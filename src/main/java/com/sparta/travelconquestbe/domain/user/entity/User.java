@@ -55,4 +55,8 @@ public class User {
     public void changeUserType(UserType newType) {
         this.type = newType;
     }
+
+    public void setId(Long userId) { // 테스트용
+
+    }
 }
