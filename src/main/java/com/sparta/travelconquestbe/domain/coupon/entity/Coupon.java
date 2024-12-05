@@ -23,7 +23,11 @@ public class Coupon extends TimeStampCreateUpdate {
     @Column(nullable = false, length = 30)
     private String name;
 
+    @Column(nullable = false)
     private String description;
+
+    @Column(unique = true)
+    private String code;
 
     @Column(nullable = false)
     private int discount_amount;
