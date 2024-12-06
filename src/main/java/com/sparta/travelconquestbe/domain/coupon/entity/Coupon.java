@@ -29,10 +29,10 @@ public class Coupon extends TimeStampCreateUpdate {
     @Column(unique = true)
     private String code;
 
-    @Column(name = "discount_amount", nullable = false)
+    @Column(nullable = false)
     private int discountAmount;
 
-    @Column(name = "valid_until", nullable = false)
+    @Column(nullable = false)
     private LocalDate validUntil;
 
     @Column(nullable = false)
