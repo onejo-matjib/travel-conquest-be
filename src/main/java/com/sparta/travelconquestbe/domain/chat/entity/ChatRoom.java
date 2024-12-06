@@ -23,5 +23,9 @@ public class ChatRoom {
 	private String title;
 	private int maxPlayers;
 
-
+	@Builder
+	public ChatRoom(String title, int maxPlayers) {
+		this.title = title;
+		this.maxPlayers = maxPlayers;
+	}
 }
