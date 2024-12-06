@@ -38,47 +38,54 @@ class ReviewServiceTest {
 		MockitoAnnotations.openMocks(this);
 	}
 
-	@Test
-	void createReview_Success() {
-		// Given
-		Long routeId = 1L;
-		Long userId = 10L;
+  @Test
+  void createReview_Success() {
+    // Given
+    Long routeId = 1L;
+    Long userId = 2L;
 
-		ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 맘에들어요!");
-		AuthUser authUser = new AuthUser(userId);
+    ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 맘에들어요!");
+    AuthUser authUser = new AuthUser(userId);
 
-		Route route = Route.builder()
-			.id(routeId)
-			.title("테스트 루트")
-			.description("테스트 루트입니다")
-			.build();
+    // User 객체 생성
+    User routeOwner = User.builder()
+        .id(20L) // 루트 소유자는 userId와 다른 ID
+        .name("RouteOwner")
+        .build();
 
-		when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-		when(reviewRepository.existsByUserIdAndRouteId(userId, routeId)).thenReturn(false);
-		when(reviewRepository.save(any(Review.class))).thenAnswer(
-			invocation -> invocation.getArgument(0));
+    Route route = Route.builder()
+        .id(routeId)
+        .title("테스트 루트")
+        .description("테스트 루트입니다")
+        .user(routeOwner) // 루트 소유자 설정
+        .build();
 
-		// When
-		ReviewResponse response = reviewService.createReview(request, authUser);
+    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
+    when(reviewRepository.existsByUserIdAndRouteId(userId, routeId)).thenReturn(false);
+    when(reviewRepository.save(any(Review.class))).thenAnswer(
+        invocation -> invocation.getArgument(0));
 
-		// Then
-		assertNotNull(response);
-		assertEquals(routeId, response.getRouteId());
-		assertEquals(5, response.getRating());
-		assertEquals("루트가 맘에들어요!", response.getComment());
+    // When
+    ReviewResponse response = reviewService.createReview(request, authUser);
 
-		verify(routeRepository, times(1)).findById(routeId);
-		verify(reviewRepository, times(1)).existsByUserIdAndRouteId(userId, routeId);
-		verify(reviewRepository, times(1)).save(any(Review.class));
-	}
+    // Then
+    assertNotNull(response);
+    assertEquals(routeId, response.getRouteId());
+    assertEquals(5, response.getRating());
+    assertEquals("루트가 맘에들어요!", response.getComment());
+
+    verify(routeRepository, times(1)).findById(routeId);
+    verify(reviewRepository, times(1)).existsByUserIdAndRouteId(userId, routeId);
+    verify(reviewRepository, times(1)).save(any(Review.class));
+  }
 
 	@Test
 	void createReview_RouteNotFound() {
 		// Given
 		Long routeId = 1L;
-		Long userId = 10L;
+		Long userId = 2L;
 
-		ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 맘에들어요!");
+		ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 너무 좋아요!");
 		AuthUser authUser = new AuthUser(userId);
 
 		when(routeRepository.findById(routeId)).thenReturn(Optional.empty());
@@ -93,49 +100,55 @@ class ReviewServiceTest {
 		verify(reviewRepository, never()).save(any(Review.class));
 	}
 
+  @Test
+  void createReview_ReviewAlreadyExists() {
+    // Given
+    Long routeId = 1L;
+    Long userId = 10L;
+
+    ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 맘에들어요!");
+    AuthUser authUser = new AuthUser(userId);
+
+    // Route 객체 생성 시 user 필드 설정
+    User owner = User.builder()
+        .id(20L) // 루트 소유자의 ID는 리뷰 작성자와 다르게 설정
+        .build();
+
+    Route route = Route.builder()
+        .id(routeId)
+        .title("테스트 루트")
+        .description("테스트 루트입니다")
+        .user(owner) // user 필드 설정
+        .build();
+
+    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
+    when(reviewRepository.existsByUserIdAndRouteId(userId, routeId)).thenReturn(true);
+
+    // When & Then
+    CustomException exception = assertThrows(CustomException.class, () -> {
+      reviewService.createReview(request, authUser);
+    });
+
+    assertEquals("REVIEW_001", exception.getErrorCode());
+    verify(routeRepository, times(1)).findById(routeId);
+    verify(reviewRepository, times(1)).existsByUserIdAndRouteId(userId, routeId);
+    verify(reviewRepository, never()).save(any(Review.class));
+  }
+
 	@Test
-	void createReview_ReviewAlreadyExists() {
+	void createReview_CannotReviewOwnRoute() {
 		// Given
 		Long routeId = 1L;
-		Long userId = 10L;
+		Long userId = 2L;
 
-		ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 맘에들어요!");
+		ReviewRequest request = new ReviewRequest(routeId, 5, "루트가 너무 좋아요!");
 		AuthUser authUser = new AuthUser(userId);
 
 		Route route = Route.builder()
 			.id(routeId)
 			.title("테스트 루트")
-			.description("테스트 루트입니다")
-			.build();
-
-		when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-		when(reviewRepository.existsByUserIdAndRouteId(userId, routeId)).thenReturn(true);
-
-		// When & Then
-		CustomException exception = assertThrows(CustomException.class, () -> {
-			reviewService.createReview(request, authUser);
-		});
-
-		assertEquals("REVIEW_001", exception.getErrorCode());
-		verify(routeRepository, times(1)).findById(routeId);
-		verify(reviewRepository, times(1)).existsByUserIdAndRouteId(userId, routeId);
-		verify(reviewRepository, never()).save(any(Review.class));
-	}
-
-	@Test
-	void createReview_CannotReviewOwnRoute() { // 유저 DB 임의로 넣고 테스트 통과
-		// Given
-		Long routeId = 1L;
-		Long userId = 10L; // 리뷰 작성자와 루트 소유자 동일
-
-		ReviewRequest request = new ReviewRequest(routeId, 5, "Great route!");
-		AuthUser authUser = new AuthUser(userId);
-
-		Route route = Route.builder()
-			.id(routeId)
-			.title("Test Route")
-			.description("This is a test route")
-			.user(User.builder().id(userId).build()) // 루트 소유자 ID와 리뷰 작성자 ID 동일
+			.description("테스트 루트 입니다")
+			.user(User.builder().id(userId).build()) // 루트 작성자 ID와 리뷰 작성자 ID 동일
 			.build();
 
 		when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
