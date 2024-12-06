@@ -23,7 +23,6 @@ public class CouponController {
             @RequestParam(defaultValue = "10", value = "limit") int limit
     ) {
         Page<CouponSearchResponse> response = couponService.searchAllCoupons(page, limit);
-
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
