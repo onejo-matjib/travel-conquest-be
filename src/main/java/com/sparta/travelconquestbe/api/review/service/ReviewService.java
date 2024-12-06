@@ -21,6 +21,7 @@ public class ReviewService {
   private final ReviewRepository reviewRepository;
   private final RouteRepository routeRepository;
 
+  //리뷰 등록
   @Transactional
   public ReviewCreateResponse createReview(ReviewCreateRequest request, AuthUser authUser) {
     // 루트가 존재하지 않을 경우 예외 처리
@@ -41,5 +42,23 @@ public class ReviewService {
     Review savedReview = reviewRepository.save(review);
 
     return ReviewCreateResponse.from(savedReview);
+  }
+
+  // 리뷰 삭제
+  @Transactional
+  public void deleteReview(Long reviewId, AuthUser authUser) {
+    // 리뷰 존재 여부 확인
+    Review review = reviewRepository.findById(reviewId)
+        .orElseThrow(() ->
+            new CustomException("REVIEW_002", "해당 리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        );
+
+    // 리뷰 작성자와 현재 유저 일치 여부 확인
+    if (!review.getUser().getId().equals(authUser.getUserId())) {
+      throw new CustomException("REVIEW_003", "본인의 리뷰만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
+    }
+
+    // 리뷰 삭제
+    reviewRepository.delete(review);
   }
 }
