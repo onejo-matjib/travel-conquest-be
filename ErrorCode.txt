@@ -28,12 +28,6 @@ COUPON_004 / 해당 쿠폰을 사용할 수 없습니다. / BAD_REQUEST
 COUPON_005 / 쿠폰이 소진되었습니다. / BAD_REQUEST
 COUPON_006 / 해당 쿠폰의 유효기간이 지났습니다. / BAD_REQUEST
 COUPON_007 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
-COUPON_001 / 해당 쿠폰이 존재하지 않습니다. / NOT_FOUND
-COUPON_002 / 해당 유저가 존재하지 않습니다. / NOT_FOUND
-COUPON_003 / 해당 쿠폰을 사용할 수 없습니다. / BAD_REQUEST
-COUPON_004 / 쿠폰이 소진되었습니다. / BAD_REQUEST
-COUPON_005 / 해당 쿠폰의 유효기간이 지났습니다. / BAD_REQUEST
-COUPON_006 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
 
 리뷰
 REVIEW_001 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
