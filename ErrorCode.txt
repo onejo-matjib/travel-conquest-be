@@ -1,5 +1,7 @@
 공통
 COMMON_001 / 잘못된 입력값 입니다. / BAD_REQUEST
+COMMON_002 / 페이지 번호는 1 이상이어야 합니다. / BAD_REQUEST
+COMMON_003 / 페이지 크기는 1 이상 " + MAX_LIMIT + " 이하로 설정해야 합니다. / BAD_REQUEST
 
 유저
 USER_001 / 이미 등록된 이메일 주소입니다. / BAD_REQUEST

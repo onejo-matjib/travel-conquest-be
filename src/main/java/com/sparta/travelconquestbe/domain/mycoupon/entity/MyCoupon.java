@@ -24,11 +24,11 @@ public class MyCoupon extends TimeStampCreated {
     @ColumnDefault(value = "false")
     private boolean useStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;
 }

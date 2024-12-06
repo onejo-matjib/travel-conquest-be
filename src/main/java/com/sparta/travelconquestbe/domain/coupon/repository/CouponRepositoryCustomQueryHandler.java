@@ -1,5 +1,6 @@
 package com.sparta.travelconquestbe.domain.coupon.repository;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
@@ -15,13 +16,13 @@ import static com.sparta.travelconquestbe.domain.coupon.entity.QCoupon.coupon;
 
 @Repository
 @RequiredArgsConstructor
-public class CouponRepositoryCustomImpl implements CouponRepositoryCustom {
+public class CouponRepositoryCustomQueryHandler implements CouponRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
     public Page<CouponSearchResponse> searchAllCoupons(Pageable pageable) {
 
-        List<CouponSearchResponse> content = jpaQueryFactory
+        QueryResults<CouponSearchResponse> results = jpaQueryFactory
                 .select(Projections.constructor(CouponSearchResponse.class,
                         coupon.id,
                         coupon.name,
@@ -36,12 +37,10 @@ public class CouponRepositoryCustomImpl implements CouponRepositoryCustom {
                 .from(coupon)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .fetch();
+                .fetchResults();
 
-        Long totalCount = jpaQueryFactory
-                .select(coupon.count())
-                .from(coupon)
-                .fetchOne();
+        List<CouponSearchResponse> content = results.getResults();
+        long totalCount = results.getTotal();
 
         return new PageImpl<>(content, pageable, totalCount);
     }
