@@ -18,11 +18,11 @@ public class CouponController {
     private final CouponService couponService;
 
     @GetMapping
-    public ResponseEntity<Page<CouponSearchResponse>> couponSearch(
+    public ResponseEntity<Page<CouponSearchResponse>> searchAllCoupons(
             @RequestParam(defaultValue = "1", value = "page") int page,
             @RequestParam(defaultValue = "10", value = "limit") int limit
     ) {
-        Page<CouponSearchResponse> response = couponService.couponSearch(page, limit);
+        Page<CouponSearchResponse> response = couponService.searchAllCoupons(page, limit);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

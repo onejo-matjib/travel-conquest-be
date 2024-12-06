@@ -14,8 +14,8 @@ public class CouponService {
     private final CouponRepository couponRepository;
 
     @Transactional(readOnly = true)
-    public Page<CouponSearchResponse> couponSearch(int page, int limit) {
+    public Page<CouponSearchResponse> searchAllCoupons(int page, int limit) {
 
-        return couponRepository.searchCoupons(PageRequest.of(page - 1, limit));
+        return couponRepository.searchAllCoupons(PageRequest.of(page - 1, limit));
     }
 }

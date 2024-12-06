@@ -19,7 +19,7 @@ public class CouponRepositoryCustomImpl implements CouponRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public Page<CouponSearchResponse> searchCoupons(Pageable pageable) {
+    public Page<CouponSearchResponse> searchAllCoupons(Pageable pageable) {
 
         List<CouponSearchResponse> content = jpaQueryFactory
                 .select(Projections.constructor(CouponSearchResponse.class,

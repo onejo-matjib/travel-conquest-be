@@ -5,5 +5,5 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CouponRepositoryCustom {
-    Page<CouponSearchResponse> searchCoupons(Pageable pageable);
+    Page<CouponSearchResponse> searchAllCoupons(Pageable pageable);
 }
