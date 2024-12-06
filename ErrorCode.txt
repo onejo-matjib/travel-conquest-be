@@ -1,5 +1,7 @@
 공통
 COMMON_001 / 잘못된 입력값 입니다. / BAD_REQUEST
+COMMON_002 / 페이지 번호는 1 이상이어야 합니다. / BAD_REQUEST
+COMMON_003 / 페이지 크기는 1 이상 " + MAX_LIMIT + " 이하로 설정해야 합니다. / BAD_REQUEST
 
 유저
 USER_001 / 이미 등록된 이메일 주소입니다. / BAD_REQUEST
@@ -21,12 +23,13 @@ ADMIN_001 / 관리자 권한이 없습니다. / FORBIDDEN
 ADMIN_002 / 사용자 등급 변경 오류. / BAD_REQUEST
 
 쿠폰
-COUPON_001 / 해당 쿠폰이 존재하지 않습니다. / NOT_FOUND
-COUPON_002 / 해당 유저가 존재하지 않습니다. / NOT_FOUND
-COUPON_003 / 해당 쿠폰을 사용할 수 없습니다. / BAD_REQUEST
-COUPON_004 / 쿠폰이 소진되었습니다. / BAD_REQUEST
-COUPON_005 / 해당 쿠폰의 유효기간이 지났습니다. / BAD_REQUEST
-COUPON_006 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
+COUPON_001 / 해당 리소스에 접근할 권한이 없습니다. / FORBIDDEN
+COUPON_002 / 해당 쿠폰이 존재하지 않습니다. / NOT_FOUND
+COUPON_003 / 해당 유저가 존재하지 않습니다. / NOT_FOUND
+COUPON_004 / 해당 쿠폰을 사용할 수 없습니다. / BAD_REQUEST
+COUPON_005 / 쿠폰이 소진되었습니다. / BAD_REQUEST
+COUPON_006 / 해당 쿠폰의 유효기간이 지났습니다. / BAD_REQUEST
+COUPON_007 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
 
 리뷰
 REVIEW_001 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST

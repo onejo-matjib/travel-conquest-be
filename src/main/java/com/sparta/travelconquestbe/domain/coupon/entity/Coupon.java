@@ -23,13 +23,17 @@ public class Coupon extends TimeStampCreateUpdate {
     @Column(nullable = false, length = 30)
     private String name;
 
+    @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
-    private int discount_amount;
+    @Column(unique = true)
+    private String code;
 
     @Column(nullable = false)
-    private LocalDate valid_until;
+    private int discountAmount;
+
+    @Column(nullable = false)
+    private LocalDate validUntil;
 
     @Column(nullable = false)
     private int count;
