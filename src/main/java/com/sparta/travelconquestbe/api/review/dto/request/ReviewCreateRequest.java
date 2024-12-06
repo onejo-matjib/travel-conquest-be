@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
-public class ReviewRequest {
+public class ReviewCreateRequest {
 
   @NotNull(message = "Route Id는 필수입니다")
   private Long routeId;
@@ -19,7 +19,7 @@ public class ReviewRequest {
   @NotBlank(message = "내용을 입력해주세요.")
   private String comment;
 
-  public ReviewRequest(Long routeId, int rating, String comment) {
+  public ReviewCreateRequest(Long routeId, int rating, String comment) {
     this.routeId = routeId;
     this.rating = rating;
     this.comment = comment;

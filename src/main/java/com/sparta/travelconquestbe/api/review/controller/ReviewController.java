@@ -1,7 +1,7 @@
 package com.sparta.travelconquestbe.api.review.controller;
 
-import com.sparta.travelconquestbe.api.review.dto.request.ReviewRequest;
-import com.sparta.travelconquestbe.api.review.dto.respones.ReviewResponse;
+import com.sparta.travelconquestbe.api.review.dto.request.ReviewCreateRequest;
+import com.sparta.travelconquestbe.api.review.dto.respones.ReviewCreateResponse;
 import com.sparta.travelconquestbe.api.review.service.ReviewService;
 import com.sparta.travelconquestbe.common.auth.AuthUser;
 import jakarta.validation.Valid;
@@ -21,9 +21,10 @@ public class ReviewController {
 
   // 리뷰 등록 API
   @PostMapping
-  public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody ReviewRequest request,
+  public ResponseEntity<ReviewCreateResponse> createReview(
+      @Valid @RequestBody ReviewCreateRequest request,
       AuthUser authUser) {
-    ReviewResponse response = reviewService.createReview(request, authUser);
+    ReviewCreateResponse response = reviewService.createReview(request, authUser);
     return ResponseEntity.ok(response);
   }
 }
