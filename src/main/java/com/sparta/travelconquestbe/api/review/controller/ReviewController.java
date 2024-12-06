@@ -21,7 +21,6 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
-  // 리뷰 등록 API
   @PostMapping
   public ResponseEntity<ReviewCreateResponse> createReview(
       @Valid @RequestBody ReviewCreateRequest request,
@@ -30,7 +29,6 @@ public class ReviewController {
     return ResponseEntity.ok(response);
   }
 
-  // 리뷰 삭제 API
   @DeleteMapping("/{reviewId}")
   public ResponseEntity<Void> deleteReview(
       @PathVariable Long reviewId,
