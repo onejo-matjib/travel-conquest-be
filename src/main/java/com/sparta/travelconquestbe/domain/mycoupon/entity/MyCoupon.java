@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.domain.mycoupon.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,7 +23,8 @@ public class MyCoupon extends TimeStampCreated {
     private Long id;
 
     @ColumnDefault(value = "false")
-    private boolean useStatus;
+    @Enumerated(EnumType.STRING)
+    private UseStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
