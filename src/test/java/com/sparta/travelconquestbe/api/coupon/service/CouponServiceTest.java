@@ -95,6 +95,5 @@ class CouponServiceTest {
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getContent().get(0).getName()).isEqualTo("테스트1");
         assertThat(result.getContent().get(1).getName()).isEqualTo("테스트2");
-
     }
 }
