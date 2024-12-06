@@ -11,13 +11,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "reviews", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "route_id"})
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,11 +37,11 @@ public class Review extends TimeStampCreated {
   private String comment;
 
   @ManyToOne
-  @JoinColumn(name = "route_id")
+  @JoinColumn(name = "route_id", nullable = false)
   private Route route;
 
   @ManyToOne
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   public static Review createReview(int rating, String comment, Route route, User user) {
