@@ -27,11 +27,16 @@ public class ReviewService {
     // 루트가 존재하지 않을 경우 예외 처리
     Route route = routeRepository.findById(request.getRouteId())
         .orElseThrow(
-            () -> new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+        );
+
+    // 본인의 루트에 리뷰를 작성하려는 경우 예외 처리
+    if (route.getUser().getId().equals(authUser.getUserId())) {
+      throw new CustomException("REVIEW_002", "본인의 루트에는 리뷰를 작성할 수 없습니다.", HttpStatus.BAD_REQUEST);
+    }
 
     // 이미 해당 루트에 리뷰를 작성한 경우 예외 처리
-    boolean isReviewExists = reviewRepository.existsByUserIdAndRouteId(authUser.getUserId(),
-        request.getRouteId());
+    boolean isReviewExists = reviewRepository.existsByUserIdAndRouteId(authUser.getUserId(), request.getRouteId());
     if (isReviewExists) {
       throw new CustomException("REVIEW_001", "이미 해당 루트에 리뷰를 작성했습니다.", HttpStatus.BAD_REQUEST);
     }

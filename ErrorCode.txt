@@ -30,6 +30,7 @@ COUPON_006 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
 
 리뷰
 REVIEW_001 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
+REVIEW_002 / 자신의 루트엔 리뷰를 남길 수 없습니다. / BAD_REQUEST
 
 루트
 ROUTE_001 / 해당 루트를 찾을 수 없습니다. / NOT_FOUND
