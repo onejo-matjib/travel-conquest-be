@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "chatRooms")
+@Table(name = "chatrooms")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,9 +23,5 @@ public class ChatRoom {
 	private String title;
 	private int maxPlayers;
 
-	@Builder
-	public ChatRoom(String title, int maxPlayers) {
-		this.title = title;
-		this.maxPlayers = maxPlayers;
-	}
+
 }
