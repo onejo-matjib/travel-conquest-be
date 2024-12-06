@@ -45,7 +45,6 @@ public class ReviewService {
   }
 
   // 리뷰 삭제
-  @Transactional
   public void deleteReview(Long reviewId, AuthUser authUser) {
     // 리뷰 존재 여부 확인
     Review review = reviewRepository.findById(reviewId)
@@ -55,6 +54,11 @@ public class ReviewService {
     // 작성자 검증
     review.validateOwner(authUser.getUserId());
     // 리뷰 삭제
+    removeReview(review);
+  }
+
+  @Transactional
+  protected void removeReview(Review review) {
     reviewRepository.delete(review);
   }
 }
