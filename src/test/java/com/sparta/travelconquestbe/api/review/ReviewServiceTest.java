@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 
 class ReviewServiceTest {
 
@@ -143,5 +144,82 @@ class ReviewServiceTest {
     verify(routeRepository, times(1)).findById(routeId);
     verify(reviewRepository, times(1)).isReviewExist(userId, routeId);
     verify(reviewRepository, never()).save(any(Review.class));
+  }
+
+  // 리뷰 삭제
+  @Test
+  void deleteReview_Success() {
+    Long reviewId = 1L;
+    Long userId = 2L;
+
+    AuthUser authUser = new AuthUser(userId);
+
+    User reviewer = User.builder()
+        .id(userId)
+        .nickname("리뷰 유저 닉네임")
+        .build();
+
+    Review review = Review.builder()
+        .id(reviewId)
+        .comment("리뷰 내용")
+        .user(reviewer)
+        .build();
+
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+
+    reviewService.deleteReview(reviewId, authUser);
+
+    verify(reviewRepository, times(1)).findById(reviewId);
+    verify(reviewRepository, times(1)).delete(review);
+  }
+
+  @Test
+  void deleteReview_ReviewNotFound() {
+    Long reviewId = 1L;
+    Long userId = 2L;
+
+    AuthUser authUser = new AuthUser(userId);
+
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.empty());
+
+    CustomException exception = assertThrows(CustomException.class, () -> {
+      reviewService.deleteReview(reviewId, authUser);
+    });
+
+    assertEquals("REVIEW_002", exception.getErrorCode());
+    assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
+    verify(reviewRepository, times(1)).findById(reviewId);
+    verify(reviewRepository, never()).delete(any());
+  }
+
+  @Test
+  void deleteReview_NotOwner() {
+    Long reviewId = 1L;
+    Long userId = 2L;
+    Long otherUserId = 3L;
+
+    AuthUser authUser = new AuthUser(userId);
+
+    User otherUser = User.builder()
+        .id(otherUserId)
+        .nickname("다른 유저 닉네임")
+        .build();
+
+    Review review = Review.builder()
+        .id(reviewId)
+        .comment("리뷰 내용")
+        .user(otherUser) // 작성자가 다른 유저
+        .build();
+
+    when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
+
+    CustomException exception = assertThrows(CustomException.class, () -> {
+      reviewService.deleteReview(reviewId, authUser);
+    });
+
+    assertEquals("REVIEW_003", exception.getErrorCode());
+    assertEquals(HttpStatus.FORBIDDEN, exception.getHttpStatus());
+    verify(reviewRepository, times(1)).findById(reviewId);
+    verify(reviewRepository, never()).delete(any());
   }
 }

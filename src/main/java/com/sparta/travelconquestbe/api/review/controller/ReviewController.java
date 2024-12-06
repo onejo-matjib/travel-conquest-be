@@ -6,7 +6,10 @@ import com.sparta.travelconquestbe.api.review.service.ReviewService;
 import com.sparta.travelconquestbe.common.auth.AuthUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +22,19 @@ public class ReviewController {
 
   private final ReviewService reviewService;
 
-  // 리뷰 등록 API
   @PostMapping
   public ResponseEntity<ReviewCreateResponse> createReview(
       @Valid @RequestBody ReviewCreateRequest request,
       AuthUser authUser) {
     ReviewCreateResponse response = reviewService.createReview(request, authUser);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @DeleteMapping("/{reviewId}")
+  public ResponseEntity<Void> deleteReview(
+      @PathVariable Long reviewId,
+      AuthUser authUser) {
+    reviewService.deleteReview(reviewId, authUser);
+    return ResponseEntity.noContent().build();
   }
 }
