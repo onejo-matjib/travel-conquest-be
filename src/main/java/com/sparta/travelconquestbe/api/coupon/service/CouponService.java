@@ -1,7 +1,15 @@
 package com.sparta.travelconquestbe.api.coupon.service;
 
+import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSaveResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
+import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
+import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +28,7 @@ import static org.springframework.http.HttpStatus.*;
 public class CouponService {
     private final CouponRepository couponRepository;
     private final MyCouponRepository myCouponRepository;
+    private final UserRepository userRepository;
 
     private static final int MAX_LIMIT = 50; // 페이지 크기 최대값
 
@@ -29,7 +38,11 @@ public class CouponService {
         if (page < 1) {
             throw new CustomException("COMMON_002", "페이지 번호는 1 이상이어야 합니다.", BAD_REQUEST);
         }
-    public Page<CouponSearchResponse> searchAllCoupons(int page, int limit) {
+
+        if (limit < 1 || limit > MAX_LIMIT) {
+            throw new CustomException("COMMON_003", "페이지 크기는 1 이상" + MAX_LIMIT + " 이하로 설정해야 합니다.",
+                    BAD_REQUEST);
+        }
 
         return couponRepository.searchAllCoupons(PageRequest.of(page - 1, limit));
     }
@@ -73,7 +86,7 @@ public class CouponService {
     // 유저 자격사항 확인 메서드
     public User qualifyUser(Long couponId, Long userId) {
         User user = userRepository.findByuserId(userId)
-                .orElseThow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
+                .orElseThrow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
 
         if (user.getType().equals(USER)) {
             throw new CustomException("COUPON_008", "등업된 사용자가 아닙니다.", FORBIDDEN);
@@ -85,7 +98,7 @@ public class CouponService {
     // 쿠폰 자격사항 확인 메서드
     public Coupon qualifyCoupon(Long couponId, Long userId) {
         User user = userRepository.findByuserId(userId)
-                .orElseThow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
+                .orElseThrow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
 
         Coupon coupon = couponRepository.findById(couponId).orElseThrow(()
                 -> new CustomException("COUPON_002", "해당 쿠폰이 존재하지 않습니다.", NOT_FOUND));
@@ -98,15 +111,10 @@ public class CouponService {
         if (coupon.getType().equals(PRIMIUM)) {
             if (!(user.getTitle().equals(CONQUEROR) || (userType.equals(ADMIN)))) {
 
-        if (limit < 1 || limit > MAX_LIMIT) {
-            throw new CustomException("COMMON_003", "페이지 크기는 1 이상" + MAX_LIMIT + " 이하로 설정해야 합니다.",
-                    BAD_REQUEST);
-        }
-
-        return couponRepository.searchAllCoupons(PageRequest.of(page - 1, limit));
                 throw new CustomException("COUPON_009", "정복자 등급만 등록할 수 있는 쿠폰입니다.", CONFLICT);
             }
         }
         return coupon;
     }
 }
+
