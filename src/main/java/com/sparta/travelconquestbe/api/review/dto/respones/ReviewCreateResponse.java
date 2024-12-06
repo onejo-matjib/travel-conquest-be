@@ -6,20 +6,21 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class ReviewResponse {
+public class ReviewCreateResponse {
 
   private Long reviewId;
   private int rating;
   private String comment;
   private Long routeId;
+  private String nickname;
 
-  // 정적 팩토리 메서드 추가
-  public static ReviewResponse from(Review review) {
-    return ReviewResponse.builder()
+  public static ReviewCreateResponse from(Review review) {
+    return ReviewCreateResponse.builder()
         .reviewId(review.getId())
         .rating(review.getRating())
         .comment(review.getComment())
         .routeId(review.getRoute().getId())
+        .nickname(review.getUser().getNickname())
         .build();
   }
 }
