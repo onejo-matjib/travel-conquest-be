@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.domain.review.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.persistence.Column;
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "reviews", uniqueConstraints = {
@@ -51,5 +53,11 @@ public class Review extends TimeStampCreated {
         .route(route)
         .user(user)
         .build();
+  }
+  // 작성자 확인
+  public void validateOwner(Long userId) {
+    if (!this.user.getId().equals(userId)) {
+      throw new CustomException("REVIEW_003", "본인의 리뷰만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
+    }
   }
 }
