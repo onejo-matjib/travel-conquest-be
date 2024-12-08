@@ -29,16 +29,14 @@ public class BookmarkService {
 
     User user = User.builder().id(authUser.getUserId()).build();
 
-    // 중복 여부 확인
-    if (bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId)) {
-      throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
-    }
-    return saveBookmark(user, route);
+    boolean isDuplicate = bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId);
+    Bookmark bookmark = Bookmark.createBookmark(user, route, isDuplicate);
+
+    return saveBookmark(bookmark);
   }
 
   @Transactional
-  protected BookmarkCreateResponse saveBookmark(User user, Route route) {
-    Bookmark bookmark = Bookmark.createBookmark(user, route);
+  protected BookmarkCreateResponse saveBookmark(Bookmark bookmark) {
     Bookmark savedBookmark = bookmarkRepository.save(bookmark);
     return BookmarkCreateResponse.from(savedBookmark);
   }
