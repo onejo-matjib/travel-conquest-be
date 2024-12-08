@@ -1,10 +1,9 @@
 package com.sparta.travelconquestbe.api.bookmark.dto.response;
 
 import com.sparta.travelconquestbe.domain.bookmark.entity.Bookmark;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder

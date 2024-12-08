@@ -24,7 +24,8 @@ public class BookmarkController {
   public ResponseEntity<BookmarkCreateResponse> createBookmark(
       @Valid @RequestBody BookmarkCreateRequest request,
       AuthUser authUser) {
-    BookmarkCreateResponse response = bookmarkService.createBookmark(request.getRouteId(), authUser);
+    BookmarkCreateResponse response = bookmarkService.createBookmark(request.getRouteId(),
+        authUser);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 }

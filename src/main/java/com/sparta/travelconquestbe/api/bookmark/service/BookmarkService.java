@@ -24,7 +24,8 @@ public class BookmarkService {
   public BookmarkCreateResponse createBookmark(Long routeId, AuthUser authUser) {
     // 대상 루트가 존재하지 않을 경우 예외
     Route route = routeRepository.findById(routeId)
-        .orElseThrow(() -> new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(
+            () -> new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     User user = User.builder().id(authUser.getUserId()).build();
 

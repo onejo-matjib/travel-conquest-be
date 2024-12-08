@@ -3,7 +3,15 @@ package com.sparta.travelconquestbe.domain.bookmark.entity;
 import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.user.entity.User;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,22 +27,22 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Bookmark extends TimeStampCreated {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "route_id", nullable = false)
-    private Route route;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "route_id", nullable = false)
+  private Route route;
 
-    public static Bookmark createBookmark(User user, Route route) {
-        return Bookmark.builder()
-            .user(user)
-            .route(route)
-            .build();
-    }
+  public static Bookmark createBookmark(User user, Route route) {
+    return Bookmark.builder()
+        .user(user)
+        .route(route)
+        .build();
+  }
 }
