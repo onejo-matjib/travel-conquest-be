@@ -31,7 +31,6 @@ public class Bookmark extends TimeStampCreated {
     @JoinColumn(name = "route_id", nullable = false)
     private Route route;
 
-    // Bookmark 엔티티 생성 메서드
     public static Bookmark createBookmark(User user, Route route) {
         return Bookmark.builder()
             .user(user)

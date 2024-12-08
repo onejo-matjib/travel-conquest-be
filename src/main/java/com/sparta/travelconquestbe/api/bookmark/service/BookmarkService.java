@@ -32,8 +32,6 @@ public class BookmarkService {
     if (bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId)) {
       throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
     }
-
-    // 즐겨찾기 저장
     return saveBookmark(user, route);
   }
 
