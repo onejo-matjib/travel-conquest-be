@@ -20,7 +20,7 @@ public class BookmarkService {
   private final BookmarkRepository bookmarkRepository;
   private final RouteRepository routeRepository;
 
-  @Transactional(readOnly = true)
+  @Transactional
   public BookmarkCreateResponse createBookmark(Long routeId, AuthUser authUser) {
     // 대상 루트가 존재하지 않을 경우 예외
     Route route = routeRepository.findById(routeId)
@@ -29,14 +29,14 @@ public class BookmarkService {
 
     User user = User.builder().id(authUser.getUserId()).build();
 
+    // 중복 여부 확인
     boolean isDuplicate = bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId);
-    Bookmark bookmark = Bookmark.createBookmark(user, route, isDuplicate);
+    if (isDuplicate) {
+      throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
+    }
 
-    return saveBookmark(bookmark);
-  }
+    Bookmark bookmark = Bookmark.createBookmark(user, route, false);
 
-  @Transactional
-  protected BookmarkCreateResponse saveBookmark(Bookmark bookmark) {
     Bookmark savedBookmark = bookmarkRepository.save(bookmark);
     return BookmarkCreateResponse.from(savedBookmark);
   }
