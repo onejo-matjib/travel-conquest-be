@@ -85,7 +85,7 @@ public class CouponService {
 
     // 유저 자격사항 확인 메서드
     public User qualifyUser(Long couponId, Long userId) {
-        User user = userRepository.findByuserId(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
 
         if (user.getType().equals(USER)) {
@@ -97,7 +97,7 @@ public class CouponService {
 
     // 쿠폰 자격사항 확인 메서드
     public Coupon qualifyCoupon(Long couponId, Long userId) {
-        User user = userRepository.findByuserId(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
 
         Coupon coupon = couponRepository.findById(couponId).orElseThrow(()

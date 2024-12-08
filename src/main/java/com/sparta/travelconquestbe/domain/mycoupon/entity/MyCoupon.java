@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "mycoupons")
@@ -22,8 +21,7 @@ public class MyCoupon extends TimeStampCreated {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ColumnDefault(value = "false")
-    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "ENUM('AVAILABLE', 'UNAVAILABLE') DEFAULT 'AVAILABLE'")
     private UseStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -3,11 +3,11 @@ package com.sparta.travelconquestbe.api.coupon.controller;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSaveResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.api.coupon.service.CouponService;
+import com.sparta.travelconquestbe.common.auth.AuthUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,9 +28,9 @@ public class CouponController {
     @PostMapping("/{id}")
     public ResponseEntity<CouponSaveResponse> saveCoupon(
             @PathVariable(name = "id") Long couponId,
-            @AuthenticationPrincipal AuthUser user
+            AuthUser user
     ) {
-        Long userId = user.getId();
+        Long userId = user.getUserId();
         CouponSaveResponse response = couponService.saveCoupon(couponId, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
