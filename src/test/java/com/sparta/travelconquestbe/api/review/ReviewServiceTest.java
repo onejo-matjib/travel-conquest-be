@@ -21,6 +21,7 @@ import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -44,6 +45,7 @@ class ReviewServiceTest {
   }
 
   @Test
+  @DisplayName("리뷰_등록_성공")
   void createReview_Success() {
     Long routeId = 1L;
     Long userId = 2L;
@@ -95,6 +97,7 @@ class ReviewServiceTest {
   }
 
   @Test
+  @DisplayName("리뷰_등록_실패_루트_존재하지_않음")
   void createReview_RouteNotFound() {
     Long routeId = 1L;
     Long userId = 2L;
@@ -114,6 +117,7 @@ class ReviewServiceTest {
   }
 
   @Test
+  @DisplayName("이미_등록된_리뷰_있음")
   void createReview_ReviewAlreadyExists() {
     Long routeId = 1L;
     Long userId = 10L;
@@ -148,6 +152,7 @@ class ReviewServiceTest {
 
   // 리뷰 삭제
   @Test
+  @DisplayName("리뷰_삭제_성공")
   void deleteReview_Success() {
     Long reviewId = 1L;
     Long userId = 2L;
@@ -174,6 +179,7 @@ class ReviewServiceTest {
   }
 
   @Test
+  @DisplayName("리뷰_삭제_실패_루트_찾을수_없음")
   void deleteReview_ReviewNotFound() {
     Long reviewId = 1L;
     Long userId = 2L;
@@ -193,6 +199,7 @@ class ReviewServiceTest {
   }
 
   @Test
+  @DisplayName("리뷰_삭제_실패_리뷰_주인_아님")
   void deleteReview_NotOwner() {
     Long reviewId = 1L;
     Long userId = 2L;
