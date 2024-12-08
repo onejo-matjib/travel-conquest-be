@@ -43,7 +43,7 @@ public class BookmarkService {
 
   @Transactional(readOnly = true)
   public Page<BookmarkListResponse> getBookmarks(AuthUser authUser, Pageable pageable) {
-    Page<Bookmark> bookmarks = bookmarkRepository.findAllByUserIdOrderByCreatedAtDesc(
+    Page<Bookmark> bookmarks = bookmarkRepository.getUserBookmarks(
         authUser.getUserId(), pageable);
     return bookmarks.map(BookmarkListResponse::from);
   }
