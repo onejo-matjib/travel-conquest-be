@@ -37,64 +37,67 @@ class BookmarkServiceTest {
   private RouteRepository routeRepository;
 
   private AuthUser authUser;
+  private Route mockRoute;
+  private User mockUser;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
     authUser = new AuthUser(1L); // Mock User ID
+    mockRoute = Route.builder().id(1L).title("Test Route").build();
+    mockUser = User.builder().id(authUser.getUserId()).build();
   }
 
   @Test
   @DisplayName("즐겨찾기_등록_성공")
   void testCreateBookmark_Success() {
-    Long routeId = 1L;
-    Route mockRoute = Route.builder().id(routeId).title("Test Route").build();
-    User mockUser = User.builder().id(authUser.getUserId()).build();
-    Bookmark mockBookmark = Bookmark.createBookmark(mockUser, mockRoute);
+    when(routeRepository.findById(mockRoute.getId())).thenReturn(Optional.of(mockRoute));
+    when(bookmarkRepository.isBookmarkExist(authUser.getUserId(), mockRoute.getId()))
+        .thenReturn(false);
+    when(bookmarkRepository.save(any(Bookmark.class))).thenAnswer(
+        invocation -> invocation.getArgument(0));
 
-    when(routeRepository.findById(routeId)).thenReturn(Optional.of(mockRoute));
-    when(bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId)).thenReturn(false);
-    when(bookmarkRepository.save(any(Bookmark.class))).thenReturn(mockBookmark);
+    BookmarkCreateResponse response = bookmarkService.createBookmark(mockRoute.getId(), authUser);
 
-    BookmarkCreateResponse response = bookmarkService.createBookmark(routeId, authUser);
+    assertThat(response.getRouteId()).isEqualTo(mockRoute.getId());
 
-    assertThat(response.getRouteId()).isEqualTo(routeId);
-    verify(routeRepository, times(1)).findById(routeId);
-    verify(bookmarkRepository, times(1)).isBookmarkExist(authUser.getUserId(), routeId);
+    verify(routeRepository, times(1)).findById(mockRoute.getId());
+    verify(bookmarkRepository, times(1)).isBookmarkExist(authUser.getUserId(), mockRoute.getId());
     verify(bookmarkRepository, times(1)).save(any(Bookmark.class));
   }
 
   @Test
   @DisplayName("즐겨찾기_등록_실패_루트_존재하지_않음")
   void testCreateBookmark_Fail_RouteNotFound() {
-    Long routeId = 999L;
-    when(routeRepository.findById(routeId)).thenReturn(Optional.empty());
+    when(routeRepository.findById(mockRoute.getId())).thenReturn(Optional.empty());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.createBookmark(routeId, authUser);
+      bookmarkService.createBookmark(mockRoute.getId(), authUser);
     });
 
     assertThat(exception.getErrorCode()).isEqualTo("ROUTE_001");
     assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
-    verify(routeRepository, times(1)).findById(routeId);
+
+    verify(routeRepository, times(1)).findById(mockRoute.getId());
     verify(bookmarkRepository, never()).save(any(Bookmark.class));
   }
 
   @Test
   @DisplayName("이미_등록된_즐겨찾기")
   void testCreateBookmark_Fail_DuplicateBookmark() {
-    Long routeId = 1L;
-    when(routeRepository.findById(routeId)).thenReturn(Optional.of(new Route()));
-    when(bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId)).thenReturn(true);
+    when(routeRepository.findById(mockRoute.getId())).thenReturn(Optional.of(mockRoute));
+    when(bookmarkRepository.isBookmarkExist(authUser.getUserId(), mockRoute.getId()))
+        .thenReturn(true);
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.createBookmark(routeId, authUser);
+      bookmarkService.createBookmark(mockRoute.getId(), authUser);
     });
 
     assertThat(exception.getErrorCode()).isEqualTo("BOOKMARK_001");
     assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
-    verify(routeRepository, times(1)).findById(routeId);
-    verify(bookmarkRepository, times(1)).isBookmarkExist(authUser.getUserId(), routeId);
+
+    verify(routeRepository, times(1)).findById(mockRoute.getId());
+    verify(bookmarkRepository, times(1)).isBookmarkExist(authUser.getUserId(), mockRoute.getId());
     verify(bookmarkRepository, never()).save(any(Bookmark.class));
   }
 }
