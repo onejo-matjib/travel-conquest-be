@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.api.bookmark.service;
+package com.sparta.travelconquestbe.api.bookmark;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
+import com.sparta.travelconquestbe.api.bookmark.service.BookmarkService;
 import com.sparta.travelconquestbe.common.auth.AuthUser;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.bookmark.entity.Bookmark;
