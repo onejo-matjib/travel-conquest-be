@@ -10,21 +10,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "bookmarks")
+@Table(name = "bookmarks", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"user_id", "route_id"})
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Bookmark extends TimeStampCreated {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "route_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id", nullable = false)
     private Route route;
+
+    // Bookmark 엔티티 생성 메서드
+    public static Bookmark createBookmark(User user, Route route) {
+        return Bookmark.builder()
+            .user(user)
+            .route(route)
+            .build();
+    }
 }
