@@ -38,3 +38,6 @@ REVIEW_003 / 본인의 리뷰만 삭제할 수 있습니다. / FORBIDDEN
 
 루트
 ROUTE_001 / 해당 루트를 찾을 수 없습니다. / NOT_FOUND
+
+즐겨찾기
+BOOKMARK_001 / 이미 해당 루트를 즐겨찾기에 등록했습니다. / CONFLICT
