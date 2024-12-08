@@ -16,7 +16,7 @@ import static com.sparta.travelconquestbe.domain.coupon.entity.QCoupon.coupon;
 
 @Repository
 @RequiredArgsConstructor
-public class CouponRepositoryCustomQueryHandler implements CouponRepositoryCustom {
+public class CouponRepositoryCustomImpl implements CouponRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
