@@ -4,6 +4,6 @@ import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface CouponRepositoryCustom {
+public interface CouponRepositoryQueryDsl {
     Page<CouponSearchResponse> searchAllCoupons(Pageable pageable);
 }
