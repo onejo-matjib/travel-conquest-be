@@ -1,0 +1,1101 @@
+package com.sparta.travelconquestbe;
+
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.http.HttpStatus;
+
+@EnableJpaAuditing
+@SpringBootApplication
+public class TravelConquestBeApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(TravelConquestBeApplication.class, args);
+    }
+
+}
+package com.sparta.travelconquestbe.api.auth.controller;
+
+import com.sparta.travelconquestbe.api.auth.dto.info.KakaoUserInfo;
+import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
+import com.sparta.travelconquestbe.api.auth.service.AuthService;
+import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class AuthController {
+
+  private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+  private final AuthService authService;
+
+  @GetMapping("/login/kakao")
+  public ResponseEntity<Void> kakaoLoginRedirect() {
+    String kakaoLoginUrl = authService.createKakaoLoginUrl();
+    return ResponseEntity.status(HttpStatus.FOUND).location(URI.create(kakaoLoginUrl)).build();
+  }
+
+  @GetMapping("/kakao/callback")
+  public ResponseEntity<?> kakaoLoginCallback(@RequestParam String code) {
+    try {
+      String jwtToken = authService.handleKakaoLogin(code);
+      return ResponseEntity.ok()
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+          .body(jwtToken);
+
+    } catch (CustomException e) {
+      logger.error("카카오 로그인 처리 중 예외 발생: 에러 코드 - {}, 메시지 - {}", e.getErrorCode(), e.getMessage());
+      return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+    } catch (Exception e) {
+      logger.error("카카오 로그인 과정에서 예기치 않은 오류 발생: {}", e.getMessage());
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("카카오 로그인 과정에서 예기치 않은 오류가 발생했습니다.");
+    }
+  }
+
+  @PostMapping("/oauth/kakao/additional-info")
+  public ResponseEntity<String> handleAdditionalInfo(@AuthUser Long userId, @RequestBody SignUpAdditionalInfoRequest request) {
+    try {
+      String jwtToken = authService.saveAdditionalInfo(userId, request);
+      return ResponseEntity.ok()
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
+          .body("회원 가입 및 로그인 성공" + jwtToken);
+    } catch (CustomException e) {
+      logger.error("추가 정보 처리 중 예외 발생: 에러 코드 - {}, 메시지 - {}", e.getErrorCode(), e.getMessage());
+      return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+    }
+  }
+}package com.sparta.travelconquestbe.api.auth.dto.info;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+public class KakaoUserInfo {
+  private Long id;
+  private String email;
+  private String nickname;
+  private String providerType;
+
+  public KakaoUserInfo(Long id, String email, String nickname) {
+    this.id = id;
+    this.email = email;
+    this.nickname = nickname;
+  }
+}package com.sparta.travelconquestbe.api.auth.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+public class SignUpAdditionalInfoRequest {
+  @NotBlank(message = "사용자 이름은 필수 항목입니다.")
+  private String name;
+
+  @NotBlank(message = "사용자 생년월일은 필수 항목입니다.")
+  private String birth;
+}
+package com.sparta.travelconquestbe.api.auth.service;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.travelconquestbe.api.auth.dto.info.KakaoUserInfo;
+import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
+import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import com.sparta.travelconquestbe.domain.user.enums.Title;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
+
+import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+  private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+
+  private final JwtHelper jwtHelper;
+  private final UserRepository userRepository;
+  private final RestTemplate restTemplate = new RestTemplate();
+  private final ObjectMapper objectMapper = new ObjectMapper();
+
+  @Value("${kakao.client-id}")
+  private String clientId;
+
+  @Value("${kakao.redirect-uri}")
+  private String redirectUri;
+
+  @Value("${kakao.client-secret}")
+  private String clientSecret;
+
+  public String handleKakaoLogin(String code) {
+    KakaoUserInfo kakaoUserInfo = getKakaoUserInfoFromCode(code);
+    Optional<User> existingUser = userRepository.findByProviderId(kakaoUserInfo.getId());
+
+    if (existingUser.isPresent()) {
+      return jwtHelper.createToken(existingUser.get().getId(), existingUser.get().getEmail(), existingUser.get().getProviderType());
+    }
+
+    if (kakaoUserInfo.getEmail() == null || kakaoUserInfo.getEmail().isEmpty()) {
+      throw new CustomException("USER_006", "이메일 정보가 필요합니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    throw new CustomException("USER_006", "추가 정보가 필요합니다.", HttpStatus.BAD_REQUEST);
+  }
+
+  public String createKakaoLoginUrl() {
+    return "https://kauth.kakao.com/oauth/authorize"
+        + "?client_id=" + clientId
+        + "&redirect_uri=" + redirectUri
+        + "&response_type=code";
+  }
+
+  public KakaoUserInfo getKakaoUserInfoFromCode(String code) {
+    String accessToken = getKakaoAccessToken(code);
+    return getKakaoUserInfo(accessToken);
+  }
+
+  private String getKakaoAccessToken(String code) {
+    String tokenUrl = "https://kauth.kakao.com/oauth/token";
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+    String body = "grant_type=authorization_code"
+        + "&client_id=" + clientId
+        + "&redirect_uri=" + redirectUri
+        + "&code=" + code
+        + "&client_secret=" + clientSecret;
+
+    HttpEntity<String> entity = new HttpEntity<>(body, headers);
+    ResponseEntity<String> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, entity, String.class);
+    return parseAccessToken(response.getBody());
+  }
+
+  private KakaoUserInfo getKakaoUserInfo(String accessToken) {
+    String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(accessToken);
+
+    HttpEntity<Void> entity = new HttpEntity<>(headers);
+    ResponseEntity<String> response = restTemplate.exchange(userInfoUrl, HttpMethod.GET, entity, String.class);
+
+    return parseUserInfo(response.getBody());
+  }
+
+  private String parseAccessToken(String responseBody) {
+    try {
+      JsonNode jsonNode = objectMapper.readTree(responseBody);
+      return jsonNode.get("access_token").asText();
+    } catch (Exception e) {
+      logger.error("액세스 토큰 파싱 실패: {}", e.getMessage());
+      throw new CustomException("AUTH_007", "액세스 토큰 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private KakaoUserInfo parseUserInfo(String responseBody) {
+    try {
+      JsonNode jsonNode = objectMapper.readTree(responseBody);
+      Long id = jsonNode.get("id").asLong();
+      String email = jsonNode.path("kakao_account").path("email").asText(null);
+      String nickname = jsonNode.path("properties").path("nickname").asText();
+      return new KakaoUserInfo(id, email, nickname);
+    } catch (Exception e) {
+      logger.error("사용자 정보 파싱 실패: {}", e.getMessage());
+      throw new CustomException("AUTH_008", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  public String saveAdditionalInfo(Long userId, SignUpAdditionalInfoRequest request) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(
+            () -> new CustomException("USER_006", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    user.updateAdditionalInfo(request.getName(), request.getBirth());
+    userRepository.save(user);
+
+    return jwtHelper.createToken(user.getId(), user.getEmail(), user.getProviderType());
+  }
+}
+
+
+package com.sparta.travelconquestbe.common.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface AuthUser {
+}package com.sparta.travelconquestbe.common.annotation;
+
+import com.sparta.travelconquestbe.common.validator.ValueOfEnumValidator;
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Constraint(validatedBy = ValueOfEnumValidator.class)
+@Target({ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidEnum {
+    Class<? extends Enum<?>> enumClass();
+
+    String message() default "";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
+}
+package com.sparta.travelconquestbe.common.config.jwt;
+
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import jakarta.annotation.PostConstruct;
+import javax.crypto.KeyGenerator;
+import java.security.Key;
+import java.util.Base64;
+import java.util.Date;
+
+@Component
+public class JwtHelper {
+
+  private String secretKey;
+
+  @Value("${jwt.expiration}")
+  private Long expiration;
+
+  @PostConstruct
+  protected void init() {
+    try {
+      KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+      keyGenerator.init(256);
+      Key key = keyGenerator.generateKey();
+      secretKey = Base64.getEncoder().encodeToString(key.getEncoded());
+    } catch (Exception e) {
+      throw new RuntimeException("시크릿 키 생성 실패", e);
+    }
+  }
+
+  // JWT 토큰 생성 (일반 로그인 및 소셜 로그인 공통 사용)
+  public String createToken(Long userId, String email, String providerType) {
+    Claims claims = Jwts.claims().setSubject(email);
+    claims.put("userId", userId);
+    claims.put("providerType", providerType);
+
+    Date now = new Date();
+    Date validity = new Date(now.getTime() + expiration);
+
+    return Jwts.builder()
+        .setClaims(claims)
+        .setIssuedAt(now)
+        .setExpiration(validity)
+        .signWith(SignatureAlgorithm.HS256, secretKey)
+        .compact();
+  }
+
+  public String getUserEmailFromToken(String token) {
+    try {
+      return getClaims(token).getSubject();
+    } catch (Exception e) {
+      throw new CustomException("AUTH_001", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  public Long getUserIdFromToken(String token) {
+    try {
+      return getClaims(token).get("userId", Long.class);
+    } catch (Exception e) {
+      throw new CustomException("AUTH_009", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  public boolean validateToken(String token) {
+    try {
+      getClaims(token);
+      return true;
+    } catch (Exception e) {
+      throw new CustomException("AUTH_010", "인증 토큰이 만료되었습니다. 다시 로그인 해주세요.", HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  private Claims getClaims(String token) {
+    return Jwts.parser()
+        .setSigningKey(secretKey)
+        .parseClaimsJws(token)
+        .getBody();
+  }
+
+  public void storeRefreshToken(String userId, String refreshToken) {
+    // Redis에 Refresh Token을 저장하는 로직
+  }
+
+  public Long getUserIdFromRefreshToken(String refreshToken) {
+    // Redis에서 Refresh Token을 확인하고, 유효한 경우 사용자 ID 반환하는 로직
+    return null; // 예시를 위한 null 반환
+  }
+}
+package com.sparta.travelconquestbe.common.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Getter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class TimeStampAll {
+    @CreatedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime updatedAt;
+
+    @Column
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime deletedAt;
+}
+package com.sparta.travelconquestbe.common.entity;
+
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Getter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class TimeStampCreated {
+
+    @CreatedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt;
+}
+package com.sparta.travelconquestbe.common.entity;
+
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+
+@Getter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class TimeStampCreateUpdate {
+    @CreatedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime updatedAt;
+}
+package com.sparta.travelconquestbe.common.exception;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@AllArgsConstructor
+@Builder
+public class CustomException extends RuntimeException {
+    private final String errorCode;
+    private final HttpStatus httpStatus;
+
+    public CustomException(String errorCode, String errorMessage, HttpStatus httpStatus) {
+        super(errorMessage);
+        this.errorCode = errorCode;
+        this.httpStatus = httpStatus;
+    }
+}
+package com.sparta.travelconquestbe.common.exception;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@Builder
+public class ErrorResponse {
+    private String errorCode;
+    private String errorMessage;
+    private int httpStatus;
+    private long timestamp;
+}
+package com.sparta.travelconquestbe.common.exception;
+
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ErrorResponse> handleCustomException(CustomException e) {
+        return new ResponseEntity<>(ErrorResponse.builder().errorCode(e.getErrorCode()).errorMessage(e.getMessage()).httpStatus(e.getHttpStatus().value()).timestamp(System.currentTimeMillis()).build(), e.getHttpStatus());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        ErrorResponse response = new ErrorResponse("COMMON_001", errorMessage, 400, System.currentTimeMillis());
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatus()));
+    }
+}
+package com.sparta.travelconquestbe.common.resolver;
+
+import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
+
+@Component
+@RequiredArgsConstructor
+public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
+
+  private final JwtHelper jwtHelper;
+
+  @Override
+  public boolean supportsParameter(MethodParameter parameter) {
+    return parameter.hasParameterAnnotation(AuthUser.class);
+  }
+
+  @Override
+  public Object resolveArgument(
+      MethodParameter parameter,
+      ModelAndViewContainer mavContainer,
+      NativeWebRequest webRequest,
+      org.springframework.web.bind.support.WebDataBinderFactory binderFactory) {
+
+    HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
+    String authorizationHeader = request.getHeader("Authorization");
+
+    if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+      throw new CustomException("AUTH_004", "Authorization 헤더가 누락되었거나 잘못되었습니다.", HttpStatus.UNAUTHORIZED);
+    }
+
+    String token = authorizationHeader.substring(7);
+
+    try {
+      return jwtHelper.getUserIdFromToken(token);
+    } catch (CustomException e) {
+      throw new CustomException("AUTH_005", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    }
+  }
+}package com.sparta.travelconquestbe.common.validator;
+
+import com.sparta.travelconquestbe.common.annotation.ValidEnum;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+
+public class ValueOfEnumValidator implements ConstraintValidator<ValidEnum, String> {
+    private Class<? extends Enum<?>> enumClass;
+
+    @Override
+    public void initialize(ValidEnum constraintAnnotation) {
+        this.enumClass = constraintAnnotation.enumClass();
+    }
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        for (Enum<?> enumConstant : enumClass.getEnumConstants()) {
+            if (enumConstant.name().equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+package com.sparta.travelconquestbe.config;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.TimeUnit;
+
+@Configuration
+@EnableCaching
+public class CacheConfig {
+    @Bean
+    // TTL 사용을 위한 외부 캐시 라이브러리 사용 'Caffeine'
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("searchPostsCache","searchPostsBestCache");
+        cacheManager.setCaffeine(
+                Caffeine.newBuilder()
+                        // 캐시 TTL 설정
+                        .expireAfterWrite(10, TimeUnit.MINUTES)
+                        // 최대 캐시 엔트리 수
+                        .maximumSize(1000)
+        );
+        return cacheManager;
+    }
+}
+package com.sparta.travelconquestbe.config;
+
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class QueryDslConfig {
+
+    private final EntityManager entityManager;
+
+    public QueryDslConfig(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    @Bean
+    public JPAQueryFactory jpaQueryFactory() {
+        return new JPAQueryFactory(entityManager);
+    }
+}
+package com.sparta.travelconquestbe.domain.admin.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampAll;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "admins")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Admin extends TimeStampAll {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String email;
+
+    @Column(nullable = false, length = 255)
+    private String password;
+}
+package com.sparta.travelconquestbe.domain.bookmark.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.route.entity.Route;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "bookmarks")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Bookmark extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
+}
+package com.sparta.travelconquestbe.domain.chat.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+
+@Entity
+@Table(name = "chats")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Chat extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false,columnDefinition = "TEXT")
+    private String content;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}
+package com.sparta.travelconquestbe.domain.coupon.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
+@Entity
+@Table(name = "coupons")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Coupon extends TimeStampCreateUpdate {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 30)
+    private String name;
+
+    private String description;
+
+    @Column(nullable = false)
+    private int discount_amount;
+
+    @Column(nullable = false)
+    private LocalDate valid_until;
+
+    @Column(nullable = false)
+    private int count;
+}
+package com.sparta.travelconquestbe.domain.mycoupon.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+
+@Entity
+@Table(name = "mycoupons")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MyCoupon extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ColumnDefault(value = "false")
+    private boolean useStatus;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+}
+package com.sparta.travelconquestbe.domain.notification.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "notifications")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Notification extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 255)
+    private String message;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}
+package com.sparta.travelconquestbe.domain.report.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.admin.entity.Admin;
+import com.sparta.travelconquestbe.domain.report.enums.Reason;
+import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
+import com.sparta.travelconquestbe.domain.report.enums.Villain;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "reports")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Report extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportCategory reportCategory;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Reason reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Villain status;
+
+    @Column(nullable = false)
+    private LocalDateTime checkedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private Admin admin;
+}
+package com.sparta.travelconquestbe.domain.report.enums;
+
+public enum Reason {
+    PROFANITY,      // 욕설
+    ADVERTISING,    // 광고
+    MISINFORMATION, // 거짓정보
+    SPAM            // 도배
+}
+package com.sparta.travelconquestbe.domain.report.enums;
+
+public enum ReportCategory {
+    ROUTE, REVIEW, CHAT
+}
+package com.sparta.travelconquestbe.domain.report.enums;
+
+public enum Villain {
+    SAINT, OUTLAW
+}
+package com.sparta.travelconquestbe.domain.review.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.route.entity.Route;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "reviews")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Review extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private int rating;
+
+    @Column(columnDefinition = "TEXT")
+    private String comment;
+
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
+
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
+}
+package com.sparta.travelconquestbe.domain.route.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "routes")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Route extends TimeStampCreateUpdate {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false,length = 255)
+    private String title;
+
+    @Column(nullable = false,columnDefinition = "TEXT")
+    private String description;
+
+    private Long totalDistance;
+
+    private int money;
+
+    private String estimatedTime;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}
+package com.sparta.travelconquestbe.domain.routelocation.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.route.entity.Route;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "routelocations")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class RouteLocation extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 255)
+    private String locationName;
+
+    @Column(nullable = false)
+    private int sequence;
+
+    @Column(name = "latitude", nullable = false, precision = 10, scale = 8)
+    private BigDecimal latitude;  // 위도
+
+    @Column(name = "longitude", nullable = false, precision = 11, scale = 8)
+    private BigDecimal longitude;  // 경도
+
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
+}
+package com.sparta.travelconquestbe.domain.subscription.entity;
+
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "subscriptions")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Subscription extends TimeStampCreated {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private Long userId;
+
+    @Column(nullable = false)
+    private Long subUserId;
+}
+package com.sparta.travelconquestbe.domain.user.entity;
+
+import com.sparta.travelconquestbe.domain.user.enums.Title;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "users")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 30)
+    private String name;
+
+    @Column(nullable = false, length = 30)
+    private String nickname;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String email;
+
+    @Column(nullable = false, length = 255)
+    private String password;
+
+    private String providerType;
+
+    private Long providerId;
+
+    @Column(nullable = false, length = 10)
+    private String birth;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private UserType type;
+
+    @Enumerated(EnumType.STRING)
+    private Title title;
+
+    public void changeNickname(String newNickname) {
+        this.nickname = newNickname;
+    }
+
+    public void changePassword(String newPassword) {
+        this.password = newPassword;
+    }
+
+    public void changeUserType(UserType newType) {
+        this.type = newType;
+    }
+
+    public void updateAdditionalInfo(String name, String birth) {
+        this.name = name;
+        this.birth = birth;
+    }
+}
+package com.sparta.travelconquestbe.domain.user.enums;
+
+public enum Title {
+    TRAVELER,
+    PIONEER,
+    CONQUEROR
+}
+package com.sparta.travelconquestbe.domain.user.enums;
+
+public enum UserType {
+    USER,
+    AUTHENTICATED_USER,
+    ADMIN
+}
+package com.sparta.travelconquestbe.domain.user.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import java.util.Optional;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserRepository extends JpaRepository<User, Long> {
+  Optional<User> findByProviderId(Long providerId);
+  Optional<User> findByEmail(String email);
+}

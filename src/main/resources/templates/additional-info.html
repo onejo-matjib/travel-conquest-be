@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오 사용자 추가 정보 입력</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .form-container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    .form-container h2 {
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+<div class="form-container">
+  <h2>추가 정보 입력</h2>
+  <form id="additionalInfoForm">
+    <div class="form-group">
+      <label for="name">이름</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+      <label for="birth">생년월일 (YYYY-MM-DD)</label>
+      <input type="date" id="birth" name="birth" required>
+    </div>
+    <button type="button" class="btn" onclick="submitAdditionalInfo()">전송</button>
+  </form>
+</div>
+
+<script>
+  function submitAdditionalInfo() {
+    const name = document.getElementById('name').value;
+    const birth = document.getElementById('birth').value;
+    const accessToken = localStorage.getItem('access_token'); // 로그인 후 저장된 access_token 사용
+
+    if (!accessToken) {
+      alert('인증 토큰이 없습니다. 다시 로그인 해주세요.');
+      return;
+    }
+
+    // 입력된 추가 정보를 JSON으로 전송
+    const additionalInfo = {
+      name: name,
+      birth: birth
+    };
+
+    fetch('http://localhost:8080/api/users/oauth/kakao/additional-info', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + accessToken
+      },
+      body: JSON.stringify(additionalInfo)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('추가 정보가 전송되었습니다.');
+      } else {
+        alert('오류: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('서버 오류가 발생했습니다.');
+    });
+  }
+</script>
+</body>
+</html>
