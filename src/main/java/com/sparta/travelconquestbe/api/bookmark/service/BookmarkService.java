@@ -14,7 +14,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +22,6 @@ public class BookmarkService {
   private final BookmarkRepository bookmarkRepository;
   private final RouteRepository routeRepository;
 
-  @Transactional
   public BookmarkCreateResponse createBookmark(Long routeId, AuthUser authUser) {
     Route route = routeRepository.findById(routeId)
         .orElseThrow(
@@ -41,7 +39,6 @@ public class BookmarkService {
     return BookmarkCreateResponse.from(savedBookmark);
   }
 
-  @Transactional(readOnly = true)
   public Page<BookmarkListResponse> getBookmarks(AuthUser authUser, Pageable pageable) {
     Page<Bookmark> bookmarks = bookmarkRepository.getUserBookmarks(
         authUser.getUserId(), pageable);
