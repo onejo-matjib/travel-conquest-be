@@ -1,14 +1,9 @@
 package com.sparta.travelconquestbe.api.coupon.service;
 
-import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSaveResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.common.exception.CustomException;
-import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
-import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
 import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
-import com.sparta.travelconquestbe.domain.user.entity.User;
-import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -16,12 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.sparta.travelconquestbe.domain.coupon.enums.CouponType.PRIMIUM;
-import static com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus.AVAILABLE;
-import static com.sparta.travelconquestbe.domain.user.enums.Title.CONQUEROR;
-import static com.sparta.travelconquestbe.domain.user.enums.UserType.ADMIN;
-import static com.sparta.travelconquestbe.domain.user.enums.UserType.USER;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Service
 @RequiredArgsConstructor
@@ -45,76 +35,6 @@ public class CouponService {
         }
 
         return couponRepository.searchAllCoupons(PageRequest.of(page - 1, limit));
-    }
-
-    @Transactional
-    public CouponSaveResponse saveCoupon(Long couponId, Long userId) {
-        // 등업하지 않은 유저가 쿠폰을 등록하는 경우
-        User user = qualifyUser(couponId, userId);
-
-        // 쿠폰 자격사항 확인
-        Coupon coupon = qualifyCoupon(couponId, userId);
-
-
-        // 해당 쿠폰이 소진될 경우
-        if (coupon.getCount() == 0) {
-            throw new CustomException("COUPON_005", "해당 쿠폰이 소진되었습니다.", CONFLICT);
-        }
-
-        MyCoupon myCoupon = MyCoupon.builder()
-                .status(AVAILABLE)
-                .user(user)
-                .coupon(coupon)
-                .build();
-
-        myCouponRepository.save(myCoupon);
-
-        CouponSaveResponse response = CouponSaveResponse.builder()
-                .id(coupon.getId())
-                .name(coupon.getName())
-                .description(coupon.getDescription())
-                .code(coupon.getCode())
-                .status(AVAILABLE)
-                .discountAmount(coupon.getDiscountAmount())
-                .validUntil(coupon.getValidUntil())
-                .createdAt(myCoupon.getCreatedAt())
-                .build();
-
-        return response;
-    }
-
-    // 유저 자격사항 확인 메서드
-    public User qualifyUser(Long couponId, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
-
-        if (user.getType().equals(USER)) {
-            throw new CustomException("COUPON_008", "등업된 사용자가 아닙니다.", FORBIDDEN);
-        }
-
-        return user;
-    }
-
-    // 쿠폰 자격사항 확인 메서드
-    public Coupon qualifyCoupon(Long couponId, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException("USER_002", "사용자를 찾을 수 없습니다", NOT_FOUND));
-
-        Coupon coupon = couponRepository.findById(couponId).orElseThrow(()
-                -> new CustomException("COUPON_002", "해당 쿠폰이 존재하지 않습니다.", NOT_FOUND));
-
-        UserType userType = user.getType();
-
-        /* 쿠폰 등급 확인
-         * 프리미엄 쿠폰일 경우 정복자만 이용할 수 있습니다.
-         * */
-        if (coupon.getType().equals(PRIMIUM)) {
-            if (!(user.getTitle().equals(CONQUEROR) || (userType.equals(ADMIN)))) {
-
-                throw new CustomException("COUPON_009", "정복자 등급만 등록할 수 있는 쿠폰입니다.", CONFLICT);
-            }
-        }
-        return coupon;
     }
 }
 
