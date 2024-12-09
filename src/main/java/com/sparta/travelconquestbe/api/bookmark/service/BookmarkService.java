@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +41,20 @@ public class BookmarkService {
   }
 
   public Page<BookmarkListResponse> getBookmarks(AuthUser authUser, Pageable pageable) {
-    Page<Bookmark> bookmarks = bookmarkRepository.getUserBookmarks(
-        authUser.getUserId(), pageable);
-    return bookmarks.map(BookmarkListResponse::from);
+    return bookmarkRepository.getUserBookmarks(authUser.getUserId(), pageable);
+  }
+
+  @Transactional
+  public void deleteBookmark(Long bookmarkId, AuthUser authUser) {
+    Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+        .orElseThrow(() -> new CustomException(
+            "BOOKMARK_002", "해당 즐겨찾기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    if (!bookmark.getUser().getId().equals(authUser.getUserId())) {
+      throw new CustomException(
+          "BOOKMARK_003", "본인의 즐겨찾기만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
+    }
+
+    bookmarkRepository.delete(bookmark);
   }
 }
