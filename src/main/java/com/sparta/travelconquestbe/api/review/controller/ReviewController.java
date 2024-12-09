@@ -3,7 +3,7 @@ package com.sparta.travelconquestbe.api.review.controller;
 import com.sparta.travelconquestbe.api.review.dto.request.ReviewCreateRequest;
 import com.sparta.travelconquestbe.api.review.dto.respones.ReviewCreateResponse;
 import com.sparta.travelconquestbe.api.review.service.ReviewService;
-import com.sparta.travelconquestbe.common.auth.AuthUser;
+import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,16 +25,16 @@ public class ReviewController {
   @PostMapping
   public ResponseEntity<ReviewCreateResponse> createReview(
       @Valid @RequestBody ReviewCreateRequest request,
-      AuthUser authUser) {
-    ReviewCreateResponse response = reviewService.createReview(request, authUser);
+      @AuthUser Long userId) {
+    ReviewCreateResponse response = reviewService.createReview(request, userId);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/{reviewId}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteReview(
-      @PathVariable Long reviewId,
-      AuthUser authUser) {
-    reviewService.deleteReview(reviewId, authUser);
+      @PathVariable(name = "id") Long reviewId,
+      @AuthUser Long userId) {
+    reviewService.deleteReview(reviewId, userId);
     return ResponseEntity.noContent().build();
   }
 }
