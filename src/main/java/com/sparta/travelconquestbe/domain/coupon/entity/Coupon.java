@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.domain.coupon.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +26,10 @@ public class Coupon extends TimeStampCreateUpdate {
 
     @Column(nullable = false)
     private String description;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CouponType type;
 
     @Column(unique = true)
     private String code;

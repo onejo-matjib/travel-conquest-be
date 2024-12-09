@@ -3,6 +3,8 @@ package com.sparta.travelconquestbe.api.coupon.service;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
+import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +17,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RequiredArgsConstructor
 public class CouponService {
     private final CouponRepository couponRepository;
+    private final MyCouponRepository myCouponRepository;
+    private final UserRepository userRepository;
 
     private static final int MAX_LIMIT = 50; // 페이지 크기 최대값
 
@@ -33,3 +37,4 @@ public class CouponService {
         return couponRepository.searchAllCoupons(PageRequest.of(page - 1, limit));
     }
 }
+

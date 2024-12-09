@@ -1,14 +1,14 @@
 package com.sparta.travelconquestbe.domain.mycoupon.entity;
 
-import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "mycoupons")
@@ -16,13 +16,14 @@ import org.hibernate.annotations.ColumnDefault;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MyCoupon extends TimeStampCreated {
+public class MyCoupon extends TimeStampCreateUpdate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ColumnDefault(value = "false")
-    private boolean useStatus;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "ENUM('AVAILABLE', 'UNAVAILABLE') DEFAULT 'AVAILABLE'")
+    private UseStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
