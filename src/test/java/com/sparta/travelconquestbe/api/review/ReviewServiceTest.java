@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,6 +20,7 @@ import com.sparta.travelconquestbe.domain.review.repository.ReviewRepository;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +37,9 @@ class ReviewServiceTest {
 
   @Mock
   private RouteRepository routeRepository;
+
+  @Mock
+  private UserRepository userRepository;
 
   @InjectMocks
   private ReviewService reviewService;
@@ -72,6 +77,8 @@ class ReviewServiceTest {
 
     when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
     when(reviewRepository.isReviewExist(userId, routeId)).thenReturn(false);
+    when(userRepository.findById(userId)).thenReturn(Optional.of(reviewer));
+
     when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> {
       Review review = invocation.getArgument(0);
       return Review.builder()
@@ -79,11 +86,11 @@ class ReviewServiceTest {
           .rating(review.getRating())
           .comment(review.getComment())
           .route(review.getRoute())
-          .user(reviewer) // user 설정
+          .user(reviewer)
           .build();
     });
 
-    ReviewCreateResponse response = reviewService.createReview(request, authUser);
+    ReviewCreateResponse response = reviewService.createReview(request, authUser.getUserId());
 
     assertNotNull(response);
     assertEquals(routeId, response.getRouteId());
@@ -93,6 +100,7 @@ class ReviewServiceTest {
 
     verify(routeRepository, times(1)).findById(routeId);
     verify(reviewRepository, times(1)).isReviewExist(userId, routeId);
+    verify(userRepository, times(1)).findById(userId);
     verify(reviewRepository, times(1)).save(any(Review.class));
   }
 
@@ -108,12 +116,13 @@ class ReviewServiceTest {
     when(routeRepository.findById(routeId)).thenReturn(Optional.empty());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.createReview(request, authUser);
+      reviewService.createReview(request, authUser.getUserId());
     });
 
     assertEquals("ROUTE#1_001", exception.getErrorCode());
     verify(routeRepository, times(1)).findById(routeId);
     verify(reviewRepository, never()).save(any(Review.class));
+    verify(userRepository, never()).findById(anyLong());
   }
 
   @Test
@@ -139,14 +148,16 @@ class ReviewServiceTest {
 
     when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
     when(reviewRepository.isReviewExist(userId, routeId)).thenReturn(true);
+    // 리뷰 중복 시 user 조회 안함 -> 필요 없음
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.createReview(request, authUser);
+      reviewService.createReview(request, authUser.getUserId());
     });
 
     assertEquals("REVIEW_001", exception.getErrorCode());
     verify(routeRepository, times(1)).findById(routeId);
     verify(reviewRepository, times(1)).isReviewExist(userId, routeId);
+    verify(userRepository, never()).findById(anyLong());
     verify(reviewRepository, never()).save(any(Review.class));
   }
 
@@ -172,14 +183,14 @@ class ReviewServiceTest {
 
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
 
-    reviewService.deleteReview(reviewId, authUser);
+    reviewService.deleteReview(reviewId, authUser.getUserId());
 
     verify(reviewRepository, times(1)).findById(reviewId);
     verify(reviewRepository, times(1)).delete(review);
   }
 
   @Test
-  @DisplayName("리뷰_삭제_실패_루트_찾을수_없음")
+  @DisplayName("리뷰_삭제_실패_리뷰_찾을수_없음")
   void deleteReview_ReviewNotFound() {
     Long reviewId = 1L;
     Long userId = 2L;
@@ -189,7 +200,7 @@ class ReviewServiceTest {
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.empty());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.deleteReview(reviewId, authUser);
+      reviewService.deleteReview(reviewId, authUser.getUserId());
     });
 
     assertEquals("REVIEW_002", exception.getErrorCode());
@@ -202,8 +213,8 @@ class ReviewServiceTest {
   @DisplayName("리뷰_삭제_실패_리뷰_주인_아님")
   void deleteReview_NotOwner() {
     Long reviewId = 1L;
-    Long userId = 2L;
-    Long otherUserId = 3L;
+    Long userId = 2L;      // 실제 삭제하려는 유저
+    Long otherUserId = 3L; // 리뷰 작성자와 다른 유저
 
     AuthUser authUser = new AuthUser(userId);
 
@@ -221,7 +232,7 @@ class ReviewServiceTest {
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.deleteReview(reviewId, authUser);
+      reviewService.deleteReview(reviewId, authUser.getUserId());
     });
 
     assertEquals("REVIEW_003", exception.getErrorCode());
