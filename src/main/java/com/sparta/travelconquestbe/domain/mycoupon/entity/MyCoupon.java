@@ -1,6 +1,6 @@
 package com.sparta.travelconquestbe.domain.mycoupon.entity;
 
-import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
 import com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus;
 import com.sparta.travelconquestbe.domain.user.entity.User;
@@ -16,11 +16,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MyCoupon extends TimeStampCreated {
+public class MyCoupon extends TimeStampCreateUpdate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "ENUM('AVAILABLE', 'UNAVAILABLE') DEFAULT 'AVAILABLE'")
     private UseStatus status;
 

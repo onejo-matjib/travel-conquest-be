@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.api.coupon.dto.respones;
+package com.sparta.travelconquestbe.api.mycoupon.dto.respones;
 
 import com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Builder
-public class CouponSaveResponse {
+public class MyCouponSaveResponse {
     private Long id;
     private String name;
     private String description;
