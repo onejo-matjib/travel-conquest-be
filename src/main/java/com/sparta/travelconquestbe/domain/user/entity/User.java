@@ -33,6 +33,8 @@ public class User {
 
     private Long providerId;
 
+    private String providerType;
+
     @Column(nullable = false, length = 10)
     private String birth;
 

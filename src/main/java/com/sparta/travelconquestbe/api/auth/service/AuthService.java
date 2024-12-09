@@ -8,10 +8,6 @@ import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
-import com.sparta.travelconquestbe.domain.user.enums.Title;
-import com.sparta.travelconquestbe.domain.user.enums.UserType;
-
-import java.net.URI;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.sparta.travelconquestbe.domain.user.enums.*;
 
 import java.util.Optional;
 
@@ -42,23 +39,8 @@ public class AuthService {
   @Value("${kakao.client-secret}")
   private String clientSecret;
 
-  public ResponseEntity<?> handleKakaoLogin(String code) {
-    KakaoUserInfo kakaoUserInfo = getKakaoUserInfoFromCode(code);
-    Optional<User> existingUser = userRepository.findByProviderId(kakaoUserInfo.getId());
-
-    if (existingUser.isPresent()) {
-      return jwtHelper.createToken(existingUser.get().getId(), existingUser.get().getEmail(),
-          existingUser.get().getProviderType());
-    }
-
-    if (kakaoUserInfo.getEmail() == null || kakaoUserInfo.getEmail().isEmpty()) {
-      throw new CustomException("USER_006", "이메일 정보가 필요합니다.", HttpStatus.BAD_REQUEST);
-    }
-
-    return ResponseEntity.status(HttpStatus.FOUND)
-        .location(URI.create("/additional-info?kakaoId=" + kakaoUserInfo.getId()))
-        .build();
-  }
+  // 임시로 저장할 KakaoUserInfo
+  private KakaoUserInfo tempKakaoUserInfo;
 
   public String createKakaoLoginUrl() {
     return "https://kauth.kakao.com/oauth/authorize"
@@ -67,7 +49,20 @@ public class AuthService {
         + "&response_type=code";
   }
 
-  public KakaoUserInfo getKakaoUserInfoFromCode(String code) {
+  public String handleKakaoLogin(String code) {
+    KakaoUserInfo kakaoUserInfo = getKakaoUserInfoFromCode(code);
+    Optional<User> existingUser = userRepository.findByProviderId(kakaoUserInfo.getId());
+
+    if (existingUser.isPresent()) {
+      User user = existingUser.get();
+      return jwtHelper.createToken(user.getId(), user.getEmail(), user.getProviderType());
+    }
+
+    tempKakaoUserInfo = kakaoUserInfo;
+    throw new CustomException("AUTH_012", "/api/users/additional-info", HttpStatus.FOUND);
+  }
+
+  private KakaoUserInfo getKakaoUserInfoFromCode(String code) {
     String accessToken = getKakaoAccessToken(code);
     return getKakaoUserInfo(accessToken);
   }
@@ -105,7 +100,7 @@ public class AuthService {
       return jsonNode.get("access_token").asText();
     } catch (Exception e) {
       logger.error("액세스 토큰 파싱 실패: {}", e.getMessage());
-      throw new CustomException("AUTH_007", "액세스 토큰 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("AUTH_013", "액세스 토큰 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -118,20 +113,30 @@ public class AuthService {
       return new KakaoUserInfo(id, email, nickname);
     } catch (Exception e) {
       logger.error("사용자 정보 파싱 실패: {}", e.getMessage());
-      throw new CustomException("AUTH_008", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("AUTH_014", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 
-  public String saveAdditionalInfo(Long userId, SignUpAdditionalInfoRequest request) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new CustomException("USER_006", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+  public String saveAdditionalInfo(SignUpAdditionalInfoRequest request) {
+    if (tempKakaoUserInfo == null) {
+      throw new CustomException("AUTH_016", "임시 사용자 정보가 없습니다.", HttpStatus.BAD_REQUEST);
+    }
 
-    user.updateAdditionalInfo(request.getName(), request.getBirth());
-    userRepository.save(user);
+    User newUser = User.builder()
+        .name(request.getName())
+        .birth(request.getBirth())
+        .email(tempKakaoUserInfo.getEmail())
+        .nickname(tempKakaoUserInfo.getNickname())
+        .password("")
+        .providerId(tempKakaoUserInfo.getId())
+        .providerType("KAKAO")
+        .type(UserType.USER)
+        .title(Title.TRAVELER)
+        .build();
 
-    return jwtHelper.createToken(user.getId(), user.getEmail(), user.getProviderType());
+    User savedUser = userRepository.save(newUser);
+
+    return jwtHelper.createToken(savedUser.getId(), savedUser.getEmail(), savedUser.getProviderType());
   }
 }
-
 

@@ -9,7 +9,6 @@ public class KakaoUserInfo {
   private Long id;
   private String email;
   private String nickname;
-  private String providerType;
 
   public KakaoUserInfo(Long id, String email, String nickname) {
     this.id = id;
