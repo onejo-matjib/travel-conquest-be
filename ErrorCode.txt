@@ -32,6 +32,7 @@ COUPON_006 / 해당 쿠폰의 유효기간이 지났습니다. / BAD_REQUEST
 COUPON_007 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
 COUPON_008 / 등업된 사용자가 아닙니다. / FORBIDDEN
 COUPON_009 / 랭커만 등록할 수 있는 쿠폰입니다. / CONFLICT
+COUPON_010 / 중복된 쿠폰이 존재합니다. / CONFLICT
 
 리뷰
 REVIEW#1_001 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
