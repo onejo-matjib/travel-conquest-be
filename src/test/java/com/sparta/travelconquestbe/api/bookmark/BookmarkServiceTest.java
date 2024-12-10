@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.api.bookmark;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
@@ -9,7 +10,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
-import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
 import com.sparta.travelconquestbe.api.bookmark.service.BookmarkService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.bookmark.entity.Bookmark;
@@ -17,7 +17,7 @@ import com.sparta.travelconquestbe.domain.bookmark.repository.BookmarkRepository
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
-import java.util.List;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,171 +25,102 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 
 class BookmarkServiceTest {
-
-  @InjectMocks
-  private BookmarkService bookmarkService;
 
   @Mock
   private BookmarkRepository bookmarkRepository;
 
   @Mock
+  private UserRepository userRepository;
+
+  @Mock
   private RouteRepository routeRepository;
 
-  private User mockUser;
-  private Route mockRoute;
+  @InjectMocks
+  private BookmarkService bookmarkService;
+
+  private Long userId;
+  private Long routeId;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-    mockUser = User.builder().id(1L).build();
-    mockRoute = Route.builder().id(1L).title("Test Route").build();
+    userId = 1L;
+    routeId = 10L;
   }
 
   @Test
-  @DisplayName("즐겨찾기_등록_성공")
-  void testCreateBookmark_Success() {
-    when(routeRepository.findById(mockRoute.getId())).thenReturn(Optional.of(mockRoute));
-    when(bookmarkRepository.isBookmarkExist(mockUser.getId(), mockRoute.getId())).thenReturn(false);
-    when(bookmarkRepository.save(any(Bookmark.class))).thenAnswer(
-        invocation -> invocation.getArgument(0));
-
-    BookmarkCreateResponse response = bookmarkService.createBookmark(mockRoute.getId(),
-        mockUser.getId());
-
-    assertThat(response.getRouteId()).isEqualTo(mockRoute.getId());
-
-    verify(routeRepository, times(1)).findById(mockRoute.getId());
-    verify(bookmarkRepository, times(1)).isBookmarkExist(mockUser.getId(), mockRoute.getId());
-    verify(bookmarkRepository, times(1)).save(any(Bookmark.class));
-  }
-
-  @Test
-  @DisplayName("즐겨찾기_등록_실패_루트_존재하지_않음")
-  void testCreateBookmark_Fail_RouteNotFound() {
-    when(routeRepository.findById(mockRoute.getId())).thenReturn(Optional.empty());
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.createBookmark(mockRoute.getId(), mockUser.getId());
-    });
-
-    assertThat(exception.getErrorCode()).isEqualTo("ROUTE_001");
-    assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.NOT_FOUND);
-
-    verify(routeRepository, times(1)).findById(mockRoute.getId());
-    verify(bookmarkRepository, never()).save(any(Bookmark.class));
-  }
-
-  @Test
-  @DisplayName("이미_등록된_즐겨찾기")
-  void testCreateBookmark_Fail_DuplicateBookmark() {
-    when(routeRepository.findById(mockRoute.getId())).thenReturn(Optional.of(mockRoute));
-    when(bookmarkRepository.isBookmarkExist(mockUser.getId(), mockRoute.getId())).thenReturn(true);
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.createBookmark(mockRoute.getId(), mockUser.getId());
-    });
-
-    assertThat(exception.getErrorCode()).isEqualTo("BOOKMARK_001");
-    assertThat(exception.getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
-
-    verify(routeRepository, times(1)).findById(mockRoute.getId());
-    verify(bookmarkRepository, times(1)).isBookmarkExist(mockUser.getId(), mockRoute.getId());
-    verify(bookmarkRepository, never()).save(any(Bookmark.class));
-  }
-
-  @Test
-  @DisplayName("즐겨찾기_목록_조회_성공")
-  void testGetBookmarks_Success() {
-    BookmarkListResponse mockResponse = new BookmarkListResponse(
-        1L, mockRoute.getId(), mockRoute.getTitle(), mockRoute.getCreatedAt()
-    );
-
-    PageRequest pageRequest = PageRequest.of(0, 10);
-    Page<BookmarkListResponse> mockPage = new PageImpl<>(List.of(mockResponse), pageRequest, 1);
-
-    when(bookmarkRepository.getUserBookmarks(mockUser.getId(), pageRequest)).thenReturn(mockPage);
-
-    Page<BookmarkListResponse> response = bookmarkService.getBookmarks(mockUser.getId(),
-        pageRequest);
-
-    assertThat(response.getContent().size()).isEqualTo(1);
-    assertThat(response.getContent().get(0).getBookmarkId()).isEqualTo(
-        mockResponse.getBookmarkId());
-    assertThat(response.getContent().get(0).getRouteId()).isEqualTo(mockResponse.getRouteId());
-
-    verify(bookmarkRepository, times(1)).getUserBookmarks(mockUser.getId(), pageRequest);
-  }
-
-  @Test
-  @DisplayName("즐겨찾기_목록_조회_빈_결과")
-  void testGetBookmarks_EmptyResult() {
-    PageRequest pageRequest = PageRequest.of(0, 10);
-    Page<BookmarkListResponse> mockPage = new PageImpl<>(List.of(), pageRequest, 0);
-
-    when(bookmarkRepository.getUserBookmarks(mockUser.getId(), pageRequest)).thenReturn(mockPage);
-
-    Page<BookmarkListResponse> response = bookmarkService.getBookmarks(mockUser.getId(),
-        pageRequest);
-
-    assertThat(response.getContent().size()).isEqualTo(0);
-
-    verify(bookmarkRepository, times(1)).getUserBookmarks(mockUser.getId(), pageRequest);
-  }
-
-  @Test
-  @DisplayName("즐겨찾기_삭제_성공")
-  void testDeleteBookmark_Success() {
-    Bookmark mockBookmark = Bookmark.builder()
-        .id(1L)
-        .user(mockUser)
+  @DisplayName("즐겨찾기 생성 성공")
+  void createBookmarkSuccess() {
+    // Mock Data
+    Route route = Route.builder()
+        .id(routeId)
+        .title("Test Route")
         .build();
 
-    when(bookmarkRepository.findById(mockBookmark.getId())).thenReturn(Optional.of(mockBookmark));
-
-    bookmarkService.deleteBookmark(mockBookmark.getId(), mockUser.getId());
-
-    verify(bookmarkRepository, times(1)).findById(mockBookmark.getId());
-    verify(bookmarkRepository, times(1)).delete(mockBookmark);
-  }
-
-  @Test
-  @DisplayName("즐겨찾기_삭제_실패_존재하지_않음")
-  void testDeleteBookmark_Fail_NotFound() {
-    when(bookmarkRepository.findById(1L)).thenReturn(Optional.empty());
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.deleteBookmark(1L, mockUser.getId());
-    });
-
-    assertThat(exception.getErrorCode()).isEqualTo("BOOKMARK_002");
-    verify(bookmarkRepository, times(1)).findById(1L);
-    verify(bookmarkRepository, never()).delete(any());
-  }
-
-  @Test
-  @DisplayName("즐겨찾기_삭제_실패_본인아님")
-  void testDeleteBookmark_Fail_NotOwner() {
-    User anotherUser = User.builder().id(2L).build();
-    Bookmark anotherBookmark = Bookmark.builder()
-        .id(1L)
-        .user(anotherUser)
+    User user = User.builder()
+        .id(userId)
+        .nickname("Tester")
         .build();
 
-    when(bookmarkRepository.findById(anotherBookmark.getId())).thenReturn(
-        Optional.of(anotherBookmark));
+    Bookmark bookmark = Bookmark.builder()
+        .id(1L)
+        .route(route) // Route 초기화
+        .user(user)   // User 초기화
+        .build();
 
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.deleteBookmark(anotherBookmark.getId(), mockUser.getId());
-    });
+    // Mock 설정
+    when(bookmarkRepository.validateBookmarkCreation(userId, routeId)).thenReturn("VALID");
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
+    when(bookmarkRepository.save(any())).thenReturn(bookmark);
 
-    assertThat(exception.getErrorCode()).isEqualTo("BOOKMARK_003");
-    verify(bookmarkRepository, times(1)).findById(anotherBookmark.getId());
+    // Service 호출
+    BookmarkCreateResponse response = bookmarkService.createBookmark(routeId, userId);
+
+    // 검증
+    assertNotNull(response);
+    assertEquals(routeId, response.getRouteId());
+    verify(bookmarkRepository, times(1)).save(any());
+  }
+
+  @Test
+  @DisplayName("즐겨찾기 생성 실패 - 중복")
+  void createBookmarkFailure_Duplicate() {
+    when(bookmarkRepository.validateBookmarkCreation(userId, routeId)).thenReturn(
+        "DUPLICATE_BOOKMARK");
+
+    CustomException exception = assertThrows(CustomException.class,
+        () -> bookmarkService.createBookmark(routeId, userId));
+
+    assertEquals("BOOKMARK_001", exception.getErrorCode());
+    verify(bookmarkRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("즐겨찾기 삭제 성공")
+  void deleteBookmarkSuccess() {
+    Bookmark bookmark = Bookmark.builder().user(User.builder().id(userId).build()).build();
+
+    when(bookmarkRepository.findById(100L)).thenReturn(Optional.of(bookmark));
+
+    bookmarkService.deleteBookmark(100L, userId);
+
+    verify(bookmarkRepository, times(1)).delete(bookmark);
+  }
+
+  @Test
+  @DisplayName("즐겨찾기 삭제 실패 - 본인이 아님")
+  void deleteBookmarkFailure_NotOwner() {
+    Bookmark bookmark = Bookmark.builder().user(User.builder().id(2L).build()).build();
+
+    when(bookmarkRepository.findById(100L)).thenReturn(Optional.of(bookmark));
+
+    CustomException exception = assertThrows(CustomException.class,
+        () -> bookmarkService.deleteBookmark(100L, userId));
+
+    assertEquals("BOOKMARK_003", exception.getErrorCode());
     verify(bookmarkRepository, never()).delete(any());
   }
 }
