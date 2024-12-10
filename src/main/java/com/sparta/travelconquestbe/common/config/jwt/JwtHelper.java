@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.common.config.jwt;
 
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -34,10 +35,11 @@ public class JwtHelper {
   }
 
   // JWT 토큰 생성 (일반 로그인 및 소셜 로그인 공통 사용)
-  public String createToken(Long userId, String email, String providerType) {
+  public String createToken(Long userId, String email, UserType userType, String providerType) {
     Claims claims = Jwts.claims().setSubject(email);
     claims.put("userId", userId);
     claims.put("providerType", providerType);
+    claims.put("userType", userType);
 
     Date now = new Date();
     Date validity = new Date(now.getTime() + expiration);
@@ -80,6 +82,22 @@ public class JwtHelper {
         .setSigningKey(secretKey)
         .parseClaimsJws(token)
         .getBody();
+  }
+
+  public Claims validateAndGetClaims(String token) {
+    try {
+      return Jwts.parser()
+          .setSigningKey(secretKey)
+          .parseClaimsJws(token)
+          .getBody();
+    } catch (Exception e) {
+      throw new CustomException("AUTH_002", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  public String getEmailFromToken(String token) {
+    Claims claims = validateAndGetClaims(token);
+    return claims.getSubject();
   }
 
   public void storeRefreshToken(String userId, String refreshToken) {

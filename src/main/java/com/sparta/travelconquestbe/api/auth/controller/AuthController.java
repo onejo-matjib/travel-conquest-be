@@ -1,14 +1,15 @@
 package com.sparta.travelconquestbe.api.auth.controller;
 
+import com.sparta.travelconquestbe.api.auth.dto.request.AuthLoginRequest;
+import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
 import com.sparta.travelconquestbe.api.auth.service.AuthService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 public class AuthController {
 
-  private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-
   private final AuthService authService;
+
+  @PostMapping("/signup")
+  public ResponseEntity<Void> signUp(@Valid @RequestBody AuthSignUpRequest request) {
+    String token = authService.signUp(request);
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        .build();
+  }
+
+  @PostMapping("/login")
+  public ResponseEntity<Void> login(@Valid @RequestBody AuthLoginRequest request) {
+    String token = authService.login(request);
+    return ResponseEntity.ok()
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+        .build();
+  }
 
   @GetMapping("/login/kakao")
   public ResponseEntity<Void> kakaoLoginRedirect() {
