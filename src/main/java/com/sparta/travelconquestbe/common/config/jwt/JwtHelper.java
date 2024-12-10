@@ -82,6 +82,22 @@ public class JwtHelper {
         .getBody();
   }
 
+  public Claims validateAndGetClaims(String token) {
+    try {
+      return Jwts.parser()
+          .setSigningKey(secretKey)
+          .parseClaimsJws(token)
+          .getBody();
+    } catch (Exception e) {
+      throw new CustomException("AUTH_002", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  public String getEmailFromToken(String token) {
+    Claims claims = validateAndGetClaims(token);
+    return claims.getSubject();
+  }
+
   public void storeRefreshToken(String userId, String refreshToken) {
     // Redis에 Refresh Token을 저장하는 로직
   }

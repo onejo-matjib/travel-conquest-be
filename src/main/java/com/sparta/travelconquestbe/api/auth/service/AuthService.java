@@ -3,6 +3,8 @@ package com.sparta.travelconquestbe.api.auth.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.travelconquestbe.api.auth.dto.info.KakaoUserInfo;
+import com.sparta.travelconquestbe.api.auth.dto.request.AuthLoginRequest;
+import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -16,6 +18,8 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.sparta.travelconquestbe.domain.user.enums.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.sparta.travelconquestbe.domain.user.enums.Title;
 
 import java.util.Optional;
 
@@ -27,6 +31,7 @@ public class AuthService {
 
   private final JwtHelper jwtHelper;
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
   private final RestTemplate restTemplate = new RestTemplate();
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -41,6 +46,37 @@ public class AuthService {
 
   // 임시로 저장할 KakaoUserInfo
   private KakaoUserInfo tempKakaoUserInfo;
+
+  public String signUp(AuthSignUpRequest request) {
+    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+      throw new CustomException("USER_005", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
+    }
+
+    User user = User.builder()
+        .email(request.getEmail())
+        .password(passwordEncoder.encode(request.getPassword()))
+        .name(request.getName())
+        .birth(request.getBirth())
+        .nickname(request.getNickname())
+        .type(UserType.USER)
+        .title(Title.TRAVELER)
+        .providerType("LOCAL")
+        .build();
+
+    userRepository.save(user);
+    return jwtHelper.createToken(user.getId(), user.getEmail(), user.getProviderType());
+  }
+
+  public String login (AuthLoginRequest request) {
+    User user = userRepository.findByEmail(request.getEmail())
+        .orElseThrow(() -> new CustomException("USER_006", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
+
+    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+      throw new CustomException("AUTH_030", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
+    }
+
+    return jwtHelper.createToken(user.getId(), user.getEmail(), user.getProviderType());
+  }
 
   public String createKakaoLoginUrl() {
     return "https://kauth.kakao.com/oauth/authorize"
