@@ -33,6 +33,7 @@ public class MyCouponService {
   private final CouponRepository couponRepository;
   private final Clock clock;
 
+  // 쿠폰 저장
   @Transactional
   public MyCouponSaveResponse saveCoupon(Long couponId, Long userId) {
     User user = validateUser(userId);
@@ -50,8 +51,8 @@ public class MyCouponService {
     return userRepository.findById(userId)
         .filter(this::isAuthorizedUser)
         .orElseThrow(
-            () -> new CustomException("COUPON_003",
-                "해당 유저가 존재하지 않거나 권한이 없습니다.", FORBIDDEN));
+            () -> new CustomException("COUPON#3_001",
+                "해당 유저가 존재하지 않습니다.", FORBIDDEN));
   }
 
   // 쿠폰 유효성 검사
@@ -69,7 +70,7 @@ public class MyCouponService {
   // 유저 권한 확인
   public boolean isAuthorizedUser(User user) {
     if (user.getType().equals(UserType.USER)) {
-      throw new CustomException("COUPON_008", "등업된 사용자가 아닙니다.", FORBIDDEN);
+      throw new CustomException("COUPON#8_001", "등업된 사용자가 아닙니다.", FORBIDDEN);
     }
     return true;
   }
@@ -77,21 +78,21 @@ public class MyCouponService {
   // 쿠폰 DB 확인
   private Coupon findCouponById(Long couponId) {
     return couponRepository.findById(couponId)
-        .orElseThrow(() -> new CustomException("COUPON_002",
+        .orElseThrow(() -> new CustomException("COUPON#2_001",
             "해당 쿠폰이 존재하지 않습니다.", NOT_FOUND));
   }
 
   // 중복 여부 확인
   private void checkCouponDuplicate(Coupon coupon, User user) {
     if (myCouponRepository.existsByCouponIdAndUserId(coupon.getId(), user.getId())) {
-      throw new CustomException("COUPON_010", "중복된 쿠폰이 존재합니다.", CONFLICT);
+      throw new CustomException("COUPON#10_001", "중복된 쿠폰이 존재합니다.", CONFLICT);
     }
   }
 
   // 쿠폰 수량 확인
   private void checkCouponAvailability(Coupon coupon) {
     if (coupon.getCount() <= 0) {
-      throw new CustomException("COUPON_005", "해당 쿠폰이 소진되었습니다.", CONFLICT);
+      throw new CustomException("COUPON#5_001", "해당 쿠폰이 소진되었습니다.", CONFLICT);
     }
   }
 
@@ -99,7 +100,7 @@ public class MyCouponService {
   private void checkPremiumCouponAccess(Coupon coupon, User user) {
     if (coupon.getType().equals(PRIMIUM)
         && !(user.getTitle().equals(CONQUEROR) || user.getType().equals(ADMIN))) {
-      throw new CustomException("COUPON_009", "정복자 등급만 등록할 수 있는 쿠폰입니다.", CONFLICT);
+      throw new CustomException("COUPON#9_001 ", "정복자 등급만 등록할 수 있는 쿠폰입니다.", CONFLICT);
     }
   }
 
@@ -107,7 +108,7 @@ public class MyCouponService {
   private void checkCouponExpiration(Coupon coupon) {
     LocalDate currentDate = LocalDate.now(clock);
     if (currentDate.isAfter(coupon.getValidUntil())) {
-      throw new CustomException("COUPON_006", "해당 쿠폰의 유효기간이 지났습니다.", BAD_REQUEST);
+      throw new CustomException("COUPON#6_001", "해당 쿠폰의 유효기간이 지났습니다.", BAD_REQUEST);
     }
   }
 

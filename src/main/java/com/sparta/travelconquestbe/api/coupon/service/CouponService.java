@@ -23,11 +23,11 @@ public class CouponService {
   public Page<CouponSearchResponse> searchAllCoupons(int page, int limit) {
     // 유효성 검증
     if (page < 1) {
-      throw new CustomException("COMMON_002", "페이지 번호는 1 이상이어야 합니다.", BAD_REQUEST);
+      throw new CustomException("COMMON#2_001", "페이지 번호는 1 이상이어야 합니다.", BAD_REQUEST);
     }
 
     if (limit < 1 || limit > MAX_LIMIT) {
-      throw new CustomException("COMMON_003", "페이지 크기는 1 이상" + MAX_LIMIT + " 이하로 설정해야 합니다.",
+      throw new CustomException("COMMON#3_001", "페이지 크기는 1 이상" + MAX_LIMIT + " 이하로 설정해야 합니다.",
           BAD_REQUEST);
     }
 

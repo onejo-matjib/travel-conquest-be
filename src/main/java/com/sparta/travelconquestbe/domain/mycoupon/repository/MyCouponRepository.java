@@ -12,6 +12,8 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon, Long> {
   boolean existsByCouponIdAndUserId(Long couponId, Long userId);
 
   @Modifying
-  @Query("DELETE FROM MyCoupon mc WHERE mc.coupon.validUntil < :currentDate")
-  void deleteByExpiredCoupons(@Param("currentDate") LocalDate currentDate);
+  @Query("DELETE FROM MyCoupon mc WHERE mc.coupon.id IN " +
+      "(SELECT c.id FROM Coupon c WHERE c.validUntil < :currentDate)")
+  void deleteExpiredMyCoupons(@Param("currentDate") LocalDate currentDate);
+
 }
