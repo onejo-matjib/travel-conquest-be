@@ -26,6 +26,6 @@ public class RouteCreateRequest {
   private String estimatedTime;
 
   @NotNull(message = "선택된 경로가 없습니다. 장소를 1개이상 선택해주세요.")
-  @Size(min = 1, max = 5, message = "장소를 1개이상 5개 미만으로 선택해주세요.")
+  @Size(min = 1, max = 5, message = "장소를 1개이상 5개 이하로 선택해주세요.")
   private List<RouteLocationInfo> locations;
 }

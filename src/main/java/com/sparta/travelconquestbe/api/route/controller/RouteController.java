@@ -29,11 +29,9 @@ public class RouteController {
       @AuthUser Long userId)
       throws Exception {
 
-    // 파일 업로드 및 URL 설정
     List<RouteLocationInfo> updatedLocations =
         routeLocationService.uploadFilesForLocations(routeCreateRequest, mediaFiles);
 
-    // 저장 서비스 호출
     RouteCreateResponse response =
         routeService.routeCreate(routeCreateRequest, updatedLocations, userId);
 

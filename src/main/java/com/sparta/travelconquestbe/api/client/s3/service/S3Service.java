@@ -23,13 +23,12 @@ public class S3Service {
   @Value("${cloud.aws.s3.bucket}")
   private String bucketName;
 
-  // 허용 확장자 리스트
   private static final List<String> ALLOWED_EXTENSIONS =
       Arrays.asList("jpg", "jpeg", "png", "gif", "mp4");
-  // 허용 파일 크기
   private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   public String uploadFile(MultipartFile file, String uniqueFileName) throws IOException {
+    File tempFile = null;
     try {
       String fileExtension = getFileExtension(Objects.requireNonNull(file.getOriginalFilename()));
       if (!ALLOWED_EXTENSIONS.contains(fileExtension.toLowerCase())) {
@@ -41,10 +40,10 @@ public class S3Service {
       }
 
       // 파일을 로컬 경로에 저장 (임시 파일 생성)
-      File tempFile = Files.createTempFile("upload-", file.getOriginalFilename()).toFile();
+      tempFile = Files.createTempFile("upload-", file.getOriginalFilename()).toFile();
       file.transferTo(tempFile);
 
-      // S3 버킷에 업로드
+      // S3 버킷 업로드
       String key = "routs_uploads/" + uniqueFileName + "_" + file.getOriginalFilename();
       s3Client.putObject(new PutObjectRequest(bucketName, key, tempFile));
 
@@ -54,6 +53,14 @@ public class S3Service {
       throw e;
     } catch (Exception e) {
       throw new CustomException("S3_001", "파일 업로드가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    } finally {
+      // 임시파일 삭제
+      if (tempFile != null && tempFile.exists()) {
+        boolean deleted = tempFile.delete();
+        if (!deleted) {
+          System.err.println("임시 파일 삭제 실패: " + tempFile.getAbsolutePath());
+        }
+      }
     }
   }
 
