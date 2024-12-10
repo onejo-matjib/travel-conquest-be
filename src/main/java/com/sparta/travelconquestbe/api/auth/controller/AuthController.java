@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
 import com.sparta.travelconquestbe.api.auth.service.AuthService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/signup")
-  public ResponseEntity<Void> signUp(@RequestBody AuthSignUpRequest request) {
+  public ResponseEntity<Void> signUp(@Valid @RequestBody AuthSignUpRequest request) {
     String token = authService.signUp(request);
     return ResponseEntity.status(HttpStatus.CREATED)
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
@@ -35,7 +36,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public ResponseEntity<Void> login(@RequestBody AuthLoginRequest request) {
+  public ResponseEntity<Void> login(@Valid @RequestBody AuthLoginRequest request) {
     String token = authService.login(request);
     return ResponseEntity.ok()
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
