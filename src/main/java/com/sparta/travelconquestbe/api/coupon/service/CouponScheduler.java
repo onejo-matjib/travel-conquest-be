@@ -18,7 +18,7 @@ public class CouponScheduler {
   private final MyCouponRepository myCouponRepository;
 
   // 매일 자정 실행
-  @Scheduled(cron = "0 55 20 * * *")
+  @Scheduled(cron = "0 00 00 * * *")
   @Transactional
   public void deleteExpiredCoupons() {
     LocalDate currentDate = LocalDate.now();
