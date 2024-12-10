@@ -40,7 +40,7 @@ public class MyCoupon extends TimeStampCreateUpdate {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @ManyToOne(fetch = FetchType.EAGER)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "coupon_id")
   private Coupon coupon;
 }

@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.api.coupon.service;
 
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
+import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CouponScheduler {
 
   private final CouponRepository couponRepository;
+  private final MyCouponRepository myCouponRepository;
 
   // 매일 자정 실행
   @Scheduled(cron = "0 00 00 * * *")
@@ -21,8 +23,11 @@ public class CouponScheduler {
   public void deleteExpiredCoupons() {
     LocalDate currentDate = LocalDate.now();
 
-    // 유효기간 지난 Coupon 삭제(MyCoupon 영속성 전이)
-    couponRepository.deleteByValidUntilBefore(currentDate);
+    // 유효기간 지난 MyCoupon 삭제
+    myCouponRepository.deleteByExpiredCoupons(currentDate);
+
+    // 유효기간 지난 Coupon 삭제
+    couponRepository.deleteByExpiredCoupons(currentDate);
   }
 }
 
