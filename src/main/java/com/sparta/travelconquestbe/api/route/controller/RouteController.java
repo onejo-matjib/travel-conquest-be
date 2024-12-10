@@ -37,4 +37,10 @@ public class RouteController {
 
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> routeDelete(@PathVariable Long id, @AuthUser Long userId) {
+    routeService.routeDelete(id, userId);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
 }

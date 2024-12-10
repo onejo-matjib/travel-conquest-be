@@ -27,7 +27,7 @@ public class ReviewService {
     // 루트가 존재하지 않을 경우 예외 처리
     Route route = routeRepository.findById(request.getRouteId())
         .orElseThrow(() ->
-            new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
+            new CustomException("ROUTE#1_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
         );
 
     // 이미 해당 루트에 리뷰를 작성한 경우 예외 처리
