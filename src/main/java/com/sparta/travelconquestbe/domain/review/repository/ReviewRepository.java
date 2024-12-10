@@ -7,6 +7,14 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-  @Query("SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END FROM Review r WHERE r.user.id = :userId AND r.route.id = :routeId")
-  boolean isReviewExist(@Param("userId") Long userId, @Param("routeId") Long routeId);
+  @Query(value = """
+          SELECT CASE 
+              WHEN NOT EXISTS (SELECT 1 FROM routes WHERE id = :routeId) THEN 'ROUTE_NOT_FOUND'
+              WHEN NOT EXISTS (SELECT 1 FROM users WHERE id = :userId) THEN 'USER_NOT_FOUND'
+              WHEN EXISTS (SELECT 1 FROM reviews WHERE user_id = :userId AND route_id = :routeId) THEN 'DUPLICATE_REVIEW'
+              ELSE 'VALID'
+          END AS validation_result
+          FROM dual
+      """, nativeQuery = true)
+  String validateReviewCreation(@Param("userId") Long userId, @Param("routeId") Long routeId);
 }

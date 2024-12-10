@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/reviews")
+@RequiredArgsConstructor
 public class ReviewController {
 
   private final ReviewService reviewService;
@@ -32,9 +32,9 @@ public class ReviewController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteReview(
-      @PathVariable(name = "id") Long reviewId,
+      @PathVariable Long id,
       @AuthUser Long userId) {
-    reviewService.deleteReview(reviewId, userId);
+    reviewService.deleteReview(id, userId);
     return ResponseEntity.noContent().build();
   }
 }

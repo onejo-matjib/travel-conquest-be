@@ -8,6 +8,7 @@ import com.sparta.travelconquestbe.domain.bookmark.repository.BookmarkRepository
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,23 +21,32 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookmarkService {
 
   private final BookmarkRepository bookmarkRepository;
+  private final UserRepository userRepository;
   private final RouteRepository routeRepository;
 
   @Transactional
   public BookmarkCreateResponse createBookmark(Long routeId, Long userId) {
+    String validationResult = bookmarkRepository.validateBookmarkCreation(userId, routeId);
+
+    switch (validationResult) {
+      case "ROUTE_NOT_FOUND":
+        throw new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+      case "DUPLICATE_BOOKMARK":
+        throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
+      default:
+        break;
+    }
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(
+            () -> new CustomException("USER_001", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
     Route route = routeRepository.findById(routeId)
         .orElseThrow(
             () -> new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-    if (bookmarkRepository.isBookmarkExist(userId, routeId)) {
-      throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
-    }
-
-    User user = User.builder().id(userId).build();
-    Bookmark bookmark = Bookmark.builder().user(user).route(route).build();
-    Bookmark savedBookmark = bookmarkRepository.save(bookmark);
-
-    return BookmarkCreateResponse.from(savedBookmark);
+    Bookmark bookmark = Bookmark.createBookmark(user, route);
+    return BookmarkCreateResponse.from(bookmarkRepository.save(bookmark));
   }
 
   @Transactional(readOnly = true)
@@ -45,8 +55,8 @@ public class BookmarkService {
   }
 
   @Transactional
-  public void deleteBookmark(Long bookmarkId, Long userId) {
-    Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
+  public void deleteBookmark(Long id, Long userId) {
+    Bookmark bookmark = bookmarkRepository.findById(id)
         .orElseThrow(
             () -> new CustomException("BOOKMARK_002", "해당 즐겨찾기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 

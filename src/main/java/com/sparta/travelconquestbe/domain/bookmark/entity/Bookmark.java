@@ -1,7 +1,6 @@
 package com.sparta.travelconquestbe.domain.bookmark.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
-import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.persistence.Entity;
@@ -17,7 +16,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "bookmarks", uniqueConstraints = {
@@ -41,10 +39,7 @@ public class Bookmark extends TimeStampCreated {
   @JoinColumn(name = "route_id", nullable = false)
   private Route route;
 
-  public static Bookmark createBookmark(User user, Route route, boolean isDuplicate) {
-    if (isDuplicate) {
-      throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
-    }
+  public static Bookmark createBookmark(User user, Route route) {
     return Bookmark.builder()
         .user(user)
         .route(route)

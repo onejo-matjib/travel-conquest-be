@@ -10,8 +10,15 @@ import org.springframework.data.repository.query.Param;
 
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
 
-  @Query("SELECT EXISTS (SELECT 1 FROM Bookmark b WHERE b.user.id = :userId AND b.route.id = :routeId)")
-  boolean isBookmarkExist(@Param("userId") Long userId, @Param("routeId") Long routeId);
+  @Query(value = """
+          SELECT CASE 
+              WHEN NOT EXISTS (SELECT 1 FROM routes WHERE id = :routeId) THEN 'ROUTE_NOT_FOUND'
+              WHEN EXISTS (SELECT 1 FROM bookmarks WHERE user_id = :userId AND route_id = :routeId) THEN 'DUPLICATE_BOOKMARK'
+              ELSE 'VALID'
+          END AS validation_result
+          FROM dual
+      """, nativeQuery = true)
+  String validateBookmarkCreation(@Param("userId") Long userId, @Param("routeId") Long routeId);
 
   @Query("SELECT new com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse(" +
       "b.id, b.route.id, b.route.title, b.createdAt) " +

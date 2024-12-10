@@ -4,6 +4,7 @@ import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionCre
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.subscription.entity.Subscription;
 import com.sparta.travelconquestbe.domain.subscription.repository.SubscriptionRepository;
+import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,21 +24,27 @@ public class SubscriptionService {
       throw new CustomException("SUBSCRIPTION_001", "본인을 구독할 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
-    userRepository.findById(subUserId)
-        .orElseThrow(
-            () -> new CustomException("USER_001", "구독 대상 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    String validationResult = subscriptionRepository.validateSubscriptionCreation(userId,
+        subUserId);
 
-    if (subscriptionRepository.isSubscribed(userId, subUserId)) {
-      throw new CustomException("SUBSCRIPTION_002", "이미 구독 중입니다.", HttpStatus.CONFLICT);
+    switch (validationResult) {
+      case "USER_NOT_FOUND":
+        throw new CustomException("USER_001", "구독 대상 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+      case "DUPLICATE_SUBSCRIPTION":
+        throw new CustomException("SUBSCRIPTION_002", "이미 구독 중입니다.", HttpStatus.CONFLICT);
+      default:
+        break;
     }
 
+    User user = userRepository.findById(userId)
+        .orElseThrow(
+            () -> new CustomException("USER_001", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
     Subscription subscription = Subscription.builder()
-        .userId(userId)
+        .userId(user.getId())
         .subUserId(subUserId)
         .build();
 
-    Subscription savedSubscription = subscriptionRepository.save(subscription);
-
-    return SubscriptionCreateResponse.from(savedSubscription);
+    return SubscriptionCreateResponse.from(subscriptionRepository.save(subscription));
   }
 }

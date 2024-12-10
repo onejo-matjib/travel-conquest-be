@@ -15,7 +15,6 @@ public class ReviewCreateRequest {
 
   @Min(value = 1, message = "최소 평점은 1점 입니다.")
   @Max(value = 5, message = "최대 평점은 5점 입니다.")
-  @NotNull(message = "아, 맞다! 평점!")
   private int rating;
 
   @NotBlank(message = "내용을 입력해주세요.")

@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/bookmarks")
+@RequiredArgsConstructor
 public class BookmarkController {
 
   private final BookmarkService bookmarkService;
@@ -44,9 +44,9 @@ public class BookmarkController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteBookmark(
-      @PathVariable(name = "id") Long bookmarkId,
+      @PathVariable Long id,
       @AuthUser Long userId) {
-    bookmarkService.deleteBookmark(bookmarkId, userId);
+    bookmarkService.deleteBookmark(id, userId);
     return ResponseEntity.noContent().build();
   }
 }
