@@ -21,7 +21,8 @@ public class SubscriptionService {
       throw new CustomException("SUBSCRIPTION#1_001", "본인을 구독할 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
-    String validationResult = subscriptionRepository.validateSubscriptionCreation(userId, subUserId);
+    String validationResult = subscriptionRepository.validateSubscriptionCreation(userId,
+        subUserId);
 
     switch (validationResult) {
       case "USER_NOT_FOUND":
