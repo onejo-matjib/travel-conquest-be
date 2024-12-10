@@ -55,12 +55,7 @@ public class S3Service {
       throw new CustomException("S3_001", "파일 업로드가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {
       // 임시파일 삭제
-      if (tempFile != null && tempFile.exists()) {
-        boolean deleted = tempFile.delete();
-        if (!deleted) {
-          System.err.println("임시 파일 삭제 실패: " + tempFile.getAbsolutePath());
-        }
-      }
+      tempFile.delete();
     }
   }
 
