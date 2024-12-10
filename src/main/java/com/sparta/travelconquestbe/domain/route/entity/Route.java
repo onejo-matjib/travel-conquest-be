@@ -2,7 +2,6 @@ package com.sparta.travelconquestbe.domain.route.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
 import com.sparta.travelconquestbe.common.exception.CustomException;
-import com.sparta.travelconquestbe.domain.review.entity.Review;
 import com.sparta.travelconquestbe.domain.routelocation.entity.RouteLocation;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
@@ -49,13 +48,6 @@ public class Route extends TimeStampCreateUpdate {
       cascade = CascadeType.REMOVE,
       orphanRemoval = true)
   private List<RouteLocation> locations = new ArrayList<>();
-
-  //  @OneToMany(
-  //      fetch = FetchType.LAZY,
-  //      mappedBy = "route",
-  //      cascade = CascadeType.REMOVE,
-  //      orphanRemoval = true)
-  //  private List<Review> reviews = new ArrayList<>();
 
   public void validCreatorOrAdmin(Long userId, UserType type) {
     if (!Objects.equals(userId, this.getUser().getId()) && type != UserType.ADMIN) {
