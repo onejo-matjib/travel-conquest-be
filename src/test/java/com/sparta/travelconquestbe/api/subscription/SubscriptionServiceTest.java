@@ -1,10 +1,22 @@
 package com.sparta.travelconquestbe.api.subscription;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionCreateResponse;
 import com.sparta.travelconquestbe.api.subscription.service.SubscriptionService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.subscription.entity.Subscription;
 import com.sparta.travelconquestbe.domain.subscription.repository.SubscriptionRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,9 +24,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
@@ -31,7 +40,8 @@ class SubscriptionServiceTest {
     Long userId = 1L;
     Long subUserId = 2L;
 
-    when(subscriptionRepository.validateSubscriptionCreation(userId, subUserId)).thenReturn("VALID");
+    when(subscriptionRepository.validateSubscriptionCreation(userId, subUserId)).thenReturn(
+        "VALID");
 
     Subscription savedSubscription = Subscription.builder()
         .id(1L)
@@ -73,7 +83,8 @@ class SubscriptionServiceTest {
     Long userId = 1L;
     Long subUserId = 2L;
 
-    when(subscriptionRepository.validateSubscriptionCreation(userId, subUserId)).thenReturn("USER_NOT_FOUND");
+    when(subscriptionRepository.validateSubscriptionCreation(userId, subUserId)).thenReturn(
+        "USER_NOT_FOUND");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.createSubscription(userId, subUserId);
@@ -81,7 +92,7 @@ class SubscriptionServiceTest {
 
     assertEquals("USER#1_001", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
-    assertEquals("구독 대상 사용자를 찾을 수 없습니다.", exception.getErrorMessage());
+    assertEquals("구독 대상 사용자가 존재하지 않습니다.", exception.getErrorMessage());
 
     verify(subscriptionRepository, times(1)).validateSubscriptionCreation(userId, subUserId);
     verify(subscriptionRepository, never()).save(any());
@@ -93,7 +104,8 @@ class SubscriptionServiceTest {
     Long userId = 1L;
     Long subUserId = 2L;
 
-    when(subscriptionRepository.validateSubscriptionCreation(userId, subUserId)).thenReturn("DUPLICATE_SUBSCRIPTION");
+    when(subscriptionRepository.validateSubscriptionCreation(userId, subUserId)).thenReturn(
+        "DUPLICATE_SUBSCRIPTION");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.createSubscription(userId, subUserId);
@@ -105,5 +117,46 @@ class SubscriptionServiceTest {
 
     verify(subscriptionRepository, times(1)).validateSubscriptionCreation(userId, subUserId);
     verify(subscriptionRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("구독 삭제 - 성공")
+  void deleteSubscription_Success() {
+    Long userId = 1L;
+    Long subUserId = 2L;
+
+    Subscription subscription = Subscription.builder()
+        .id(1L)
+        .userId(userId)
+        .subUserId(subUserId)
+        .build();
+
+    when(subscriptionRepository.findSubscription(userId, subUserId)).thenReturn(
+        Optional.of(subscription));
+
+    assertDoesNotThrow(() -> subscriptionService.deleteSubscription(userId, subUserId));
+
+    verify(subscriptionRepository, times(1)).findSubscription(userId, subUserId);
+    verify(subscriptionRepository, times(1)).delete(subscription);
+  }
+
+  @Test
+  @DisplayName("구독 삭제 실패 - 구독 관계 없음")
+  void deleteSubscription_NotFound() {
+    Long userId = 1L;
+    Long subUserId = 2L;
+
+    when(subscriptionRepository.findSubscription(userId, subUserId)).thenReturn(Optional.empty());
+
+    CustomException exception = assertThrows(CustomException.class, () -> {
+      subscriptionService.deleteSubscription(userId, subUserId);
+    });
+
+    assertEquals("SUBSCRIPTION#3_001", exception.getErrorCode());
+    assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
+    assertEquals("구독 관계를 찾을 수 없습니다.", exception.getErrorMessage());
+
+    verify(subscriptionRepository, times(1)).findSubscription(userId, subUserId);
+    verify(subscriptionRepository, never()).delete(any());
   }
 }
