@@ -15,7 +15,7 @@ public class SubscriptionService {
 
   private final SubscriptionRepository subscriptionRepository;
 
-  @Transactional(readOnly = true)
+  @Transactional
   public SubscriptionCreateResponse createSubscription(Long userId, Long subUserId) {
     if (userId.equals(subUserId)) {
       throw new CustomException("SUBSCRIPTION#1_001", "본인을 구독할 수 없습니다.", HttpStatus.BAD_REQUEST);
