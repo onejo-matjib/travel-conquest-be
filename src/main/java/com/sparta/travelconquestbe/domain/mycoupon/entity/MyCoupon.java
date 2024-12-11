@@ -32,6 +32,9 @@ public class MyCoupon extends TimeStampCreateUpdate {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(unique = true)
+  private String code;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, columnDefinition = "ENUM('AVAILABLE', 'UNAVAILABLE') DEFAULT 'AVAILABLE'")
   private UseStatus status;
