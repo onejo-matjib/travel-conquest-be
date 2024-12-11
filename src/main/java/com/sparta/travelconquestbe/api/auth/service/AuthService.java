@@ -6,6 +6,7 @@ import com.sparta.travelconquestbe.api.auth.dto.info.UserInfo;
 import com.sparta.travelconquestbe.api.auth.dto.request.AuthLoginRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
+import com.sparta.travelconquestbe.api.auth.dto.respones.KakaoLoginResult;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.user.entity.User;
@@ -47,9 +48,6 @@ public class AuthService {
   @Value("${kakao.client-secret}")
   private String clientSecret;
 
-  // 임시로 저장할 UserInfo
-  private UserInfo tempUserInfo;
-
   public String signUp(AuthSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new CustomException("USER_005", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
@@ -88,22 +86,18 @@ public class AuthService {
         + "&response_type=code";
   }
 
-  public String handleKakaoLogin(String code) {
+  public KakaoLoginResult handleKakaoLogin(String code) {
     UserInfo kakaoUserInfo = getKakaoUserInfoFromCode(code);
     Optional<User> existingUser = userRepository.findByProviderId(kakaoUserInfo.getId());
 
     if (existingUser.isPresent()) {
       User user = existingUser.get();
-      return jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), user.getProviderType());
+      String jwtToken = jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), user.getProviderType());
+      return KakaoLoginResult.existingUser(jwtToken);
+    } else {
+      kakaoUserInfo.saveProviderType("KAKAO");
+      return KakaoLoginResult.newUser(kakaoUserInfo);
     }
-
-    tempUserInfo = UserInfo.builder()
-        .id(kakaoUserInfo.getId())
-        .email(kakaoUserInfo.getEmail())
-        .nickname(kakaoUserInfo.getNickname())
-        .build();
-    tempUserInfo.saveProviderType("KAKAO");
-    throw new CustomException("AUTH_012", "/api/users/additional-info", HttpStatus.FOUND);
   }
 
   private UserInfo getKakaoUserInfoFromCode(String code) {
@@ -161,6 +155,7 @@ public class AuthService {
     }
   }
 
+  // 소셜 로그인 신규 가입자 전용 + 추가 정보 입력받음
   public String saveAdditionalInfo(SignUpAdditionalInfoRequest request, UserInfo tempUserInfo) {
     if (tempUserInfo == null) {
       throw new CustomException("AUTH_016", "임시 사용자 정보가 없습니다.", HttpStatus.BAD_REQUEST);

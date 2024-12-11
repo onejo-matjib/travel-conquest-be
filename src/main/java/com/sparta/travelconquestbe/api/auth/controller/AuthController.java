@@ -4,6 +4,7 @@ import com.sparta.travelconquestbe.api.auth.dto.info.UserInfo;
 import com.sparta.travelconquestbe.api.auth.dto.request.AuthLoginRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
+import com.sparta.travelconquestbe.api.auth.dto.respones.KakaoLoginResult;
 import com.sparta.travelconquestbe.api.auth.service.AuthService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,20 +54,19 @@ public class AuthController {
   }
 
   @GetMapping("/oauth/kakao/callback")
-  public ResponseEntity<?> kakaoLoginCallback(@RequestParam("code") String code) {
-    try {
-      String jwtToken = authService.handleKakaoLogin(code);
+  public ResponseEntity<?> kakaoLoginCallback(@RequestParam("code") String code, HttpServletRequest request) {
+
+    KakaoLoginResult result = authService.handleKakaoLogin(code);
+
+    if(result.isNewUser()) {
+      request.getSession().setAttribute("tempUserInfo", result.getUserInfo());
+      return ResponseEntity.status(HttpStatus.FOUND)
+          .header(HttpHeaders.LOCATION, "/api/users/additional-info")
+          .build();
+    } else {
       return ResponseEntity.ok()
-          .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken)
-          .body("로그인 성공" + jwtToken);
-    } catch (CustomException e) {
-      if (e.getHttpStatus() == HttpStatus.FOUND) {
-        // 추가 정보 입력 페이지로 리다이렉트
-        return ResponseEntity.status(HttpStatus.FOUND)
-            .header(HttpHeaders.LOCATION, e.getErrorMessage())
-            .build();
-      }
-      return ResponseEntity.status(e.getHttpStatus()).body(e.getMessage());
+          .header(HttpHeaders.AUTHORIZATION, "Bearer " + result.getToken())
+          .body("로그인 성공 " + result.getToken());
     }
   }
 
