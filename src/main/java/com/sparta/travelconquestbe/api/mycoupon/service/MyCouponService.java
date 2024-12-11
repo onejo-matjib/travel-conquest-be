@@ -33,7 +33,7 @@ public class MyCouponService {
   private final UserRepository userRepository;
 
   // 쿠폰 저장
-  public MyCouponSaveResponse saveCoupon(Long couponId, Long userId) {
+  public MyCouponSaveResponse createMyCoupon(Long couponId, Long userId) {
     // 임시 사용
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomException("COUPON#3_001",
@@ -42,7 +42,7 @@ public class MyCouponService {
 
     isAuthorizedUser(user);
     Coupon coupon = validateCoupon(couponId, user);
-    MyCoupon myCoupon = saveCoupon(user, coupon);
+    MyCoupon myCoupon = saveMyCoupon(user, coupon);
 
     return buildResponse(myCoupon);
   }
@@ -104,7 +104,7 @@ public class MyCouponService {
   }
 
   // 쿠폰 저장
-  public MyCoupon saveCoupon(User user, Coupon coupon) {
+  public MyCoupon saveMyCoupon(User user, Coupon coupon) {
     MyCoupon myCoupon = MyCoupon.builder()
         .status(AVAILABLE)
         .user(user)

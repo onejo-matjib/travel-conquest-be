@@ -19,11 +19,11 @@ public class MyCouponController {
   private final MyCouponService myCouponService;
 
   @PostMapping("/{couponId}")
-  public ResponseEntity<MyCouponSaveResponse> saveCoupon(
+  public ResponseEntity<MyCouponSaveResponse> createMyCoupon(
       @PathVariable Long couponId,
       @AuthUser Long userId
   ) {
-    MyCouponSaveResponse response = myCouponService.saveCoupon(couponId, userId);
+    MyCouponSaveResponse response = myCouponService.createMyCoupon(couponId, userId);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 }
