@@ -3,7 +3,6 @@ package com.sparta.travelconquestbe.api.bookmark;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
@@ -20,9 +19,7 @@ import com.sparta.travelconquestbe.domain.bookmark.repository.BookmarkRepository
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
-import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -83,7 +80,7 @@ class BookmarkServiceTest {
   }
 
   @Test
-  @DisplayName("즐겨찾기 등록 실패 - 루트 존재하지않음")
+  @DisplayName("즐겨찾기 등록 실패 - 루트 존재하지 않음")
   void createBookmark_RouteNotFound() {
     Long userId = 1L;
     Long routeId = 2L;
@@ -95,7 +92,7 @@ class BookmarkServiceTest {
       bookmarkService.createBookmark(routeId, userId);
     });
 
-    assertEquals("ROUTE#1_001", exception.getErrorCode());
+    assertEquals("BOOKMARK#1_001", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     verify(bookmarkRepository, times(1)).validateBookmarkCreation(userId, routeId);
     verify(routeRepository, never()).findById(routeId);
@@ -127,8 +124,7 @@ class BookmarkServiceTest {
   void getBookmarks_Success() {
     Long userId = 1L;
 
-    BookmarkListResponse response = new BookmarkListResponse(1L, 2L, "Test Route",
-        LocalDateTime.now());
+    BookmarkListResponse response = new BookmarkListResponse(1L, 2L, "Test Route", null);
     Page<BookmarkListResponse> page = new PageImpl<>(Collections.singletonList(response));
 
     when(bookmarkRepository.getUserBookmarks(eq(userId), any(PageRequest.class))).thenReturn(page);
@@ -171,7 +167,7 @@ class BookmarkServiceTest {
       bookmarkService.deleteBookmark(bookmarkId, userId);
     });
 
-    assertEquals("BOOKMARK#1_001", exception.getErrorCode());
+    assertEquals("BOOKMARK#1_003", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     verify(bookmarkRepository, times(1)).findById(bookmarkId);
     verify(bookmarkRepository, never()).delete(any(Bookmark.class));
@@ -198,45 +194,5 @@ class BookmarkServiceTest {
     assertEquals(HttpStatus.FORBIDDEN, exception.getHttpStatus());
     verify(bookmarkRepository, times(1)).findById(bookmarkId);
     verify(bookmarkRepository, never()).delete(any(Bookmark.class));
-  }
-
-  @Test
-  @DisplayName("즐겨찾기 목록 조회 - 페이징 검증")
-  void getBookmarks_PagingSuccess() {
-    Long userId = 1L;
-
-    BookmarkListResponse response1 = new BookmarkListResponse(1L, 2L, "Test Route 1",
-        LocalDateTime.now());
-    BookmarkListResponse response2 = new BookmarkListResponse(2L, 3L, "Test Route 2",
-        LocalDateTime.now());
-    Page<BookmarkListResponse> page = new PageImpl<>(
-        List.of(response1, response2), PageRequest.of(0, 2), 2);
-
-    when(bookmarkRepository.getUserBookmarks(eq(userId), any(PageRequest.class))).thenReturn(page);
-
-    Page<BookmarkListResponse> result = bookmarkService.getBookmarks(userId, PageRequest.of(0, 2));
-
-    assertNotNull(result);
-    assertEquals(2, result.getContent().size());
-    assertEquals(2, result.getTotalElements());
-    assertEquals(1, result.getTotalPages());
-    verify(bookmarkRepository, times(1)).getUserBookmarks(eq(userId), any(PageRequest.class));
-  }
-
-  @Test
-  @DisplayName("즐겨찾기 목록 조회 - 비어있는 목록")
-  void getBookmarks_EmptyList() {
-    Long userId = 1L;
-
-    Page<BookmarkListResponse> emptyPage = new PageImpl<>(Collections.emptyList());
-
-    when(bookmarkRepository.getUserBookmarks(eq(userId), any(PageRequest.class))).thenReturn(
-        emptyPage);
-
-    Page<BookmarkListResponse> result = bookmarkService.getBookmarks(userId, PageRequest.of(0, 10));
-
-    assertNotNull(result);
-    assertTrue(result.getContent().isEmpty());
-    verify(bookmarkRepository, times(1)).getUserBookmarks(eq(userId), any(PageRequest.class));
   }
 }

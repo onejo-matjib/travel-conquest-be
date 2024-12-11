@@ -28,7 +28,8 @@ public class SubscriptionService {
         subUserId);
     switch (validationResult) {
       case "USER_NOT_FOUND":
-        throw new CustomException("SUBSCRIPTION#3_001", "구독 대상 사용자가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+        throw new CustomException("SUBSCRIPTION#3_001", "구독 대상 사용자가 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND);
       case "DUPLICATE_SUBSCRIPTION":
         throw new CustomException("SUBSCRIPTION#2_001", "이미 구독 중입니다.", HttpStatus.CONFLICT);
       default:
