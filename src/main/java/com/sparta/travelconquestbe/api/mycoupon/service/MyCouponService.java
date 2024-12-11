@@ -16,6 +16,7 @@ import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -73,7 +74,7 @@ public class MyCouponService {
     }
 
     // 쿠폰 코드 발급 (쿠폰이름#숫자번호
-    String couponCode = coupon.getName() + "#" + coupon.getCount();
+    String couponCode = UUID.randomUUID().toString();
 
     // 쿠폰 저장
     MyCoupon myCoupon =
