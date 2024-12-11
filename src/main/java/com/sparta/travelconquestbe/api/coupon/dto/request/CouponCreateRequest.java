@@ -1,5 +1,6 @@
 package com.sparta.travelconquestbe.api.coupon.dto.request;
 
+import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +18,7 @@ public class CouponCreateRequest {
   private String description;
 
   @NotNull(message = "쿠폰 유형은 필수입니다.")
+  @ValidEnum(enumClass = CouponType.class)
   private CouponType type;
 
   @NotNull(message = "할인 금액은 필수입니다.")

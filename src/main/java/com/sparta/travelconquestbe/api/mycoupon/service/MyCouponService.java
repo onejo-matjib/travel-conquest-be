@@ -1,17 +1,15 @@
 package com.sparta.travelconquestbe.api.mycoupon.service;
 
-import static com.sparta.travelconquestbe.domain.coupon.enums.CouponType.PRIMIUM;
-import static com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus.AVAILABLE;
-import static com.sparta.travelconquestbe.domain.user.enums.Title.CONQUEROR;
-import static com.sparta.travelconquestbe.domain.user.enums.UserType.ADMIN;
-
 import com.sparta.travelconquestbe.api.mycoupon.dto.respones.MyCouponSaveResponse;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
+import com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus;
 import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.time.Clock;
@@ -66,8 +64,8 @@ public class MyCouponService {
     }
 
     // 프리미엄 쿠폰 저장 시 유저 등급 확인
-    if (coupon.getType().equals(PRIMIUM)
-        && !(user.getTitle().equals(CONQUEROR) || user.getType().equals(ADMIN))) {
+    if (coupon.getType().equals(CouponType.PREMIUM)
+        && !(user.getTitle().equals(Title.CONQUEROR) || user.getType().equals(UserType.ADMIN))) {
       throw new CustomException("COUPON#4_003 ",
           "정복자 등급만 등록할 수 있는 쿠폰입니다.",
           HttpStatus.CONFLICT);
@@ -80,7 +78,7 @@ public class MyCouponService {
     MyCoupon myCoupon =
         MyCoupon.builder()
             .code(couponCode)
-            .status(AVAILABLE)
+            .status(UseStatus.AVAILABLE)
             .user(user)
             .coupon(coupon)
             .build();
