@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>카카오 사용자 추가 정보 입력</title>
+  <title>사용자 추가 정보 입력</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -75,6 +75,8 @@
       name: name,
       birth: birth
     };
+
+    console.log(additionalInfo);
 
     fetch('http://localhost:8080/api/users/additional-info', {
       method: 'POST',
