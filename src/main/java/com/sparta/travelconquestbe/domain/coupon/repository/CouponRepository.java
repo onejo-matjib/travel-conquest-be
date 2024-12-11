@@ -12,4 +12,5 @@ public interface CouponRepository extends JpaRepository<Coupon, Long>, CouponRep
   @Modifying
   @Query("DELETE FROM Coupon c WHERE c.validUntil < :currentDate")
   void deleteByExpiredCoupons(@Param("currentDate") LocalDate currentDate);
+
 }
