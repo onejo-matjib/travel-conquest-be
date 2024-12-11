@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,5 +29,13 @@ public class SubscriptionController {
     SubscriptionCreateResponse response = subscriptionService.createSubscription(userId,
         request.getSubUserId());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @DeleteMapping("/{subUserId}")
+  public ResponseEntity<Void> deleteSubscription(
+      @AuthUser Long userId,
+      @PathVariable Long subUserId) {
+    subscriptionService.deleteSubscription(userId, subUserId);
+    return ResponseEntity.noContent().build();
   }
 }
