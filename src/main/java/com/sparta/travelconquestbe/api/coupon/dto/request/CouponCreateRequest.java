@@ -19,9 +19,6 @@ public class CouponCreateRequest {
   @NotNull(message = "쿠폰 유형은 필수입니다.")
   private CouponType type;
 
-  @NotBlank(message = "쿠폰 코드는 필수입니다.")
-  private String code;
-
   @NotNull(message = "할인 금액은 필수입니다.")
   private int discountAmount;
 
