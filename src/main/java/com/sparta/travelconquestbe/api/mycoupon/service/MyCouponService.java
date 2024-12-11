@@ -17,7 +17,6 @@ import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
 import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
-import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.time.Clock;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -29,30 +28,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class MyCouponService {
 
   private final MyCouponRepository myCouponRepository;
-  private final UserRepository userRepository;
   private final CouponRepository couponRepository;
   private final Clock clock;
 
   // 쿠폰 저장
-  @Transactional
-  public MyCouponSaveResponse saveCoupon(Long couponId, Long userId) {
-    User user = validateUser(userId);
+  public MyCouponSaveResponse saveCoupon(Long couponId, User user) {
 
     Coupon coupon = validateCoupon(couponId, user);
 
     MyCoupon myCoupon = SaveCoupon(user, coupon);
 
     return buildResponse(myCoupon);
-  }
-
-  // 유저 유효성 검사
-  @Transactional(readOnly = true)
-  public User validateUser(Long userId) {
-    return userRepository.findById(userId)
-        .filter(this::isAuthorizedUser)
-        .orElseThrow(
-            () -> new CustomException("COUPON#3_001",
-                "해당 유저가 존재하지 않습니다.", FORBIDDEN));
   }
 
   // 쿠폰 유효성 검사
