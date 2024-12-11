@@ -42,7 +42,7 @@ public class MyCouponService {
 
     isAuthorizedUser(user);
     Coupon coupon = validateCoupon(couponId, user);
-    MyCoupon myCoupon = SaveCoupon(user, coupon);
+    MyCoupon myCoupon = saveCoupon(user, coupon);
 
     return buildResponse(myCoupon);
   }
@@ -104,7 +104,7 @@ public class MyCouponService {
   }
 
   // 쿠폰 저장
-  public MyCoupon SaveCoupon(User user, Coupon coupon) {
+  public MyCoupon saveCoupon(User user, Coupon coupon) {
     MyCoupon myCoupon = MyCoupon.builder()
         .status(AVAILABLE)
         .user(user)
