@@ -41,9 +41,6 @@ public class Coupon extends TimeStampCreateUpdate {
   @Enumerated(EnumType.STRING)
   private CouponType type;
 
-  @Column(unique = true)
-  private String code;
-
   @Column(nullable = false)
   private int discountAmount;
 
