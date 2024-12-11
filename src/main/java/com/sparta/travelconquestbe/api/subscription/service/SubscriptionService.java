@@ -28,7 +28,7 @@ public class SubscriptionService {
         subUserId);
     switch (validationResult) {
       case "USER_NOT_FOUND":
-        throw new CustomException("USER#1_001", "구독 대상 사용자가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+        throw new CustomException("SUBSCRIPTION#3_001", "구독 대상 사용자가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
       case "DUPLICATE_SUBSCRIPTION":
         throw new CustomException("SUBSCRIPTION#2_001", "이미 구독 중입니다.", HttpStatus.CONFLICT);
       default:
@@ -47,15 +47,15 @@ public class SubscriptionService {
   public void deleteSubscription(Long userId, Long subUserId) {
     Subscription subscription = subscriptionRepository.findSubscription(userId, subUserId)
         .orElseThrow(() -> new CustomException(
-            "SUBSCRIPTION#3_001", "구독 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            "SUBSCRIPTION#3_002", "구독 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     subscriptionRepository.delete(subscription);
   }
 
   @Transactional(readOnly = true)
-  public SubscriptionListResponse getFollowings(Long userId, Pageable pageable) {
+  public SubscriptionListResponse searchFollowings(Long userId, Pageable pageable) {
     Page<Subscription> subscriptions = subscriptionRepository.findAllByUserId(userId, pageable);
-    Long totalFollowings = subscriptionRepository.countByUserId(userId);
+    Long totalFollowings = subscriptions.getTotalElements();
 
     return SubscriptionListResponse.from(subscriptions, totalFollowings);
   }

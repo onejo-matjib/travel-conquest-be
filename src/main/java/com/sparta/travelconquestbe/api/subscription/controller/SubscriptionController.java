@@ -43,10 +43,10 @@ public class SubscriptionController {
   }
 
   @GetMapping
-  public ResponseEntity<SubscriptionListResponse> getMyFollowings(
+  public ResponseEntity<SubscriptionListResponse> searchMyFollowings(
       @AuthUser Long userId,
       Pageable pageable) {
-    SubscriptionListResponse response = subscriptionService.getFollowings(userId, pageable);
+    SubscriptionListResponse response = subscriptionService.searchFollowings(userId, pageable);
     return ResponseEntity.ok(response);
   }
 }
