@@ -14,7 +14,6 @@ public class CouponCreateResponse {
   private String name;
   private String descriotion;
   private CouponType type;
-  private String code;
   private int discountAmount;
   private LocalDate validUntil;
   private int count;
