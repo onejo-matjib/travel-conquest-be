@@ -60,4 +60,12 @@ public class SubscriptionService {
 
     return SubscriptionListResponse.from(subscriptions, totalFollowings);
   }
+
+  @Transactional(readOnly = true)
+  public SubscriptionListResponse searchFollowers(Long userId, Pageable pageable) {
+    Page<Subscription> subscriptions = subscriptionRepository.findAllBySubUserId(userId, pageable);
+    Long totalFollowers = subscriptions.getTotalElements();
+
+    return SubscriptionListResponse.from(subscriptions, totalFollowers);
+  }
 }

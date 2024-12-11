@@ -30,4 +30,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
       @Param("subUserId") Long subUserId);
 
   Page<Subscription> findAllByUserId(Long userId, Pageable pageable);
+
+  Page<Subscription> findAllBySubUserId(Long subUserId, Pageable pageable);
 }
