@@ -22,7 +22,6 @@ import java.time.Clock;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +33,6 @@ public class MyCouponService {
   private final UserRepository userRepository;
 
   // 쿠폰 저장
-  @Transactional
   public MyCouponSaveResponse saveCoupon(Long couponId, Long userId) {
     // 임시 사용
     User user = userRepository.findById(userId)
