@@ -111,7 +111,7 @@ class ReviewServiceTest {
       reviewService.createReview(request, authUser);
     });
 
-    assertEquals("ROUTE_001", exception.getErrorCode());
+    assertEquals("ROUTE#1_001", exception.getErrorCode());
     verify(routeRepository, times(1)).findById(routeId);
     verify(reviewRepository, never()).save(any(Review.class));
   }

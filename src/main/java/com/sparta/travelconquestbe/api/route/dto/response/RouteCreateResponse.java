@@ -13,10 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class RouteCreateResponse {
-    private String title;
-    private String description;
-    private Long totalDistance;
-    private int money;
-    private String estimatedTime;
-    private List<RouteLocationInfo> locations;
+  private Long id;
+  private String title;
+  private String description;
+  private Long totalDistance;
+  private int money;
+  private String estimatedTime;
+  private List<RouteLocationInfo> locations;
 }

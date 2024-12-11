@@ -9,10 +9,10 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RouteLocationInfo {
-    private int sequence;
-    private String locationName;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
-    private String mediaUrl;
-    private String fileName;
+  private int sequence;
+  private String locationName;
+  private BigDecimal latitude;
+  private BigDecimal longitude;
+  private String mediaUrl;
+  private String fileName;
 }

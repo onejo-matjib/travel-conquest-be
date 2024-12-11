@@ -1,10 +1,13 @@
 package com.sparta.travelconquestbe.api.client.s3.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
@@ -32,11 +35,13 @@ public class S3Service {
     try {
       String fileExtension = getFileExtension(Objects.requireNonNull(file.getOriginalFilename()));
       if (!ALLOWED_EXTENSIONS.contains(fileExtension.toLowerCase())) {
-        throw new CustomException("S3_002", "허용되지 않는 파일 형식입니다.", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        throw new CustomException(
+            "S3#2_001", "허용되지 않는 파일 형식입니다.", HttpStatus.UNSUPPORTED_MEDIA_TYPE);
       }
 
       if (file.getSize() > MAX_FILE_SIZE) {
-        throw new CustomException("S3_003", "파일 크기가 허용 범위를 초과했습니다.", HttpStatus.PAYLOAD_TOO_LARGE);
+        throw new CustomException(
+            "S3#3_001", "파일 크기가 허용 범위를 초과했습니다.", HttpStatus.PAYLOAD_TOO_LARGE);
       }
 
       // 파일을 로컬 경로에 저장 (임시 파일 생성)
@@ -52,11 +57,30 @@ public class S3Service {
     } catch (CustomException e) {
       throw e;
     } catch (Exception e) {
-      throw new CustomException("S3_001", "파일 업로드가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new CustomException("S3#1_001", "파일 업로드가 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {
       // 임시파일 삭제
       tempFile.delete();
     }
+  }
+
+  public void deleteFile(List<String> mediaUrls) {
+    String bucketUrlPrefix = "https://" + bucketName + ".s3.ap-northeast-2.amazonaws.com/";
+
+    mediaUrls.stream()
+        .map(url -> url.replace(bucketUrlPrefix, ""))
+        .map(
+            key -> {
+              try {
+                return URLDecoder.decode(key, StandardCharsets.UTF_8);
+              } catch (Exception e) {
+                throw new CustomException("S3#4_001", "key 값 디코딩이 실패했습니다.", HttpStatus.BAD_REQUEST);
+              }
+            })
+        .forEach(
+            key -> {
+              s3Client.deleteObject(new DeleteObjectRequest(bucketName, key));
+            });
   }
 
   // 확장자 추출용 유틸 메소드

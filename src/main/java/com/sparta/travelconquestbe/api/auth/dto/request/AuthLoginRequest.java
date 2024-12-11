@@ -18,7 +18,6 @@ public class AuthLoginRequest {
 
   @NotBlank(message = "비밀번호를 입력해주세요.")
   @Size(min = 8, max = 20, message = "최소 8글자 최대 20글자로 입력해주세요.")
-  @Valid
   private String password;
 
   @Builder

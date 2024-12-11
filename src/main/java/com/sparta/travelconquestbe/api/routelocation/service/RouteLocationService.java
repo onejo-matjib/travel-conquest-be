@@ -34,7 +34,7 @@ public class RouteLocationService {
               .orElseThrow(
                   () ->
                       new CustomException(
-                          "ROUTE_003",
+                          "ROUTE#3_001",
                           "파일 매칭 중 예상치 못한 오류가 발생했습니다.",
                           HttpStatus.INTERNAL_SERVER_ERROR));
       String uniqueFileName = UUID.randomUUID().toString();
@@ -44,6 +44,11 @@ public class RouteLocationService {
       updatedLocations.add(locationInfo);
     }
     return updatedLocations;
+  }
+
+  @Transactional
+  public void deleteFilesForLocations(List<String> locationsMediaUrls) {
+    s3Service.deleteFile(locationsMediaUrls);
   }
 
   // 장소에 대한 사진 혹은 영상이 있는지 검증.
@@ -58,7 +63,7 @@ public class RouteLocationService {
                       file -> fileName != null && fileName.equals(file.getOriginalFilename()));
       if (!fileExists) {
         throw new CustomException(
-            "ROUTE_002",
+            "ROUTE#2_001",
             "장소에 대한 사진 혹은 영상이 존재하지 않습니다. " + "누락된 장소 : " + locationInfo.getLocationName(),
             HttpStatus.BAD_REQUEST);
       }

@@ -3,6 +3,7 @@ package com.sparta.travelconquestbe.api.route.service;
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
+import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
@@ -23,6 +24,7 @@ public class RouteService {
   private final RouteRepository routeRepository;
   private final RouteLocationRepository routeLocationRepository;
   private final UserRepository userRepository;
+  private final RouteLocationService routeLocationService;
 
   @Transactional
   public RouteCreateResponse routeCreate(
@@ -34,7 +36,7 @@ public class RouteService {
         userRepository
             .findById(userId)
             .orElseThrow(
-                () -> new CustomException("USER_002", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                () -> new CustomException("ROUTE#2_001", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     Route route =
         Route.builder()
             .title(routeCreateRequest.getTitle())
@@ -60,6 +62,7 @@ public class RouteService {
     Route savedRoute = routeRepository.save(route);
     routeLocationRepository.bulkSave(locations);
     return RouteCreateResponse.builder()
+        .id(savedRoute.getId())
         .title(savedRoute.getTitle())
         .description(savedRoute.getDescription())
         .totalDistance(savedRoute.getTotalDistance())
@@ -67,5 +70,25 @@ public class RouteService {
         .estimatedTime(savedRoute.getEstimatedTime())
         .locations(updatedLocations)
         .build();
+  }
+
+  @Transactional
+  public void routeDelete(Long id, Long userId) {
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(
+                () -> new CustomException("ROUTE#2_002", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    Route route =
+        routeRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new CustomException("ROUTE#1_002", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    route.validCreatorOrAdmin(user.getId(), user.getType());
+    List<String> locationsMediaUrls =
+        route.getLocations().stream().map(RouteLocation::getMediaUrl).toList();
+    routeLocationService.deleteFilesForLocations(locationsMediaUrls);
+    routeRepository.deleteRouteLocationsReviewsAndRoute(route.getId());
   }
 }
