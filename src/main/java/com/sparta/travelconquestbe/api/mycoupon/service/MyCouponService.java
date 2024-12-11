@@ -69,28 +69,28 @@ public class MyCouponService {
   }
 
   // 쿠폰 DB 확인
-  private Coupon findCouponById(Long couponId) {
+  public Coupon findCouponById(Long couponId) {
     return couponRepository.findById(couponId)
         .orElseThrow(() -> new CustomException("COUPON#2_001",
             "해당 쿠폰이 존재하지 않습니다.", NOT_FOUND));
   }
 
   // 중복 여부 확인
-  private void checkCouponDuplicate(Coupon coupon, User user) {
+  public void checkCouponDuplicate(Coupon coupon, User user) {
     if (myCouponRepository.existsByCouponIdAndUserId(coupon.getId(), user.getId())) {
       throw new CustomException("COUPON#10_001", "중복된 쿠폰이 존재합니다.", CONFLICT);
     }
   }
 
   // 쿠폰 수량 확인
-  private void checkCouponAvailability(Coupon coupon) {
+  public void checkCouponAvailability(Coupon coupon) {
     if (coupon.getCount() <= 0) {
       throw new CustomException("COUPON#5_001", "해당 쿠폰이 소진되었습니다.", CONFLICT);
     }
   }
 
   // 프리미엄 쿠폰 저장 시 유저 등급 확인
-  private void checkPremiumCouponAccess(Coupon coupon, User user) {
+  public void checkPremiumCouponAccess(Coupon coupon, User user) {
     if (coupon.getType().equals(PRIMIUM)
         && !(user.getTitle().equals(CONQUEROR) || user.getType().equals(ADMIN))) {
       throw new CustomException("COUPON#9_001 ", "정복자 등급만 등록할 수 있는 쿠폰입니다.", CONFLICT);
@@ -98,7 +98,7 @@ public class MyCouponService {
   }
 
   // 쿠폰 유효기간 확인
-  private void checkCouponExpiration(Coupon coupon) {
+  public void checkCouponExpiration(Coupon coupon) {
     LocalDate currentDate = LocalDate.now(clock);
     if (currentDate.isAfter(coupon.getValidUntil())) {
       throw new CustomException("COUPON#6_001", "해당 쿠폰의 유효기간이 지났습니다.", BAD_REQUEST);
@@ -106,7 +106,7 @@ public class MyCouponService {
   }
 
   // 쿠폰 저장
-  private MyCoupon SaveCoupon(User user, Coupon coupon) {
+  public MyCoupon SaveCoupon(User user, Coupon coupon) {
     MyCoupon myCoupon = MyCoupon.builder()
         .status(AVAILABLE)
         .user(user)
@@ -120,7 +120,7 @@ public class MyCouponService {
   }
 
   // 응답 생성
-  private MyCouponSaveResponse buildResponse(MyCoupon myCoupon) {
+  public MyCouponSaveResponse buildResponse(MyCoupon myCoupon) {
     return MyCouponSaveResponse.builder()
         .id(myCoupon.getId())
         .name(myCoupon.getCoupon().getName())
