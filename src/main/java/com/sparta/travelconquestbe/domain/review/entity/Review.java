@@ -54,10 +54,10 @@ public class Review extends TimeStampCreated {
         .user(user)
         .build();
   }
-  // 작성자 확인
+
   public void validateOwner(Long userId) {
     if (!this.user.getId().equals(userId)) {
-      throw new CustomException("REVIEW_003", "본인의 리뷰만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("REVIEW#3_001", "본인의 리뷰만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
     }
   }
 }

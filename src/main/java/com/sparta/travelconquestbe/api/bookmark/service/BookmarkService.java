@@ -2,7 +2,6 @@ package com.sparta.travelconquestbe.api.bookmark.service;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
-import com.sparta.travelconquestbe.common.auth.AuthUser;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.bookmark.entity.Bookmark;
 import com.sparta.travelconquestbe.domain.bookmark.repository.BookmarkRepository;
@@ -23,36 +22,40 @@ public class BookmarkService {
   private final BookmarkRepository bookmarkRepository;
   private final RouteRepository routeRepository;
 
-  public BookmarkCreateResponse createBookmark(Long routeId, AuthUser authUser) {
-    Route route = routeRepository.findById(routeId)
-        .orElseThrow(
-            () -> new CustomException("ROUTE_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+  @Transactional
+  public BookmarkCreateResponse createBookmark(Long routeId, Long userId) {
+    String validationResult = bookmarkRepository.validateBookmarkCreation(userId, routeId);
 
-    User user = User.builder().id(authUser.getUserId()).build();
-
-    boolean isDuplicate = bookmarkRepository.isBookmarkExist(authUser.getUserId(), routeId);
-    if (isDuplicate) {
-      throw new CustomException("BOOKMARK_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
+    switch (validationResult) {
+      case "ROUTE_NOT_FOUND":
+        throw new CustomException("ROUTE#1_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+      case "DUPLICATE_BOOKMARK":
+        throw new CustomException("BOOKMARK#2_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
+      default:
+        break;
     }
 
-    Bookmark bookmark = Bookmark.createBookmark(user, route, false);
-    Bookmark savedBookmark = bookmarkRepository.save(bookmark);
-    return BookmarkCreateResponse.from(savedBookmark);
+    Route route = routeRepository.findById(routeId)
+        .orElseThrow(
+            () -> new CustomException("ROUTE#1_002", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    Bookmark bookmark = Bookmark.createBookmark(User.builder().id(userId).build(), route);
+    return BookmarkCreateResponse.from(bookmarkRepository.save(bookmark));
   }
 
-  public Page<BookmarkListResponse> getBookmarks(AuthUser authUser, Pageable pageable) {
-    return bookmarkRepository.getUserBookmarks(authUser.getUserId(), pageable);
+  @Transactional(readOnly = true)
+  public Page<BookmarkListResponse> getBookmarks(Long userId, Pageable pageable) {
+    return bookmarkRepository.getUserBookmarks(userId, pageable);
   }
 
   @Transactional
-  public void deleteBookmark(Long bookmarkId, AuthUser authUser) {
-    Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
-        .orElseThrow(() -> new CustomException(
-            "BOOKMARK_002", "해당 즐겨찾기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+  public void deleteBookmark(Long id, Long userId) {
+    Bookmark bookmark = bookmarkRepository.findById(id)
+        .orElseThrow(
+            () -> new CustomException("BOOKMARK#1_001", "해당 즐겨찾기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-    if (!bookmark.getUser().getId().equals(authUser.getUserId())) {
-      throw new CustomException(
-          "BOOKMARK_003", "본인의 즐겨찾기만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
+    if (!bookmark.getUser().getId().equals(userId)) {
+      throw new CustomException("BOOKMARK#3_001", "본인의 즐겨찾기만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
     }
 
     bookmarkRepository.delete(bookmark);

@@ -3,23 +3,18 @@ package com.sparta.travelconquestbe.api.review;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import com.sparta.travelconquestbe.api.review.dto.request.ReviewCreateRequest;
 import com.sparta.travelconquestbe.api.review.dto.respones.ReviewCreateResponse;
 import com.sparta.travelconquestbe.api.review.service.ReviewService;
-import com.sparta.travelconquestbe.common.auth.AuthUser;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.review.entity.Review;
 import com.sparta.travelconquestbe.domain.review.repository.ReviewRepository;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
-import java.util.Optional;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -28,6 +23,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 
+import java.util.Optional;
+
 class ReviewServiceTest {
 
   @Mock
@@ -35,6 +32,9 @@ class ReviewServiceTest {
 
   @Mock
   private RouteRepository routeRepository;
+
+  @Mock
+  private UserRepository userRepository;
 
   @InjectMocks
   private ReviewService reviewService;
@@ -45,33 +45,19 @@ class ReviewServiceTest {
   }
 
   @Test
-  @DisplayName("리뷰_등록_성공")
+  @DisplayName("리뷰 등록 성공")
   void createReview_Success() {
     Long routeId = 1L;
     Long userId = 2L;
 
-    ReviewCreateRequest request = new ReviewCreateRequest(routeId, 5, "루트가 맘에들어요!");
-    AuthUser authUser = new AuthUser(userId);
+    ReviewCreateRequest request = new ReviewCreateRequest(routeId, 5, "테스트 리뷰");
 
-    User routeOwner = User.builder()
-        .id(20L)
-        .nickname("루트 유저 닉네임")
-        .build();
+    User user = User.builder().id(userId).nickname("테스트 사용자").build();
+    Route route = Route.builder().id(routeId).title("테스트 루트").build();
 
-    User reviewer = User.builder()
-        .id(userId)
-        .nickname("리뷰 유저 닉네임")
-        .build();
-
-    Route route = Route.builder()
-        .id(routeId)
-        .title("테스트 루트")
-        .description("테스트 루트입니다")
-        .user(routeOwner)
-        .build();
-
+    when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-    when(reviewRepository.isReviewExist(userId, routeId)).thenReturn(false);
+    when(reviewRepository.validateReviewCreation(userId, routeId)).thenReturn("VALID");
     when(reviewRepository.save(any(Review.class))).thenAnswer(invocation -> {
       Review review = invocation.getArgument(0);
       return Review.builder()
@@ -79,153 +65,124 @@ class ReviewServiceTest {
           .rating(review.getRating())
           .comment(review.getComment())
           .route(review.getRoute())
-          .user(reviewer) // user 설정
+          .user(review.getUser())
           .build();
     });
 
-    ReviewCreateResponse response = reviewService.createReview(request, authUser);
+    ReviewCreateResponse response = reviewService.createReview(request, userId);
 
     assertNotNull(response);
     assertEquals(routeId, response.getRouteId());
     assertEquals(5, response.getRating());
-    assertEquals("루트가 맘에들어요!", response.getComment());
-    assertEquals("리뷰 유저 닉네임", response.getNickname());
+    assertEquals("테스트 리뷰", response.getComment());
+    assertEquals("테스트 사용자", response.getNickname());
 
+    verify(userRepository, times(1)).findById(userId);
     verify(routeRepository, times(1)).findById(routeId);
-    verify(reviewRepository, times(1)).isReviewExist(userId, routeId);
+    verify(reviewRepository, times(1)).validateReviewCreation(userId, routeId);
     verify(reviewRepository, times(1)).save(any(Review.class));
   }
 
   @Test
-  @DisplayName("리뷰_등록_실패_루트_존재하지_않음")
+  @DisplayName("리뷰 등록 실패 - 루트 없음")
   void createReview_RouteNotFound() {
     Long routeId = 1L;
     Long userId = 2L;
 
-    ReviewCreateRequest request = new ReviewCreateRequest(routeId, 5, "루트가 너무 좋아요!");
-    AuthUser authUser = new AuthUser(userId);
+    ReviewCreateRequest request = new ReviewCreateRequest(routeId, 5, "테스트 리뷰");
 
-    when(routeRepository.findById(routeId)).thenReturn(Optional.empty());
+    when(reviewRepository.validateReviewCreation(userId, routeId)).thenReturn("ROUTE_NOT_FOUND");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.createReview(request, authUser);
+      reviewService.createReview(request, userId);
     });
 
     assertEquals("ROUTE#1_001", exception.getErrorCode());
-    verify(routeRepository, times(1)).findById(routeId);
-    verify(reviewRepository, never()).save(any(Review.class));
+    assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
+
+    verify(reviewRepository, times(1)).validateReviewCreation(userId, routeId);
+    verify(routeRepository, never()).findById(anyLong());
+    verify(reviewRepository, never()).save(any());
   }
 
+
   @Test
-  @DisplayName("이미_등록된_리뷰_있음")
-  void createReview_ReviewAlreadyExists() {
+  @DisplayName("리뷰 등록 실패 - 중복된 리뷰")
+  void createReview_DuplicateReview() {
     Long routeId = 1L;
-    Long userId = 10L;
+    Long userId = 2L;
 
-    ReviewCreateRequest request = new ReviewCreateRequest(routeId, 5, "루트가 맘에들어요!");
-    AuthUser authUser = new AuthUser(userId);
+    ReviewCreateRequest request = new ReviewCreateRequest(routeId, 5, "테스트 리뷰");
 
-    User owner = User.builder()
-        .id(20L)
-        .nickname("RouteOwnerNick")
-        .build();
-
-    Route route = Route.builder()
-        .id(routeId)
-        .title("테스트 루트")
-        .description("테스트 루트입니다")
-        .user(owner)
-        .build();
-
-    when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-    when(reviewRepository.isReviewExist(userId, routeId)).thenReturn(true);
+    when(reviewRepository.validateReviewCreation(userId, routeId)).thenReturn("DUPLICATE_REVIEW");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.createReview(request, authUser);
+      reviewService.createReview(request, userId);
     });
 
-    assertEquals("REVIEW_001", exception.getErrorCode());
-    verify(routeRepository, times(1)).findById(routeId);
-    verify(reviewRepository, times(1)).isReviewExist(userId, routeId);
-    verify(reviewRepository, never()).save(any(Review.class));
+    assertEquals("REVIEW#1_001", exception.getErrorCode());
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
+
+    verify(reviewRepository, times(1)).validateReviewCreation(userId, routeId);
+    verify(routeRepository, never()).findById(anyLong());
+    verify(reviewRepository, never()).save(any());
   }
 
-  // 리뷰 삭제
   @Test
-  @DisplayName("리뷰_삭제_성공")
+  @DisplayName("리뷰 삭제 성공")
   void deleteReview_Success() {
     Long reviewId = 1L;
     Long userId = 2L;
 
-    AuthUser authUser = new AuthUser(userId);
-
-    User reviewer = User.builder()
-        .id(userId)
-        .nickname("리뷰 유저 닉네임")
-        .build();
-
-    Review review = Review.builder()
-        .id(reviewId)
-        .comment("리뷰 내용")
-        .user(reviewer)
-        .build();
+    User user = User.builder().id(userId).build();
+    Review review = Review.builder().id(reviewId).user(user).build();
 
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
 
-    reviewService.deleteReview(reviewId, authUser);
+    reviewService.deleteReview(reviewId, userId);
 
     verify(reviewRepository, times(1)).findById(reviewId);
     verify(reviewRepository, times(1)).delete(review);
   }
 
   @Test
-  @DisplayName("리뷰_삭제_실패_루트_찾을수_없음")
+  @DisplayName("리뷰 삭제 실패 - 리뷰 없음")
   void deleteReview_ReviewNotFound() {
     Long reviewId = 1L;
     Long userId = 2L;
 
-    AuthUser authUser = new AuthUser(userId);
-
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.empty());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.deleteReview(reviewId, authUser);
+      reviewService.deleteReview(reviewId, userId);
     });
 
-    assertEquals("REVIEW_002", exception.getErrorCode());
+    assertEquals("REVIEW#2_001", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
+
     verify(reviewRepository, times(1)).findById(reviewId);
     verify(reviewRepository, never()).delete(any());
   }
 
   @Test
-  @DisplayName("리뷰_삭제_실패_리뷰_주인_아님")
-  void deleteReview_NotOwner() {
+  @DisplayName("리뷰 삭제 실패 - 권한 없음")
+  void deleteReview_NotAuthorized() {
     Long reviewId = 1L;
     Long userId = 2L;
     Long otherUserId = 3L;
 
-    AuthUser authUser = new AuthUser(userId);
-
-    User otherUser = User.builder()
-        .id(otherUserId)
-        .nickname("다른 유저 닉네임")
-        .build();
-
-    Review review = Review.builder()
-        .id(reviewId)
-        .comment("리뷰 내용")
-        .user(otherUser) // 작성자가 다른 유저
-        .build();
+    User otherUser = User.builder().id(otherUserId).build();
+    Review review = Review.builder().id(reviewId).user(otherUser).build();
 
     when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(review));
 
     CustomException exception = assertThrows(CustomException.class, () -> {
-      reviewService.deleteReview(reviewId, authUser);
+      reviewService.deleteReview(reviewId, userId);
     });
 
-    assertEquals("REVIEW_003", exception.getErrorCode());
+    assertEquals("REVIEW#3_001", exception.getErrorCode());
     assertEquals(HttpStatus.FORBIDDEN, exception.getHttpStatus());
+
     verify(reviewRepository, times(1)).findById(reviewId);
     verify(reviewRepository, never()).delete(any());
   }
