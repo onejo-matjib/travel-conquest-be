@@ -32,9 +32,11 @@ COUPON_006 / 해당 쿠폰의 유효기간이 지났습니다. / BAD_REQUEST
 COUPON_007 / 이미 사용한 쿠폰입니다. / BAD_REQUEST
 
 리뷰
-REVIEW_001 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
-REVIEW_002 / 해당 리뷰를 찾을 수 없습니다. / NOT_FOUND
-REVIEW_003 / 본인의 리뷰만 삭제할 수 있습니다. / FORBIDDEN
+REVIEW#1_001 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
+REVIEW#2_001 / 해당 리뷰를 찾을 수 없습니다. / NOT_FOUND
+REVIEW#3_001 / 본인의 리뷰만 삭제할 수 있습니다. / FORBIDDEN
+ROUTE#1_001 / 해당 루트를 찾을 수 없습니다. / NOT_FOUND
+USER#1_001 / 사용자를 찾을 수 없습니다. / NOT_FOUND
 
 루트
 ROUTE#1_NNN / 해당 루트를 찾을 수 없습니다. / NOT_FOUND
