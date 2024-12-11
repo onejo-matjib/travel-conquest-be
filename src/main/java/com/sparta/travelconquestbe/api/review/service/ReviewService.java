@@ -27,19 +27,19 @@ public class ReviewService {
     String validationResult = reviewRepository.validateReviewCreation(userId, request.getRouteId());
     switch (validationResult) {
       case "ROUTE_NOT_FOUND":
-        throw new CustomException("ROUTE#1_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        throw new CustomException("REVIEW#1_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
       case "DUPLICATE_REVIEW":
-        throw new CustomException("REVIEW#1_001", "이미 해당 루트에 리뷰를 작성했습니다.", HttpStatus.BAD_REQUEST);
+        throw new CustomException("REVIEW#2_001", "이미 해당 루트에 리뷰를 작성했습니다.", HttpStatus.BAD_REQUEST);
       default:
         break;
     }
 
     User user = userRepository.findById(userId)
         .orElseThrow(
-            () -> new CustomException("USER#1_001", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("REVIEW#1_002", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     Route route = routeRepository.findById(request.getRouteId())
         .orElseThrow(
-            () -> new CustomException("ROUTE#1_002", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("REVIEW#1_003", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     Review review = Review.createReview(
         request.getRating(),
@@ -54,7 +54,7 @@ public class ReviewService {
   public void deleteReview(Long id, Long userId) {
     Review review = reviewRepository.findById(id)
         .orElseThrow(
-            () -> new CustomException("REVIEW#2_001", "해당 리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("REVIEW#1_004", "해당 리뷰를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     review.validateOwner(userId);
     reviewRepository.delete(review);

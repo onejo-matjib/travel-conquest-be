@@ -3,7 +3,12 @@ package com.sparta.travelconquestbe.api.review;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.review.dto.request.ReviewCreateRequest;
 import com.sparta.travelconquestbe.api.review.dto.respones.ReviewCreateResponse;
@@ -15,6 +20,7 @@ import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,8 +28,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
-
-import java.util.Optional;
 
 class ReviewServiceTest {
 
@@ -97,14 +101,13 @@ class ReviewServiceTest {
       reviewService.createReview(request, userId);
     });
 
-    assertEquals("ROUTE#1_001", exception.getErrorCode());
+    assertEquals("REVIEW#1_001", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
 
     verify(reviewRepository, times(1)).validateReviewCreation(userId, routeId);
     verify(routeRepository, never()).findById(anyLong());
     verify(reviewRepository, never()).save(any());
   }
-
 
   @Test
   @DisplayName("리뷰 등록 실패 - 중복된 리뷰")
@@ -120,7 +123,7 @@ class ReviewServiceTest {
       reviewService.createReview(request, userId);
     });
 
-    assertEquals("REVIEW#1_001", exception.getErrorCode());
+    assertEquals("REVIEW#2_001", exception.getErrorCode());
     assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
 
     verify(reviewRepository, times(1)).validateReviewCreation(userId, routeId);
@@ -157,7 +160,7 @@ class ReviewServiceTest {
       reviewService.deleteReview(reviewId, userId);
     });
 
-    assertEquals("REVIEW#2_001", exception.getErrorCode());
+    assertEquals("REVIEW#1_004", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
 
     verify(reviewRepository, times(1)).findById(reviewId);

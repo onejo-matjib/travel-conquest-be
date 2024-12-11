@@ -1,7 +1,14 @@
 package com.sparta.travelconquestbe.api.bookmark;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
@@ -12,6 +19,8 @@ import com.sparta.travelconquestbe.domain.bookmark.repository.BookmarkRepository
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import java.util.Collections;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,10 +31,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Optional;
 
 class BookmarkServiceTest {
 
@@ -75,18 +80,19 @@ class BookmarkServiceTest {
   }
 
   @Test
-  @DisplayName("즐겨찾기 등록 실패 - 루트 존재하지않음")
+  @DisplayName("즐겨찾기 등록 실패 - 루트 존재하지 않음")
   void createBookmark_RouteNotFound() {
     Long userId = 1L;
     Long routeId = 2L;
 
-    when(bookmarkRepository.validateBookmarkCreation(userId, routeId)).thenReturn("ROUTE_NOT_FOUND");
+    when(bookmarkRepository.validateBookmarkCreation(userId, routeId)).thenReturn(
+        "ROUTE_NOT_FOUND");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       bookmarkService.createBookmark(routeId, userId);
     });
 
-    assertEquals("ROUTE#1_001", exception.getErrorCode());
+    assertEquals("BOOKMARK#1_001", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     verify(bookmarkRepository, times(1)).validateBookmarkCreation(userId, routeId);
     verify(routeRepository, never()).findById(routeId);
@@ -99,7 +105,8 @@ class BookmarkServiceTest {
     Long userId = 1L;
     Long routeId = 2L;
 
-    when(bookmarkRepository.validateBookmarkCreation(userId, routeId)).thenReturn("DUPLICATE_BOOKMARK");
+    when(bookmarkRepository.validateBookmarkCreation(userId, routeId)).thenReturn(
+        "DUPLICATE_BOOKMARK");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       bookmarkService.createBookmark(routeId, userId);
@@ -117,7 +124,7 @@ class BookmarkServiceTest {
   void getBookmarks_Success() {
     Long userId = 1L;
 
-    BookmarkListResponse response = new BookmarkListResponse(1L, 2L, "Test Route", LocalDateTime.now());
+    BookmarkListResponse response = new BookmarkListResponse(1L, 2L, "Test Route", null);
     Page<BookmarkListResponse> page = new PageImpl<>(Collections.singletonList(response));
 
     when(bookmarkRepository.getUserBookmarks(eq(userId), any(PageRequest.class))).thenReturn(page);
@@ -160,7 +167,7 @@ class BookmarkServiceTest {
       bookmarkService.deleteBookmark(bookmarkId, userId);
     });
 
-    assertEquals("BOOKMARK#1_001", exception.getErrorCode());
+    assertEquals("BOOKMARK#1_003", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     verify(bookmarkRepository, times(1)).findById(bookmarkId);
     verify(bookmarkRepository, never()).delete(any(Bookmark.class));

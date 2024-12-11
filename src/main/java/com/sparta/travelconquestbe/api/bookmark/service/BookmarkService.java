@@ -28,7 +28,7 @@ public class BookmarkService {
 
     switch (validationResult) {
       case "ROUTE_NOT_FOUND":
-        throw new CustomException("ROUTE#1_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+        throw new CustomException("BOOKMARK#1_001", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
       case "DUPLICATE_BOOKMARK":
         throw new CustomException("BOOKMARK#2_001", "이미 등록된 즐겨찾기입니다.", HttpStatus.CONFLICT);
       default:
@@ -37,7 +37,7 @@ public class BookmarkService {
 
     Route route = routeRepository.findById(routeId)
         .orElseThrow(
-            () -> new CustomException("ROUTE#1_002", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("BOOKMARK#1_002", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     Bookmark bookmark = Bookmark.createBookmark(User.builder().id(userId).build(), route);
     return BookmarkCreateResponse.from(bookmarkRepository.save(bookmark));
@@ -52,7 +52,8 @@ public class BookmarkService {
   public void deleteBookmark(Long id, Long userId) {
     Bookmark bookmark = bookmarkRepository.findById(id)
         .orElseThrow(
-            () -> new CustomException("BOOKMARK#1_001", "해당 즐겨찾기를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("BOOKMARK#1_003", "해당 즐겨찾기를 찾을 수 없습니다.",
+                HttpStatus.NOT_FOUND));
 
     if (!bookmark.getUser().getId().equals(userId)) {
       throw new CustomException("BOOKMARK#3_001", "본인의 즐겨찾기만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);

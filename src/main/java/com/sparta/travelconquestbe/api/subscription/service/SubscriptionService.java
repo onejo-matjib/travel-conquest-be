@@ -1,10 +1,13 @@
 package com.sparta.travelconquestbe.api.subscription.service;
 
 import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionCreateResponse;
+import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionListResponse;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.subscription.entity.Subscription;
 import com.sparta.travelconquestbe.domain.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +28,8 @@ public class SubscriptionService {
         subUserId);
     switch (validationResult) {
       case "USER_NOT_FOUND":
-        throw new CustomException("USER#1_001", "구독 대상 사용자가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+        throw new CustomException("SUBSCRIPTION#3_001", "구독 대상 사용자가 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND);
       case "DUPLICATE_SUBSCRIPTION":
         throw new CustomException("SUBSCRIPTION#2_001", "이미 구독 중입니다.", HttpStatus.CONFLICT);
       default:
@@ -44,8 +48,16 @@ public class SubscriptionService {
   public void deleteSubscription(Long userId, Long subUserId) {
     Subscription subscription = subscriptionRepository.findSubscription(userId, subUserId)
         .orElseThrow(() -> new CustomException(
-            "SUBSCRIPTION#3_001", "구독 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            "SUBSCRIPTION#3_002", "구독 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     subscriptionRepository.delete(subscription);
+  }
+
+  @Transactional(readOnly = true)
+  public SubscriptionListResponse searchFollowings(Long userId, Pageable pageable) {
+    Page<Subscription> subscriptions = subscriptionRepository.findAllByUserId(userId, pageable);
+    Long totalFollowings = subscriptions.getTotalElements();
+
+    return SubscriptionListResponse.from(subscriptions, totalFollowings);
   }
 }
