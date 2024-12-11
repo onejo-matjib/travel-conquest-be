@@ -1,10 +1,13 @@
 package com.sparta.travelconquestbe.api.subscription.service;
 
 import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionCreateResponse;
+import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionListResponse;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.subscription.entity.Subscription;
 import com.sparta.travelconquestbe.domain.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,5 +50,13 @@ public class SubscriptionService {
             "SUBSCRIPTION#3_001", "구독 관계를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     subscriptionRepository.delete(subscription);
+  }
+
+  @Transactional(readOnly = true)
+  public SubscriptionListResponse getFollowings(Long userId, Pageable pageable) {
+    Page<Subscription> subscriptions = subscriptionRepository.findAllByUserId(userId, pageable);
+    Long totalFollowings = subscriptionRepository.countByUserId(userId);
+
+    return SubscriptionListResponse.from(subscriptions, totalFollowings);
   }
 }
