@@ -11,7 +11,6 @@ import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
-import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +22,6 @@ public class CouponService {
 
   private final CouponRepository couponRepository;
   private final UserRepository userRepository;
-  private final Clock clock;
 
   public Page<CouponSearchResponse> searchAllCoupons(int page, int limit) {
 

@@ -20,5 +20,4 @@ public class CouponCreateResponse {
   private int count;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
-
 }
