@@ -2,7 +2,7 @@ package com.sparta.travelconquestbe.api.auth.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sparta.travelconquestbe.api.auth.dto.info.KakaoUserInfo;
+import com.sparta.travelconquestbe.api.auth.dto.info.UserInfo;
 import com.sparta.travelconquestbe.api.auth.dto.request.AuthLoginRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.auth.dto.request.SignUpAdditionalInfoRequest;
@@ -10,12 +10,15 @@ import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import com.sparta.travelconquestbe.domain.user.enums.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -44,8 +47,8 @@ public class AuthService {
   @Value("${kakao.client-secret}")
   private String clientSecret;
 
-  // 임시로 저장할 KakaoUserInfo
-  private KakaoUserInfo tempKakaoUserInfo;
+  // 임시로 저장할 UserInfo
+  private UserInfo tempUserInfo;
 
   public String signUp(AuthSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -86,7 +89,7 @@ public class AuthService {
   }
 
   public String handleKakaoLogin(String code) {
-    KakaoUserInfo kakaoUserInfo = getKakaoUserInfoFromCode(code);
+    UserInfo kakaoUserInfo = getKakaoUserInfoFromCode(code);
     Optional<User> existingUser = userRepository.findByProviderId(kakaoUserInfo.getId());
 
     if (existingUser.isPresent()) {
@@ -94,11 +97,16 @@ public class AuthService {
       return jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), user.getProviderType());
     }
 
-    tempKakaoUserInfo = kakaoUserInfo;
+    tempUserInfo = UserInfo.builder()
+        .id(kakaoUserInfo.getId())
+        .email(kakaoUserInfo.getEmail())
+        .nickname(kakaoUserInfo.getNickname())
+        .build();
+    tempUserInfo.saveProviderType("KAKAO");
     throw new CustomException("AUTH_012", "/api/users/additional-info", HttpStatus.FOUND);
   }
 
-  private KakaoUserInfo getKakaoUserInfoFromCode(String code) {
+  private UserInfo getKakaoUserInfoFromCode(String code) {
     String accessToken = getKakaoAccessToken(code);
     return getKakaoUserInfo(accessToken);
   }
@@ -119,7 +127,7 @@ public class AuthService {
     return parseAccessToken(response.getBody());
   }
 
-  private KakaoUserInfo getKakaoUserInfo(String accessToken) {
+  private UserInfo getKakaoUserInfo(String accessToken) {
     String userInfoUrl = "https://kapi.kakao.com/v2/user/me";
     HttpHeaders headers = new HttpHeaders();
     headers.setBearerAuth(accessToken);
@@ -140,32 +148,32 @@ public class AuthService {
     }
   }
 
-  private KakaoUserInfo parseUserInfo(String responseBody) {
+  private UserInfo parseUserInfo(String responseBody) {
     try {
       JsonNode jsonNode = objectMapper.readTree(responseBody);
-      Long id = jsonNode.get("id").asLong();
+      String id = jsonNode.get("id").toString();
       String email = jsonNode.path("kakao_account").path("email").asText(null);
       String nickname = jsonNode.path("properties").path("nickname").asText();
-      return new KakaoUserInfo(id, email, nickname);
+      return new UserInfo(id, email, nickname);
     } catch (Exception e) {
       logger.error("사용자 정보 파싱 실패: {}", e.getMessage());
       throw new CustomException("AUTH_014", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 
-  public String saveAdditionalInfo(SignUpAdditionalInfoRequest request) {
-    if (tempKakaoUserInfo == null) {
+  public String saveAdditionalInfo(SignUpAdditionalInfoRequest request, UserInfo tempUserInfo) {
+    if (tempUserInfo == null) {
       throw new CustomException("AUTH_016", "임시 사용자 정보가 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
     User newUser = User.builder()
         .name(request.getName())
         .birth(request.getBirth())
-        .email(tempKakaoUserInfo.getEmail())
-        .nickname(tempKakaoUserInfo.getNickname())
+        .email(tempUserInfo.getEmail())
+        .nickname(tempUserInfo.getNickname())
         .password("")
-        .providerId(tempKakaoUserInfo.getId())
-        .providerType("KAKAO")
+        .providerId(tempUserInfo.getId())
+        .providerType(tempUserInfo.getProviderType())
         .type(UserType.USER)
         .title(Title.TRAVELER)
         .build();
@@ -174,5 +182,6 @@ public class AuthService {
 
     return jwtHelper.createToken(savedUser.getId(), savedUser.getEmail(), savedUser.getType(), savedUser.getProviderType());
   }
+
 }
 
