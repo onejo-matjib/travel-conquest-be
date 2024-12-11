@@ -29,7 +29,7 @@ public class SecurityConfig {
     http
         .csrf(csrf -> csrf.disable()) // CSRF 설정 비활성화 (람다 방식)
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/users/signup", "/api/users/login/**", "/api/users/oauth/**", "/api/users/additional-info").permitAll()
+            .requestMatchers("/api/users/signup", "/api/users/login/**", "/api/users/oauth/**", "/api/users/additional-info", "/login.html", "/app.js").permitAll()
             .anyRequest().authenticated()
         )
         .oauth2Login(oauth2 -> oauth2
