@@ -66,5 +66,6 @@ ROUTE#1_001 / 해당 루트를 찾을 수 없습니다. / NOT_FOUND
 
 구독
 SUBSCRIPTION#1_001 / 본인을 구독할 수 없습니다. / BAD_REQUEST
-SUBSCRIPTION#2_002 / 이미 구독 중입니다. / CONFLICT
+SUBSCRIPTION#2_001 / 이미 구독 중입니다. / CONFLICT
+SUBSCRIPTION#3_001 / 구독 관계를 찾을 수 없습니다. / NOT_FOUND
 USER#1_001 / 구독 대상 사용자를 찾을 수 없습니다. / NOT_FOUND
