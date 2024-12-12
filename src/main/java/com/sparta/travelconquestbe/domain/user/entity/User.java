@@ -31,7 +31,7 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
-    private Long providerId;
+    private String providerId;
 
     private String providerType;
 
