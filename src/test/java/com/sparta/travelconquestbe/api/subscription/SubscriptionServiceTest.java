@@ -96,7 +96,6 @@ class SubscriptionServiceTest {
       subscriptionService.createSubscription(userId, subUserId);
     });
 
-    // 서비스 코드의 실제 에러 코드와 일치하도록 수정
     assertEquals("SUBSCRIPTION#3_001", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     assertEquals("구독 대상 사용자가 존재하지 않습니다.", exception.getErrorMessage());
@@ -160,7 +159,6 @@ class SubscriptionServiceTest {
       subscriptionService.deleteSubscription(userId, subUserId);
     });
 
-    // 서비스 코드의 실제 에러 코드와 일치하도록 수정
     assertEquals("SUBSCRIPTION#3_002", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     assertEquals("구독 관계를 찾을 수 없습니다.", exception.getErrorMessage());
@@ -223,7 +221,6 @@ class SubscriptionServiceTest {
       subscriptionService.deleteSubscription(userId, userId);
     });
 
-    // 변경된 예외 코드로 수정
     assertEquals("SUBSCRIPTION#3_002", exception.getErrorCode());
     assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
     assertEquals("구독 관계를 찾을 수 없습니다.", exception.getErrorMessage());
@@ -237,10 +234,45 @@ class SubscriptionServiceTest {
     Long userId = 1L;
 
     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-      PageRequest invalidPageRequest = PageRequest.of(-1, 10); // 음수 페이지 요청
+      PageRequest invalidPageRequest = PageRequest.of(-1, 10);
       subscriptionService.searchFollowings(userId, invalidPageRequest);
     });
 
     assertEquals("Page index must not be less than zero", exception.getMessage());
+  }
+
+  @Test
+  @DisplayName("내 구독자 목록 조회 성공")
+  void searchMyFollowers_Success() {
+    Long userId = 1L;
+    PageRequest pageable = PageRequest.of(0, 10);
+
+    Subscription subscription1 = Subscription.builder()
+        .id(1L)
+        .userId(2L)
+        .subUserId(userId)
+        .build();
+
+    Subscription subscription2 = Subscription.builder()
+        .id(2L)
+        .userId(3L)
+        .subUserId(userId)
+        .build();
+
+    Page<Subscription> mockPage = new PageImpl<>(List.of(subscription1, subscription2), pageable,
+        2);
+
+    when(subscriptionRepository.findAllBySubUserId(userId, pageable)).thenReturn(mockPage);
+
+    SubscriptionListResponse response = subscriptionService.searchFollowers(userId, pageable);
+
+    assertNotNull(response);
+    assertEquals(2, response.getTotalFollowings());
+    assertEquals(2, response.getFollowings().size());
+
+    assertEquals(1L, response.getFollowings().get(0).getId());
+    assertEquals(2L, response.getFollowings().get(1).getId());
+
+    verify(subscriptionRepository, times(1)).findAllBySubUserId(userId, pageable);
   }
 }
