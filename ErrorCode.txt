@@ -8,7 +8,7 @@ USER_003 / 비밀번호가 일치하지 않습니다. / BAD_REQUEST
 USER_004 / 유효하지 않은 사용자 등급 요청입니다. / BAD_REQUEST
 
 인증
-AUTH_001 / 유효하지 않은 인증 토큰입니다. / UNAUTHORIZED
+AUTH#1_001 / 유효하지 않은 인증 토큰입니다. / UNAUTHORIZED
 AUTH_002 / 해당 리소스에 접근할 권한이 없습니다. / FORBIDDEN
 AUTH_003 / 인증 토큰이 만료되었습니다. 다시 로그인 해주세요. / UNAUTHORIZED
 
