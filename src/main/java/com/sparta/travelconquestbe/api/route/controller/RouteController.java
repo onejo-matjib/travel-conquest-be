@@ -9,6 +9,7 @@ import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationServic
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.domain.route.enums.RouteSort;
+import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
