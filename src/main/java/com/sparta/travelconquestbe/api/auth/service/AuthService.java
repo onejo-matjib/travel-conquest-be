@@ -65,7 +65,7 @@ public class AuthService {
         .build();
 
     userRepository.save(user);
-    return jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), user.getProviderType());
+    return jwtHelper.createToken(user);
   }
 
   public String login (AuthLoginRequest request) {
@@ -76,7 +76,7 @@ public class AuthService {
       throw new CustomException("AUTH_030", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
     }
 
-    return jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), user.getProviderType());
+    return jwtHelper.createToken(user);
   }
 
   public String createKakaoLoginUrl() {
@@ -92,7 +92,7 @@ public class AuthService {
 
     if (existingUser.isPresent()) {
       User user = existingUser.get();
-      String jwtToken = jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), user.getProviderType());
+      String jwtToken = jwtHelper.createToken(user);
       return KakaoLoginResult.existingUser(jwtToken);
     } else {
       kakaoUserInfo.saveProviderType("KAKAO");
@@ -175,7 +175,7 @@ public class AuthService {
 
     User savedUser = userRepository.save(newUser);
 
-    return jwtHelper.createToken(savedUser.getId(), savedUser.getEmail(), savedUser.getType(), savedUser.getProviderType());
+    return jwtHelper.createToken(savedUser);
   }
 
 }

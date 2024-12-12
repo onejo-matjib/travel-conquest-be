@@ -36,7 +36,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
 
     if (optionalUser.isPresent()) {
       User user = optionalUser.get();
-      String token = jwtHelper.createToken(user.getId(), user.getEmail(), user.getType(), providerType);
+      String token = jwtHelper.createToken(user);
 
       response.setHeader("Authorization", "Bearer " + token);
       response.setContentType("text/plain; charset=UTF-8");

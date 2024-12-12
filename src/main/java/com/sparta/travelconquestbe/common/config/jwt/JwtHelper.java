@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.common.config.jwt;
 
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import io.jsonwebtoken.Claims;
@@ -37,11 +38,15 @@ public class JwtHelper {
   }
 
   // JWT 토큰 생성 (일반 로그인 및 소셜 로그인 공통 사용)
-  public String createToken(Long userId, String email, UserType userType, String providerType) {
-    Claims claims = Jwts.claims().setSubject(email);
-    claims.put("userId", userId);
-    claims.put("providerType", providerType);
-    claims.put("userType", userType);
+  public String createToken(User user) {
+    Claims claims = Jwts.claims().setSubject(user.getEmail());
+    claims.put("id", user.getId());
+    claims.put("name", user.getName());
+    claims.put("nickname", user.getNickname());
+    claims.put("providerType", user.getProviderType());
+    claims.put("birth", user.getBirth());
+    claims.put("userType", user.getType());
+    claims.put("title", user.getTitle());
 
     Date now = new Date();
     Date validity = new Date(now.getTime() + expiration);
