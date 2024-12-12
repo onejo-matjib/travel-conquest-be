@@ -1,0 +1,255 @@
+/* 공통 스타일 */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 600px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    position: relative; /* 퇴장 버튼을 위치시키기 위해 필요 */
+}
+
+/* 제목 스타일 */
+h1, h2 {
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #4caf50;
+}
+
+/* 버튼 스타일 */
+.button {
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+.exit-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #f44336;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.exit-button:hover {
+    background-color: #e53935;
+}
+
+/* 채팅 메시지 컨테이너 */
+.chat-container {
+    height: 300px;
+    overflow-y: scroll;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+/* 메시지 스타일 */
+.message {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.message-left {
+    text-align: left;
+}
+
+.message-right {
+    text-align: right;
+}
+
+/* 폼 스타일 */
+.chat-form {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.chat-form input {
+    width: 80%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.chat-form button {
+    width: 18%;
+    padding: 10px;
+    font-size: 14px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.chat-form button:hover {
+    background-color: #45a049;
+}
+
+/* 추가적인 스타일 */
+.checkbox-label {
+    display: inline-flex; /* 텍스트와 체크박스를 가로로 배치 */
+    align-items: center; /* 체크박스와 텍스트를 세로로 정렬 */
+    margin-bottom: 10px;
+    gap: 10px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer; /* 클릭할 수 있는 커서 */
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 16px; /* 체크박스 크기 조정 */
+    height: 16px; /* 체크박스 크기 조정 */
+    accent-color: #4caf50; /* 체크박스 색상 */
+    margin: 0; /* 기본 여백 제거 */
+}
+
+/* 비밀번호 입력 필드 스타일 */
+#roomPassword {
+    margin-top: 10px;
+}
+
+#roomPassword:disabled {
+    background-color: #e0e0e0;
+}
+
+/* 테이블 스타일 */
+.room-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.room-table th,
+.room-table td {
+    padding: 15px;
+    text-align: center;
+    border: 1px solid #ddd;
+    word-wrap: break-word; /* 긴 텍스트가 셀 밖으로 넘어가지 않도록 설정 */
+    overflow-wrap: break-word; /* 텍스트가 셀 밖으로 넘치지 않게 처리 */
+}
+
+.room-table th {
+    background-color: #4caf50;
+    color: white;
+}
+
+.room-table td {
+    background-color: #f9f9f9;
+    font-size: 14px;
+}
+
+.room-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.room-table td .enter-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.room-table td .enter-button:hover {
+    background-color: #45a049;
+}
+/* 채팅방 생성 폼 스타일 */
+#createRoomForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#roomName,
+#maxUsers,
+#roomPassword {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+#roomName:focus,
+#maxUsers:focus,
+#roomPassword:focus {
+    border-color: #4caf50;
+    outline: none;
+}
+
+#hasPassword {
+    margin-right: 10px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+#roomPassword:disabled {
+    background-color: #f4f4f9;
+    cursor: not-allowed;
+}
+
+/* 버튼 스타일 */
+#createRoomForm button {
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+#createRoomForm button:hover {
+    background-color: #45a049;
+}
