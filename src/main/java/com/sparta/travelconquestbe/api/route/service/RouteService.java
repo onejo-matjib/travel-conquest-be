@@ -2,10 +2,12 @@ package com.sparta.travelconquestbe.api.route.service;
 
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
 import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
+import com.sparta.travelconquestbe.domain.route.enums.RouteSort;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.routelocation.entity.RouteLocation;
 import com.sparta.travelconquestbe.domain.routelocation.repository.RouteLocationRepository;
@@ -13,6 +15,9 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +41,7 @@ public class RouteService {
         userRepository
             .findById(userId)
             .orElseThrow(
-                () -> new CustomException("ROUTE#2_001", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                () -> new CustomException("ROUTE#1_001", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     Route route =
         Route.builder()
             .title(routeCreateRequest.getTitle())
@@ -72,19 +77,25 @@ public class RouteService {
         .build();
   }
 
+  @Transactional(readOnly = true)
+  public Page<RouteSearchAllResponse> routeSearchAll(int page, int limit, RouteSort sort) {
+    Pageable pageable = PageRequest.of(page - 1, limit);
+    return routeRepository.routeSearchAll(pageable, sort);
+  }
+
   @Transactional
   public void routeDelete(Long id, Long userId) {
     User user =
         userRepository
             .findById(userId)
             .orElseThrow(
-                () -> new CustomException("ROUTE#2_002", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                () -> new CustomException("ROUTE#1_002", "사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     Route route =
         routeRepository
             .findById(id)
             .orElseThrow(
                 () ->
-                    new CustomException("ROUTE#1_002", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                    new CustomException("ROUTE#1_003", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
     route.validCreatorOrAdmin(user.getId(), user.getType());
     List<String> locationsMediaUrls =
         route.getLocations().stream().map(RouteLocation::getMediaUrl).toList();
