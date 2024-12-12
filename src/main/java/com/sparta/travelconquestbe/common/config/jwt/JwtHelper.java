@@ -1,6 +1,9 @@
 package com.sparta.travelconquestbe.common.config.jwt;
 
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -35,11 +38,15 @@ public class JwtHelper {
   }
 
   // JWT 토큰 생성 (일반 로그인 및 소셜 로그인 공통 사용)
-  public String createToken(Long userId, String email, UserType userType, String providerType) {
-    Claims claims = Jwts.claims().setSubject(email);
-    claims.put("userId", userId);
-    claims.put("providerType", providerType);
-    claims.put("userType", userType);
+  public String createToken(User user) {
+    Claims claims = Jwts.claims().setSubject(user.getEmail());
+    claims.put("id", user.getId());
+    claims.put("name", user.getName());
+    claims.put("nickname", user.getNickname());
+    claims.put("providerType", user.getProviderType());
+    claims.put("birth", user.getBirth());
+    claims.put("userType", user.getType());
+    claims.put("title", user.getTitle());
 
     Date now = new Date();
     Date validity = new Date(now.getTime() + expiration);
@@ -50,22 +57,6 @@ public class JwtHelper {
         .setExpiration(validity)
         .signWith(SignatureAlgorithm.HS256, secretKey)
         .compact();
-  }
-
-  public String getUserEmailFromToken(String token) {
-    try {
-      return getClaims(token).getSubject();
-    } catch (Exception e) {
-      throw new CustomException("AUTH_001", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
-    }
-  }
-
-  public Long getUserIdFromToken(String token) {
-    try {
-      return getClaims(token).get("userId", Long.class);
-    } catch (Exception e) {
-      throw new CustomException("AUTH_009", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
-    }
   }
 
   public boolean validateToken(String token) {
@@ -95,9 +86,24 @@ public class JwtHelper {
     }
   }
 
-  public String getEmailFromToken(String token) {
-    Claims claims = validateAndGetClaims(token);
-    return claims.getSubject();
+  public AuthUserInfo getAuthUserInfoFromToken(String token) {
+    try {
+      Claims claims = getClaims(token);
+      Long id = claims.get("id", Long.class);
+      String name = claims.get("name", String.class);
+      String nickname = claims.get("nickname", String.class);
+      String email = claims.getSubject();
+      String providerType = claims.get("providerType", String.class);
+      String birth = claims.get("birth", String.class);
+      String userTypeStr = claims.get("userType", String.class);
+      UserType type = UserType.valueOf(userTypeStr);
+      String titleStr = claims.get("title", String.class);
+      Title title = Title.valueOf(titleStr);
+
+      return new AuthUserInfo(id, name, nickname, email, providerType, birth, type, title);
+    } catch (Exception e) {
+      throw new CustomException("AUTH#1_001", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+    }
   }
 
   public void storeRefreshToken(String userId, String refreshToken) {

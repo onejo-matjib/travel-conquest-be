@@ -8,17 +8,20 @@ USER_003 / 비밀번호가 일치하지 않습니다. / BAD_REQUEST
 USER_004 / 유효하지 않은 사용자 등급 요청입니다. / BAD_REQUEST
 
 인증
-AUTH_001 / 유효하지 않은 인증 토큰입니다. / UNAUTHORIZED
-AUTH_002 / 해당 리소스에 접근할 권한이 없습니다. / FORBIDDEN
-AUTH_003 / 인증 토큰이 만료되었습니다. 다시 로그인 해주세요. / UNAUTHORIZED
+AUTH#1_001 / 에러 메시지 / UNAUTHORIZED
+AUTH#2_002 / 에러 메시지 / FORBIDDEN
+AUTH#3_003 / 에러 메시지 / UNAUTHORIZED
+AUTH#4_000 / 에러 메시지 / NOT_FOUND
 
 신고
 REPORT_001 / 유효하지 않은 신고 유형입니다. / BAD_REQUEST
 REPORT_002 / 신고할 대상을 찾을 수 없습니다. / NOT_FOUND
 
 관리자
-ADMIN_001 / 관리자 권한이 없습니다. / FORBIDDEN
+CustomException("ADMIN#1_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
 ADMIN_002 / 사용자 등급 변경 오류. / BAD_REQUEST
+CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
+CustomException("ADMIN#4_001", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
 
 쿠폰
 COUPON#1_NNN / 해당 쿠폰을 저장할 수 없습니다. / BAD_REQUEST

@@ -1,8 +1,11 @@
 package com.sparta.travelconquestbe.common.resolver;
 
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.enums.Title;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
@@ -20,7 +23,8 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
 
   @Override
   public boolean supportsParameter(MethodParameter parameter) {
-    return parameter.hasParameterAnnotation(AuthUser.class);
+    return parameter.hasParameterAnnotation(AuthUser.class) &&
+        parameter.getParameterType().equals(AuthUserInfo.class);
   }
 
   @Override
@@ -40,7 +44,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
     String token = authorizationHeader.substring(7);
 
     try {
-      return jwtHelper.getUserIdFromToken(token);
+      return jwtHelper.getAuthUserInfoFromToken(token);
     } catch (CustomException e) {
       throw new CustomException("AUTH_005", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
     }

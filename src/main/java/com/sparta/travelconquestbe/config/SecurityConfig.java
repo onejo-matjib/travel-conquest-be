@@ -29,7 +29,9 @@ public class SecurityConfig {
     http
         .csrf(csrf -> csrf.disable()) // CSRF 설정 비활성화 (람다 방식)
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/users/signup", "/api/users/login/**", "/api/users/oauth/**", "/api/users/additional-info", "/login.html", "/app.js").permitAll()
+            .requestMatchers("/api/users/signup", "/api/users/login/**", "/api/users/oauth/**",
+                "/api/users/additional-info", "/login.html", "/app.js", "/api/admins/**")
+            .permitAll()
             .anyRequest().authenticated()
         )
         .oauth2Login(oauth2 -> oauth2
@@ -39,12 +41,14 @@ public class SecurityConfig {
                 .userService(customOAuth2UserService)
             )
         )
-        .addFilterBefore(new JwtAuthenticationFilter(jwtHelper), UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(new JwtAuthenticationFilter(jwtHelper),
+            UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+      throws Exception {
     return configuration.getAuthenticationManager();
   }
 
