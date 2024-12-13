@@ -3,6 +3,7 @@ package com.sparta.travelconquestbe.domain.coupon.entity;
 import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,7 +51,7 @@ public class Coupon extends TimeStampCreateUpdate {
   @Column(nullable = false)
   private int count;
 
-  @OneToMany(mappedBy = "coupon")
+  @OneToMany(mappedBy = "coupon", cascade = CascadeType.REMOVE)
   @Column(nullable = false)
   private List<MyCoupon> myCoupons;
 

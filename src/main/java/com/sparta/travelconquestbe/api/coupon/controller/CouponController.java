@@ -39,7 +39,7 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
-  @PostMapping
+  @PostMapping("/admin")
   public ResponseEntity<CouponCreateResponse> createCoupon(
       @Valid @RequestBody CouponCreateRequest request,
       @AuthUser AuthUserInfo user
@@ -48,12 +48,12 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/{id}")
-  public ResponseEntity<String> deleteCoupon(@PathVariable Long id,
+  @DeleteMapping("/{id}/admin")
+  public ResponseEntity<String> deleteCoupon(
+      @PathVariable Long id,
       @AuthUser AuthUserInfo user
   ) {
     couponService.deleteCounpon(id, user);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).body("해당 쿠폰이 삭제되었습니다.");
   }
-
 }

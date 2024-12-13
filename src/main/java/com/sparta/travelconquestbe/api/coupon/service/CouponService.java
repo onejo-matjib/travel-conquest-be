@@ -6,6 +6,7 @@ import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class CouponService {
         Coupon.builder()
             .name(request.getName())
             .description(request.getDescription())
-            .type(request.getType())
+            .type(CouponType.NORMAL)
             .discountAmount(request.getDiscountAmount())
             .validUntil(request.getValidUntil())
             .count(request.getCount())
@@ -48,7 +49,7 @@ public class CouponService {
     return CouponCreateResponse.builder()
         .id(coupon.getId())
         .name(coupon.getName())
-        .descriotion(coupon.getDescription())
+        .description(coupon.getDescription())
         .type(coupon.getType())
         .discountAmount(coupon.getDiscountAmount())
         .validUntil(coupon.getValidUntil())
