@@ -44,8 +44,8 @@ public class CouponController {
       @Valid @RequestBody CouponCreateRequest request,
       @AuthUser AuthUserInfo user
   ) {
-    CouponCreateResponse response = couponService.createCoupon(request, user);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    couponService.createCoupon(request, user);
+    return ResponseEntity.noContent().build();
   }
 
   @DeleteMapping("/admins/coupons/{id}")
