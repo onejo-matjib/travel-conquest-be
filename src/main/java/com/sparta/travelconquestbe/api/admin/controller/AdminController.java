@@ -86,7 +86,7 @@ public class AdminController {
       @PathVariable Long id,
       @AuthUser AuthUserInfo user
   ) {
-    adminService.deleteCounpon(id, user);
+    adminService.deleteCoupon(id, user);
     return ResponseEntity.noContent().build();
   }
 }

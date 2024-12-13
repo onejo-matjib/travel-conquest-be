@@ -157,7 +157,7 @@ public class AdminService {
   }
 
   @Transactional
-  public void deleteCounpon(Long id, AuthUserInfo userInfo) {
+  public void deleteCoupon(Long id, AuthUserInfo userInfo) {
     if (!(userInfo.getType().equals(UserType.ADMIN))) {
       throw new CustomException("COUPON#3_003",
           "해당 리소스에 접근할 권한이 없습니다.",
