@@ -67,7 +67,7 @@ public class MyCouponService {
           HttpStatus.CONFLICT);
     }
 
-    // 쿠폰 코드 발급 
+    // 쿠폰 코드 발급
     String couponCode = UUID.randomUUID().toString();
     User savedUser = userRepository.findById(userInfo.getId()).orElseThrow(
         () -> new CustomException("COUPON#2_002",
