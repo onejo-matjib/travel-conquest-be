@@ -48,7 +48,7 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/admins/coupons/{id}/")
+  @DeleteMapping("/admins/coupons/{id}")
   public ResponseEntity<String> deleteCoupon(
       @PathVariable Long id,
       @AuthUser AuthUserInfo user
