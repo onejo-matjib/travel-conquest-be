@@ -7,14 +7,13 @@ import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
-import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
-import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +56,21 @@ public class CouponService {
         .createdAt(coupon.getCreatedAt())
         .updatedAt(coupon.getUpdatedAt())
         .build();
+  }
+
+  @Transactional
+  public void deleteCounpon(Long id, AuthUserInfo user) {
+    if (!(user.getType().equals(UserType.ADMIN))) {
+      throw new CustomException("COUPON#3_003",
+          "해당 리소스에 접근할 권한이 없습니다.",
+          HttpStatus.FORBIDDEN);
+    }
+
+    Coupon coupon = couponRepository.findById(id).orElseThrow
+        (() -> new CustomException("COUPON#2_004",
+            "해당 쿠폰이 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND));
+    couponRepository.delete(coupon);
   }
 }
 
