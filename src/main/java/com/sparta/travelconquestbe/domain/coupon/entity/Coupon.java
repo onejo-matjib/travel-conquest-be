@@ -55,7 +55,7 @@ public class Coupon extends TimeStampCreateUpdate {
   @Column(nullable = false)
   private List<MyCoupon> myCoupons;
 
-  public void saveCoupon() {
+  public void decrementCoupon() {
     this.count -= 1;
   }
 }

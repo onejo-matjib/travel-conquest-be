@@ -35,7 +35,7 @@ public class MyCouponService {
     // 유저 권한 확인
     if (userInfo.getType().equals(UserType.USER)) {
       throw new CustomException("COUPON#3_002",
-          "등업된 사용자가 아닙니다.",
+          "인증된 사용자가 아닙니다.",
           HttpStatus.FORBIDDEN);
     }
 
@@ -60,8 +60,7 @@ public class MyCouponService {
 
     // 프리미엄 쿠폰 저장 시 유저 등급 확인
     if (coupon.getType().equals(CouponType.PREMIUM)
-        && !(userInfo.getTitle().equals(Title.CONQUEROR) || userInfo.getType()
-        .equals(UserType.ADMIN))) {
+        && !(userInfo.getTitle().equals(Title.CONQUEROR))) {
       throw new CustomException("COUPON#4_003 ",
           "정복자 등급만 등록할 수 있는 쿠폰입니다.",
           HttpStatus.CONFLICT);
@@ -69,30 +68,30 @@ public class MyCouponService {
 
     // 쿠폰 코드 발급
     String couponCode = UUID.randomUUID().toString();
-    User savedUser = userRepository.findById(userInfo.getId()).orElseThrow(
-        () -> new CustomException("COUPON#2_002",
-            "해당 유저가 존재하지 않습니다",
-            HttpStatus.NOT_FOUND));
+
+    // 유저 프록시 객체
+    User referenceUser = userRepository.getReferenceById(userInfo.getId());
 
     // 쿠폰 저장
     MyCoupon myCoupon =
         MyCoupon.builder()
             .code(couponCode)
             .status(UseStatus.AVAILABLE)
-            .user(savedUser)
+            .user(referenceUser)
             .coupon(coupon)
             .build();
-    coupon.saveCoupon();
+    coupon.decrementCoupon();
     myCouponRepository.save(myCoupon);
+    Coupon associatedCoupon = myCoupon.getCoupon();
 
     return MyCouponSaveResponse.builder()
-        .id(myCoupon.getId())
-        .name(myCoupon.getCoupon().getName())
-        .description(myCoupon.getCoupon().getDescription())
+        .id(associatedCoupon.getId())
+        .name(associatedCoupon.getName())
+        .description(associatedCoupon.getDescription())
         .code(myCoupon.getCode())
         .status(myCoupon.getStatus())
-        .discountAmount(myCoupon.getCoupon().getDiscountAmount())
-        .validUntil(myCoupon.getCoupon().getValidUntil())
+        .discountAmount(associatedCoupon.getDiscountAmount())
+        .validUntil(associatedCoupon.getValidUntil())
         .createdAt(myCoupon.getCreatedAt())
         .build();
   }

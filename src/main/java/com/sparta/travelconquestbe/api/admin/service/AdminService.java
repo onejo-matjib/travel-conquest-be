@@ -5,7 +5,15 @@ import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
+import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
+import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
+import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
+import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
@@ -23,6 +31,7 @@ public class AdminService {
   private final UserRepository userRepository;
   private final JwtHelper jwtHelper;
   private final PasswordEncoder passwordEncoder;
+  private final CouponRepository couponRepository;
 
   public void signUp(AdminSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -113,5 +122,52 @@ public class AdminService {
         .updatedAt(user.getUpdatedAt())
         .deletedAt(user.getDeletedAt())
         .build();
+  }
+
+  public CouponCreateResponse createCoupon(CouponCreateRequest request, AuthUserInfo userInfo) {
+
+    if (!(userInfo.getType().equals(UserType.ADMIN))) {
+      throw new CustomException("COUPON#3_001",
+          "해당 리소스에 접근할 권한이 없습니다.",
+          HttpStatus.FORBIDDEN);
+    }
+
+    Coupon coupon =
+        Coupon.builder()
+            .name(request.getName())
+            .description(request.getDescription())
+            .type(CouponType.valueOf(request.getType()))
+            .discountAmount(request.getDiscountAmount())
+            .validUntil(request.getValidUntil())
+            .count(request.getCount())
+            .build();
+    couponRepository.save(coupon);
+
+    return CouponCreateResponse.builder()
+        .id(coupon.getId())
+        .name(coupon.getName())
+        .description(coupon.getDescription())
+        .type(coupon.getType())
+        .discountAmount(coupon.getDiscountAmount())
+        .validUntil(coupon.getValidUntil())
+        .count(coupon.getCount())
+        .createdAt(coupon.getCreatedAt())
+        .updatedAt(coupon.getUpdatedAt())
+        .build();
+  }
+
+  @Transactional
+  public void deleteCounpon(Long id, AuthUserInfo userInfo) {
+    if (!(userInfo.getType().equals(UserType.ADMIN))) {
+      throw new CustomException("COUPON#3_003",
+          "해당 리소스에 접근할 권한이 없습니다.",
+          HttpStatus.FORBIDDEN);
+    }
+
+    Coupon coupon = couponRepository.findById(id).orElseThrow
+        (() -> new CustomException("COUPON#2_003",
+            "해당 쿠폰이 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND));
+    couponRepository.delete(coupon);
   }
 }

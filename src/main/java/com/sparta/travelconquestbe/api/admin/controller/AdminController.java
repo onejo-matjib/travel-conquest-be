@@ -5,6 +5,9 @@ import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminUpdateUserRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.api.admin.service.AdminService;
+import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
+import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
+import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -17,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -67,4 +72,21 @@ public class AdminController {
     return ResponseEntity.ok(response);
   }
 
+  @PostMapping("/admins/coupons")
+  public ResponseEntity<CouponCreateResponse> createCoupon(
+      @Valid @RequestBody CouponCreateRequest request,
+      @AuthUser AuthUserInfo user
+  ) {
+    CouponCreateResponse response = adminService.createCoupon(request, user);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+  }
+
+  @DeleteMapping("/admins/coupons/{id}")
+  public ResponseEntity<String> deleteCoupon(
+      @PathVariable Long id,
+      @AuthUser AuthUserInfo user
+  ) {
+    adminService.deleteCounpon(id, user);
+    return ResponseEntity.noContent().build();
+  }
 }
