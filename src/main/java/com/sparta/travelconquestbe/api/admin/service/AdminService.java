@@ -24,7 +24,7 @@ public class AdminService {
 
   public void signUp(AuthSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-      throw new CustomException("USER#3_001", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
+      throw new CustomException("ADMIN#4_001", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
     }
 
     User adminUser = User.builder()
@@ -46,11 +46,11 @@ public class AdminService {
         .orElseThrow(() -> new CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
 
     if(!UserType.ADMIN.equals(user.getType())) {
-      throw new CustomException("ADMIN#1_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("ADMIN#2_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
     }
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-      throw new CustomException("ADMIN#4_001", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("ADMIN#1_001", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
     }
 
     return jwtHelper.createToken(user);

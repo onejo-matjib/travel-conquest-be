@@ -76,7 +76,7 @@ public class AuthController {
     UserInfo tempUserInfo = (UserInfo) httpRequest.getSession().getAttribute("tempUserInfo");
 
     if (tempUserInfo == null) {
-      throw new CustomException("AUTH#1_033", "임시 사용자 정보가 없습니다.", HttpStatus.NOT_FOUND);
+      throw new CustomException("AUTH#3_001", "임시 사용자 정보가 없습니다.", HttpStatus.NOT_FOUND);
     }
 
     try {

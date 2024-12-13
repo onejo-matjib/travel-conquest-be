@@ -29,7 +29,7 @@ public class AdminController {
       @AuthUser AuthUserInfo user) {
 
     if (!UserType.ADMIN.equals(user.getType())) {
-      throw new CustomException("ADMIN#1_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("ADMIN#2_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
     }
 
     adminService.signUp(request);

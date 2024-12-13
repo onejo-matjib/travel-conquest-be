@@ -38,7 +38,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
     String authorizationHeader = request.getHeader("Authorization");
 
     if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-      throw new CustomException("AUTH_004", "Authorization 헤더가 누락되었거나 잘못되었습니다.", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("AUTH#1_006", "Authorization 헤더가 누락되었거나 잘못되었습니다.", HttpStatus.UNAUTHORIZED);
     }
 
     String token = authorizationHeader.substring(7);
@@ -46,7 +46,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
     try {
       return jwtHelper.getAuthUserInfoFromToken(token);
     } catch (CustomException e) {
-      throw new CustomException("AUTH_005", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("AUTH#1_007", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
     }
   }
 }
