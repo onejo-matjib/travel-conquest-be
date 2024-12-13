@@ -59,9 +59,9 @@ function enterRoom(roomId, hasPassword) {
     if (hasPassword) {
         const password = prompt('비밀번호를 입력하세요');
         if (password) {
-            window.location.href = `/chat.html?roomId=${roomId}&password=${password}`;
+            window.location.href = `/chatroom.html?roomId=${roomId}&password=${password}`;
         }
     } else {
-        window.location.href = `/chat.html?roomId=${roomId}`;
+        window.location.href = `/chatroom.html?roomId=${roomId}`;
     }
 }
