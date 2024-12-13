@@ -1,8 +1,10 @@
 package com.sparta.travelconquestbe.domain.user.entity;
 
+import com.sparta.travelconquestbe.common.entity.TimeStampAll;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User extends TimeStampAll {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -13,14 +13,13 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class TimeStampAll {
     @CreatedDate
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedDate
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @Column
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime deletedAt;
 }
