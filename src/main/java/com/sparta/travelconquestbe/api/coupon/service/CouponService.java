@@ -39,7 +39,7 @@ public class CouponService {
         Coupon.builder()
             .name(request.getName())
             .description(request.getDescription())
-            .type(CouponType.NORMAL)
+            .type(CouponType.valueOf(request.getType()))
             .discountAmount(request.getDiscountAmount())
             .validUntil(request.getValidUntil())
             .count(request.getCount())

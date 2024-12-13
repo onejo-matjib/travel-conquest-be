@@ -39,7 +39,7 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
-  @PostMapping("/admin")
+  @PostMapping("/admins")
   public ResponseEntity<CouponCreateResponse> createCoupon(
       @Valid @RequestBody CouponCreateRequest request,
       @AuthUser AuthUserInfo user
@@ -48,7 +48,7 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/{id}/admin")
+  @DeleteMapping("/{id}/admins")
   public ResponseEntity<String> deleteCoupon(
       @PathVariable Long id,
       @AuthUser AuthUserInfo user
