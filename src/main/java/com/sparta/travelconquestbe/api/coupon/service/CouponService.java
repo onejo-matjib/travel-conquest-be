@@ -26,9 +26,9 @@ public class CouponService {
     return couponRepository.searchAllCoupons(PageRequest.of(page - 1, limit));
   }
 
-  public CouponCreateResponse createCoupon(CouponCreateRequest request, AuthUserInfo user) {
+  public CouponCreateResponse createCoupon(CouponCreateRequest request, AuthUserInfo userInfo) {
 
-    if (!(user.getType().equals(UserType.ADMIN))) {
+    if (!(userInfo.getType().equals(UserType.ADMIN))) {
       throw new CustomException("COUPON#3_001",
           "해당 리소스에 접근할 권한이 없습니다.",
           HttpStatus.FORBIDDEN);
@@ -59,15 +59,15 @@ public class CouponService {
   }
 
   @Transactional
-  public void deleteCounpon(Long id, AuthUserInfo user) {
-    if (!(user.getType().equals(UserType.ADMIN))) {
+  public void deleteCounpon(Long id, AuthUserInfo userInfo) {
+    if (!(userInfo.getType().equals(UserType.ADMIN))) {
       throw new CustomException("COUPON#3_003",
           "해당 리소스에 접근할 권한이 없습니다.",
           HttpStatus.FORBIDDEN);
     }
 
     Coupon coupon = couponRepository.findById(id).orElseThrow
-        (() -> new CustomException("COUPON#2_004",
+        (() -> new CustomException("COUPON#2_003",
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
     couponRepository.delete(coupon);
