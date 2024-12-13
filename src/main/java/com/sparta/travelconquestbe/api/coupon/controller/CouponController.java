@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/coupons")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Validated
 public class CouponController {
 
   private final CouponService couponService;
 
-  @GetMapping
+  @GetMapping("/coupons")
   public ResponseEntity<Page<CouponSearchResponse>> searchAllCoupons(
       @Positive @RequestParam(defaultValue = "1", value = "page") int page,
       @Positive @RequestParam(defaultValue = "10", value = "limit") int limit
@@ -39,7 +39,7 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
-  @PostMapping("/admins")
+  @PostMapping("/admins/coupons")
   public ResponseEntity<CouponCreateResponse> createCoupon(
       @Valid @RequestBody CouponCreateRequest request,
       @AuthUser AuthUserInfo user
@@ -48,7 +48,7 @@ public class CouponController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/{id}/admins")
+  @DeleteMapping("/admins/coupons/{id}/")
   public ResponseEntity<String> deleteCoupon(
       @PathVariable Long id,
       @AuthUser AuthUserInfo user
