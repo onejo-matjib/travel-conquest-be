@@ -80,7 +80,7 @@ public class MyCouponService {
             .user(referenceUser)
             .coupon(coupon)
             .build();
-    coupon.decrementCoupon();
+    coupon.decrementCount();
     myCouponRepository.save(myCoupon);
     Coupon associatedCoupon = myCoupon.getCoupon();
 

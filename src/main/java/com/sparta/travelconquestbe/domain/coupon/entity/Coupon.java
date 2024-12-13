@@ -56,7 +56,7 @@ public class Coupon extends TimeStampCreateUpdate {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "coupon", cascade = CascadeType.REMOVE, orphanRemoval = true)
   private final List<MyCoupon> myCoupons = new ArrayList<>();
 
-  public void decrementCoupon() {
+  public void decrementCount() {
     this.count -= 1;
   }
 }
