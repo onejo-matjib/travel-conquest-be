@@ -8,12 +8,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -51,9 +53,8 @@ public class Coupon extends TimeStampCreateUpdate {
   @Column(nullable = false)
   private int count;
 
-  @OneToMany(mappedBy = "coupon", cascade = CascadeType.REMOVE)
-  @Column(nullable = false)
-  private List<MyCoupon> myCoupons;
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "coupon", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  private final List<MyCoupon> myCoupons = new ArrayList<>();
 
   public void decrementCoupon() {
     this.count -= 1;
