@@ -65,7 +65,7 @@ public class AdminService {
 
     User user = userRepository.findById(userId)
         .orElseThrow(
-            () -> new CustomException("ADMIN#_000", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("ADMIN#3_003", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     String deletedNickname = "delete_" + user.getNickname();
     user.changeNickname(deletedNickname);
@@ -84,7 +84,7 @@ public class AdminService {
         .orElseThrow(() -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     if (user.getType() != UserType.USER) {
-      throw new CustomException("ADMIN#5_001", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("ADMIN#5_002", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
     }
 
     user.updateUserType();
@@ -95,7 +95,7 @@ public class AdminService {
 
   private void verifyAdmin(AuthUserInfo admin) {
     if (!(admin.getType() == UserType.ADMIN)) {
-      throw new CustomException("ADMIN#1_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("ADMIN#2_003", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
     }
   }
 

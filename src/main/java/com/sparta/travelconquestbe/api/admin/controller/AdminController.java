@@ -62,7 +62,7 @@ public class AdminController {
     } else if (action == AdminAction.UPDATE) {
       response = adminService.updateUserLevel(admin, userId);
     } else {
-      throw new CustomException("ADMIN#1_002", "올바르지 않은 요청입니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("ADMIN#5_001", "올바르지 않은 요청입니다.", HttpStatus.BAD_REQUEST);
     }
     return ResponseEntity.ok(response);
   }
