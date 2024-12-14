@@ -1,11 +1,11 @@
 package com.sparta.travelconquestbe.api.report.service;
 
 import com.sparta.travelconquestbe.api.report.dto.request.ReportCreateRequest;
-import com.sparta.travelconquestbe.api.report.dto.response.ReportCreateResponse;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
 import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import com.sparta.travelconquestbe.domain.report.repository.ReportRepository;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,46 +16,43 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReportService {
 
   private final ReportRepository reportRepository;
+  private final UserRepository userRepository;
 
   @Transactional
-  public ReportCreateResponse createReport(ReportCreateRequest request, Long reporterId) {
-    if (request.getTargetId().equals(reporterId)) {
+  public void createReport(Long reporterId, ReportCreateRequest request) {
+    if (reporterId.equals(request.getTargetId())) {
       throw new CustomException("REPORT#1_001", "본인을 신고할 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
-    validateTarget(request.getTargetId());
-    return saveReport(request);
+
+    boolean isDuplicate = reportRepository.isDuplicateReport(
+        reporterId,
+        request.getTargetId(),
+        request.getReportCategory().name()
+    );
+    if (isDuplicate) {
+      throw new CustomException("REPORT#2_001", "이미 신고한 대상입니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    Villain currentStatus = getCurrentVillainStatus(request.getTargetId());
+    saveReport(reporterId, request, currentStatus);
   }
 
-  private void validateTarget(Long targetId) {
-    Report latestReport = reportRepository.findLatestReportByTargetId(targetId)
-        .orElseThrow(
-            () -> new CustomException("REPORT#2_001", "신고 대상이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
-
-    if (latestReport.getCheckedAt() == null) {
-      throw new CustomException("REPORT#3_001", "처리되지 않은 동일 대상의 신고가 이미 존재합니다.",
-          HttpStatus.CONFLICT);
-    }
+  @Transactional(readOnly = true)
+  public Villain getCurrentVillainStatus(Long targetId) {
+    return reportRepository.findLatestStatus(targetId)
+        .orElse(Villain.SAINT);
   }
 
   @Transactional
-  public ReportCreateResponse saveReport(ReportCreateRequest request) {
-    Villain currentStatus = reportRepository.findTargetStatus(request.getTargetId())
-        .orElse(Villain.SAINT);
-
-    Report report = reportRepository.save(
-        Report.builder()
-            .reportCategory(request.getReportCategory())
-            .reason(request.getReason())
-            .targetId(request.getTargetId())
-            .status(currentStatus)
-            .build()
-    );
-
-    return ReportCreateResponse.builder()
-        .reportId(report.getId())
-        .reportCategory(report.getReportCategory())
-        .reason(request.getReason())
+  public void saveReport(Long reporterId, ReportCreateRequest request, Villain currentStatus) {
+    Report report = Report.builder()
+        .reporter(userRepository.getReferenceById(reporterId))
         .targetId(request.getTargetId())
+        .reportCategory(request.getReportCategory())
+        .reason(request.getReason())
+        .status(currentStatus)
         .build();
+
+    reportRepository.save(report);
   }
 }

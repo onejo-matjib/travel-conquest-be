@@ -9,9 +9,22 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
-  @Query("SELECT r FROM Report r WHERE r.targetId = :targetId ORDER BY r.createdAt DESC")
-  Optional<Report> findLatestReportByTargetId(@Param("targetId") Long targetId);
+  @Query(value = "SELECT EXISTS (" +
+      "SELECT 1 FROM reports " +
+      "WHERE reporter_id = :reporterId " +
+      "AND target_id = :targetId " +
+      "AND category = :reportCategory)",
+      nativeQuery = true)
+  boolean isDuplicateReport(
+      @Param("reporterId") Long reporterId,
+      @Param("targetId") Long targetId,
+      @Param("reportCategory") String reportCategory
+  );
 
-  @Query("SELECT r.status FROM Report r WHERE r.targetId = :targetId ORDER BY r.createdAt DESC")
-  Optional<Villain> findTargetStatus(@Param("targetId") Long targetId);
+  @Query(value = "SELECT r.status " +
+      "FROM reports r " +
+      "WHERE r.target_id = :targetId " +
+      "ORDER BY r.id DESC " +
+      "LIMIT 1", nativeQuery = true)
+  Optional<Villain> findLatestStatus(@Param("targetId") Long targetId);
 }

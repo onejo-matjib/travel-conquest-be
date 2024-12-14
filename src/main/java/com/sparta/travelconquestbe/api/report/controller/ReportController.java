@@ -1,7 +1,6 @@
 package com.sparta.travelconquestbe.api.report.controller;
 
 import com.sparta.travelconquestbe.api.report.dto.request.ReportCreateRequest;
-import com.sparta.travelconquestbe.api.report.dto.response.ReportCreateResponse;
 import com.sparta.travelconquestbe.api.report.service.ReportService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import jakarta.validation.Valid;
@@ -19,10 +18,11 @@ public class ReportController {
   private final ReportService reportService;
 
   @PostMapping("/api/users/reports")
-  public ResponseEntity<ReportCreateResponse> createReport(
+  public ResponseEntity<Void> createReport(
       @AuthUser Long reporterId,
-      @Valid @RequestBody ReportCreateRequest request) {
-    ReportCreateResponse response = reportService.createReport(request, reporterId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+      @Valid @RequestBody ReportCreateRequest request
+  ) {
+    reportService.createReport(reporterId, request);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
   }
 }
