@@ -19,9 +19,7 @@ public class ReportController {
 
   @PostMapping("/api/users/reports")
   public ResponseEntity<Void> createReport(
-      @AuthUser Long reporterId,
-      @Valid @RequestBody ReportCreateRequest request
-  ) {
+      @AuthUser Long reporterId, @Valid @RequestBody ReportCreateRequest request) {
     reportService.createReport(reporterId, request);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }

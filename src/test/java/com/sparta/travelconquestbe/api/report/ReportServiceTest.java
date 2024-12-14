@@ -20,7 +20,6 @@ import com.sparta.travelconquestbe.domain.report.enums.Reason;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
 import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import com.sparta.travelconquestbe.domain.report.repository.ReportRepository;
-import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,10 +34,8 @@ class ReportServiceTest {
 
   @Mock
   private ReportRepository reportRepository;
-
   @Mock
   private UserRepository userRepository;
-
   @InjectMocks
   private ReportService reportService;
 
@@ -52,20 +49,22 @@ class ReportServiceTest {
   void createReport_SelfReport() {
     Long targetId = 1L;
     Long reporterId = 1L;
+    ReportCreateRequest request =
+        ReportCreateRequest.builder()
+            .targetId(targetId)
+            .reportCategory(ReportCategory.REVIEW)
+            .reason(Reason.SPAM)
+            .build();
 
-    ReportCreateRequest request = ReportCreateRequest.builder()
-        .targetId(targetId)
-        .reportCategory(ReportCategory.REVIEW)
-        .reason(Reason.SPAM)
-        .build();
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      reportService.createReport(reporterId, request);
-    });
+    CustomException exception =
+        assertThrows(
+            CustomException.class,
+            () -> {
+              reportService.createReport(reporterId, request);
+            });
 
     assertEquals("REPORT#1_001", exception.getErrorCode());
     assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
-
     verify(reportRepository, never()).isDuplicateReport(anyLong(), anyLong(), anyString());
     verify(reportRepository, never()).findLatestStatus(anyLong());
     verify(reportRepository, never()).save(any(Report.class));
@@ -76,25 +75,27 @@ class ReportServiceTest {
   void createReport_DuplicateReport() {
     Long targetId = 1L;
     Long reporterId = 2L;
+    ReportCreateRequest request =
+        ReportCreateRequest.builder()
+            .targetId(targetId)
+            .reportCategory(ReportCategory.ROUTE)
+            .reason(Reason.PROFANITY)
+            .build();
 
-    ReportCreateRequest request = ReportCreateRequest.builder()
-        .targetId(targetId)
-        .reportCategory(ReportCategory.ROUTE)
-        .reason(Reason.PROFANITY)
-        .build();
+    when(reportRepository.isDuplicateReport(eq(reporterId), eq(targetId), eq("ROUTE")))
+        .thenReturn(true);
 
-    when(reportRepository.isDuplicateReport(eq(reporterId), eq(targetId),
-        eq(ReportCategory.ROUTE.name()))).thenReturn(true);
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      reportService.createReport(reporterId, request);
-    });
+    CustomException exception =
+        assertThrows(
+            CustomException.class,
+            () -> {
+              reportService.createReport(reporterId, request);
+            });
 
     assertEquals("REPORT#2_001", exception.getErrorCode());
     assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
-
-    verify(reportRepository, times(1)).isDuplicateReport(eq(reporterId), eq(targetId),
-        eq(ReportCategory.ROUTE.name()));
+    verify(reportRepository, times(1))
+        .isDuplicateReport(eq(reporterId), eq(targetId), eq("ROUTE"));
     verify(reportRepository, never()).findLatestStatus(anyLong());
     verify(reportRepository, never()).save(any(Report.class));
   }
@@ -104,38 +105,35 @@ class ReportServiceTest {
   void createReport_SuccessAfterProcessing() {
     Long targetId = 1L;
     Long reporterId = 2L;
+    ReportCreateRequest request =
+        ReportCreateRequest.builder()
+            .targetId(targetId)
+            .reportCategory(ReportCategory.CHAT)
+            .reason(Reason.SPAM)
+            .build();
 
-    ReportCreateRequest request = ReportCreateRequest.builder()
-        .targetId(targetId)
-        .reportCategory(ReportCategory.CHAT)
-        .reason(Reason.SPAM)
-        .build();
+    when(reportRepository.isDuplicateReport(eq(reporterId), eq(targetId), eq("CHAT")))
+        .thenReturn(false);
+    when(reportRepository.findLatestStatus(targetId)).thenReturn(Optional.of(Villain.OUTLAW));
 
-    when(reportRepository.isDuplicateReport(eq(reporterId), eq(targetId),
-        eq(ReportCategory.CHAT.name()))).thenReturn(false);
+    when(userRepository.getReferenceById(reporterId)).thenReturn(null);
 
-    Villain currentStatus = Villain.OUTLAW;
-    when(reportRepository.findLatestStatus(targetId)).thenReturn(Optional.of(currentStatus));
-
-    User reporter = User.builder().id(reporterId).build();
-    when(userRepository.getReferenceById(reporterId)).thenReturn(reporter);
-
-    when(reportRepository.save(any(Report.class))).thenAnswer(invocation -> {
-      Report report = invocation.getArgument(0);
-      return Report.builder()
-          .id(2L)
-          .reporter(reporter)
-          .targetId(report.getTargetId())
-          .reportCategory(report.getReportCategory())
-          .reason(report.getReason())
-          .status(report.getStatus())
-          .build();
-    });
+    when(reportRepository.save(any(Report.class)))
+        .thenAnswer(
+            invocation -> {
+              Report report = invocation.getArgument(0);
+              return Report.builder()
+                  .id(2L)
+                  .reporterId(report.getReporterId())
+                  .targetId(report.getTargetId())
+                  .reportCategory(report.getReportCategory())
+                  .reason(report.getReason())
+                  .status(report.getStatus())
+                  .build();
+            });
 
     assertDoesNotThrow(() -> reportService.createReport(reporterId, request));
-
-    verify(reportRepository, times(1)).isDuplicateReport(eq(reporterId), eq(targetId),
-        eq(ReportCategory.CHAT.name()));
+    verify(reportRepository, times(1)).isDuplicateReport(eq(reporterId), eq(targetId), eq("CHAT"));
     verify(reportRepository, times(1)).findLatestStatus(targetId);
     verify(userRepository, times(1)).getReferenceById(reporterId);
     verify(reportRepository, times(1)).save(any(Report.class));
@@ -145,16 +143,12 @@ class ReportServiceTest {
   @DisplayName("신고 등록 실패 - 대상 아이디 NULL")
   void createReport_TargetIdNull() {
     Long reporterId = 2L;
-
-    ReportCreateRequest request = ReportCreateRequest.builder()
-        .reportCategory(ReportCategory.CHAT)
-        .reason(Reason.SPAM)
-        .build();
+    ReportCreateRequest request =
+        ReportCreateRequest.builder().reportCategory(ReportCategory.CHAT).reason(Reason.SPAM)
+            .build();
 
     assertDoesNotThrow(() -> reportService.createReport(reporterId, request));
-
-    verify(reportRepository, times(1)).isDuplicateReport(eq(reporterId), eq(null),
-        eq(ReportCategory.CHAT.name()));
+    verify(reportRepository, times(1)).isDuplicateReport(eq(reporterId), eq(null), eq("CHAT"));
     verify(reportRepository, times(1)).findLatestStatus(null);
     verify(reportRepository, times(1)).save(any(Report.class));
   }
