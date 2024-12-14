@@ -47,5 +47,6 @@ public class Report {
   @Column(nullable = false)
   private Villain status;
 
-  @Column private LocalDateTime checkedAt;
+  @Column
+  private LocalDateTime checkedAt;
 }
