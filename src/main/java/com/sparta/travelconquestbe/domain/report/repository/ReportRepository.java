@@ -13,7 +13,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
       "SELECT 1 FROM reports " +
       "WHERE reporter_id = :reporterId " +
       "AND target_id = :targetId " +
-      "AND category = :reportCategory)",
+      "AND report_category = :reportCategory)",
       nativeQuery = true)
   boolean isDuplicateReport(
       @Param("reporterId") Long reporterId,

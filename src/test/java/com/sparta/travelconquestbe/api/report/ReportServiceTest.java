@@ -84,8 +84,7 @@ class ReportServiceTest {
         .build();
 
     when(reportRepository.isDuplicateReport(eq(reporterId), eq(targetId),
-        eq(ReportCategory.ROUTE.name())))
-        .thenReturn(true);
+        eq(ReportCategory.ROUTE.name()))).thenReturn(true);
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       reportService.createReport(reporterId, request);
@@ -113,8 +112,7 @@ class ReportServiceTest {
         .build();
 
     when(reportRepository.isDuplicateReport(eq(reporterId), eq(targetId),
-        eq(ReportCategory.CHAT.name())))
-        .thenReturn(false);
+        eq(ReportCategory.CHAT.name()))).thenReturn(false);
 
     Villain currentStatus = Villain.OUTLAW;
     when(reportRepository.findLatestStatus(targetId)).thenReturn(Optional.of(currentStatus));
