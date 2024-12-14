@@ -12,14 +12,20 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class TimeStampAll {
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+  @CreatedDate
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
-    @Column
-    private LocalDateTime deletedAt;
+  @LastModifiedDate
+  @Column(nullable = false)
+  private LocalDateTime updatedAt;
+
+  @Column
+  private LocalDateTime deletedAt;
+
+  protected void markDelete(LocalDateTime deletedAt) {
+      this.deletedAt = deletedAt;
+  }
+
 }

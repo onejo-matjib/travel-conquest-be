@@ -1,18 +1,20 @@
 package com.sparta.travelconquestbe.api.admin.service;
 
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
-import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
+import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
+import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
-import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class AdminService {
   private final JwtHelper jwtHelper;
   private final PasswordEncoder passwordEncoder;
 
-  public void signUp(AuthSignUpRequest request) {
+  public void signUp(AdminSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
       throw new CustomException("ADMIN#4_001", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
     }
@@ -43,9 +45,10 @@ public class AdminService {
 
   public String login(AdminLoginRequest request) {
     User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(
+            () -> new CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
 
-    if(!UserType.ADMIN.equals(user.getType())) {
+    if (!UserType.ADMIN.equals(user.getType())) {
       throw new CustomException("ADMIN#2_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
     }
 
@@ -54,5 +57,61 @@ public class AdminService {
     }
 
     return jwtHelper.createToken(user);
+  }
+
+  @Transactional
+  public AdminUpdateUserResponse banUser(AuthUserInfo admin, Long userId) {
+    verifyAdmin(admin);
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(
+            () -> new CustomException("ADMIN#_000", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    String deletedNickname = "delete_" + user.getNickname();
+    user.changeNickname(deletedNickname);
+    user.delete();
+
+    userRepository.save(user);
+
+    return mapToResponse(user);
+  }
+
+  @Transactional
+  public AdminUpdateUserResponse updateUserLevel(AuthUserInfo admin, Long userId) {
+    verifyAdmin(admin);
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    if (user.getType() != UserType.USER) {
+      throw new CustomException("ADMIN#5_001", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    user.updateUserType();
+    userRepository.save(user);
+
+    return mapToResponse(user);
+  }
+
+  private void verifyAdmin(AuthUserInfo admin) {
+    if (!(admin.getType() == UserType.ADMIN)) {
+      throw new CustomException("ADMIN#1_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+    }
+  }
+
+  private AdminUpdateUserResponse mapToResponse(User user) {
+    return AdminUpdateUserResponse.builder()
+        .userId(user.getId())
+        .name(user.getName())
+        .nickname(user.getNickname())
+        .email(user.getEmail())
+        .providerType(user.getProviderType())
+        .birth(user.getBirth())
+        .userType(user.getType())
+        .title(user.getTitle())
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .deletedAt(user.getDeletedAt())
+        .build();
   }
 }
