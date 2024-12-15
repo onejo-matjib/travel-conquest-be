@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.api.report.service;
 
 import com.sparta.travelconquestbe.api.report.dto.request.ReportCreateRequest;
+import com.sparta.travelconquestbe.api.report.dto.response.ReportCreateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
@@ -21,7 +22,7 @@ public class ReportService {
   private final UserRepository userRepository;
 
   @Transactional
-  public void createReport(AuthUserInfo user, ReportCreateRequest request) {
+  public ReportCreateResponse createReport(AuthUserInfo user, ReportCreateRequest request) {
     User reporter = userRepository.getReferenceById(user.getId());
     User target = userRepository.getReferenceById(request.getTargetId());
 
@@ -30,16 +31,21 @@ public class ReportService {
     }
 
     boolean isDuplicate = reportRepository.isDuplicateReport(
-        reporter.getId(),
-        target.getId(),
-        request.getReportCategory().name()
-    );
+        reporter.getId(), target.getId(), request.getReportCategory().name());
     if (isDuplicate) {
       throw new CustomException("REPORT#2_001", "이미 신고한 대상입니다.", HttpStatus.BAD_REQUEST);
     }
 
     Villain currentStatus = getCurrentVillainStatus(target.getId());
-    saveReport(reporter, target, request, currentStatus);
+    Report report = saveReport(reporter, target, request, currentStatus);
+
+    return ReportCreateResponse.builder()
+        .reportId(report.getId())
+        .reportCategory(report.getReportCategory())
+        .reason(report.getReason())
+        .targetId(report.getTargetId().getId())
+        .createdAt(report.getCreatedAt())
+        .build();
   }
 
   @Transactional(readOnly = true)
@@ -48,7 +54,7 @@ public class ReportService {
   }
 
   @Transactional
-  public void saveReport(User reporter, User target, ReportCreateRequest request,
+  public Report saveReport(User reporter, User target, ReportCreateRequest request,
       Villain currentStatus) {
     Report report = Report.builder()
         .reporterId(reporter)
@@ -58,6 +64,6 @@ public class ReportService {
         .status(currentStatus)
         .build();
 
-    reportRepository.save(report);
+    return reportRepository.save(report);
   }
 }

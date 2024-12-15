@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.api.report.dto.response;
 
 import com.sparta.travelconquestbe.domain.report.enums.Reason;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,4 +14,5 @@ public class ReportCreateResponse {
   private ReportCategory reportCategory;
   private Reason reason;
   private Long targetId;
+  private LocalDateTime createdAt;
 }
