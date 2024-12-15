@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateRespo
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
 import com.sparta.travelconquestbe.api.bookmark.service.BookmarkService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,24 +30,27 @@ public class BookmarkController {
   @PostMapping
   public ResponseEntity<BookmarkCreateResponse> createBookmark(
       @Valid @RequestBody BookmarkCreateRequest request,
-      @AuthUser Long userId) {
-    BookmarkCreateResponse response = bookmarkService.createBookmark(request.getRouteId(), userId);
+      @AuthUser AuthUserInfo user
+  ) {
+    BookmarkCreateResponse response = bookmarkService.createBookmark(request.getRouteId(), user);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @GetMapping
   public ResponseEntity<Page<BookmarkListResponse>> getBookmarks(
       Pageable pageable,
-      @AuthUser Long userId) {
-    Page<BookmarkListResponse> response = bookmarkService.getBookmarks(userId, pageable);
+      @AuthUser AuthUserInfo user
+  ) {
+    Page<BookmarkListResponse> response = bookmarkService.getBookmarks(user, pageable);
     return ResponseEntity.ok(response);
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteBookmark(
       @PathVariable Long id,
-      @AuthUser Long userId) {
-    bookmarkService.deleteBookmark(id, userId);
+      @AuthUser AuthUserInfo user
+  ) {
+    bookmarkService.deleteBookmark(id, user);
     return ResponseEntity.noContent().build();
   }
 }
