@@ -1,7 +1,12 @@
 package com.sparta.travelconquestbe.api.subscription;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionCreateResponse;
 import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionListResponse;
@@ -16,9 +21,15 @@ import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
-import org.junit.jupiter.api.*;
-import org.mockito.*;
-import org.springframework.data.domain.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 
 class SubscriptionServiceTest {
@@ -42,9 +53,12 @@ class SubscriptionServiceTest {
   void createSubscription_Success() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
-    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn("VALID");
-    Subscription saved = Subscription.builder().id(1L).userId(user.getId()).subUserId(subUserId).build();
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn(
+        "VALID");
+    Subscription saved = Subscription.builder().id(1L).userId(user.getId()).subUserId(subUserId)
+        .build();
     when(subscriptionRepository.save(any(Subscription.class))).thenReturn(saved);
 
     SubscriptionCreateResponse response = subscriptionService.createSubscription(user, subUserId);
@@ -58,7 +72,8 @@ class SubscriptionServiceTest {
   @DisplayName("구독 생성 실패 - 자기 구독")
   void createSubscription_SelfSubscription() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.createSubscription(user, user.getId());
@@ -73,8 +88,10 @@ class SubscriptionServiceTest {
   void createSubscription_TargetUserNotFound() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
-    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn("USER_NOT_FOUND");
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn(
+        "USER_NOT_FOUND");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.createSubscription(user, subUserId);
@@ -89,8 +106,10 @@ class SubscriptionServiceTest {
   void createSubscription_DuplicateSubscription() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
-    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn("DUPLICATE_SUBSCRIPTION");
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn(
+        "DUPLICATE_SUBSCRIPTION");
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.createSubscription(user, subUserId);
@@ -105,9 +124,12 @@ class SubscriptionServiceTest {
   void deleteSubscription_Success() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    Subscription subscription = Subscription.builder().id(1L).userId(user.getId()).subUserId(subUserId).build();
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
-    when(subscriptionRepository.findSubscription(user.getId(), subUserId)).thenReturn(Optional.of(subscription));
+    Subscription subscription = Subscription.builder().id(1L).userId(user.getId())
+        .subUserId(subUserId).build();
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(subscriptionRepository.findSubscription(user.getId(), subUserId)).thenReturn(
+        Optional.of(subscription));
 
     assertDoesNotThrow(() -> subscriptionService.deleteSubscription(user, subUserId));
     verify(subscriptionRepository).delete(subscription);
@@ -118,8 +140,10 @@ class SubscriptionServiceTest {
   void deleteSubscription_NotFound() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
-    when(subscriptionRepository.findSubscription(user.getId(), subUserId)).thenReturn(Optional.empty());
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(subscriptionRepository.findSubscription(user.getId(), subUserId)).thenReturn(
+        Optional.empty());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.deleteSubscription(user, subUserId);
@@ -137,7 +161,8 @@ class SubscriptionServiceTest {
     Subscription s = Subscription.builder().id(1L).userId(user.getId()).subUserId(2L).build();
     Page<Subscription> page = new PageImpl<>(List.of(s), pageable, 1);
 
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
     when(subscriptionRepository.findAllByUserId(user.getId(), pageable)).thenReturn(page);
 
     SubscriptionListResponse response = subscriptionService.searchFollowings(user, pageable);
@@ -153,7 +178,8 @@ class SubscriptionServiceTest {
     PageRequest pageable = PageRequest.of(0, 10);
     Page<Subscription> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
     when(subscriptionRepository.findAllByUserId(user.getId(), pageable)).thenReturn(emptyPage);
 
     SubscriptionListResponse response = subscriptionService.searchFollowings(user, pageable);
@@ -165,7 +191,8 @@ class SubscriptionServiceTest {
   @DisplayName("구독 삭제 실패 - 같은 유저")
   void deleteSubscription_SameUserAndTarget() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
 
     CustomException exception = assertThrows(CustomException.class, () -> {
       subscriptionService.deleteSubscription(user, user.getId());
@@ -184,7 +211,8 @@ class SubscriptionServiceTest {
     Subscription s2 = Subscription.builder().id(2L).userId(3L).subUserId(user.getId()).build();
     Page<Subscription> mockPage = new PageImpl<>(List.of(s1, s2), pageable, 2);
 
-    when(userRepository.getReferenceById(user.getId())).thenReturn(User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
     when(subscriptionRepository.findAllBySubUserId(user.getId(), pageable)).thenReturn(mockPage);
 
     SubscriptionListResponse response = subscriptionService.searchFollowers(user, pageable);
