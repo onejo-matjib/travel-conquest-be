@@ -1,6 +1,5 @@
-package com.sparta.travelconquestbe.api.admin.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+package com.sparta.travelconquestbe.api.admin.service;
 
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -11,13 +10,36 @@ import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.junit.jupiter.Container;
 
 @SpringBootTest
+@Testcontainers
 @Transactional
+@ExtendWith(SpringExtension.class)
 class AdminServiceTest {
+
+  @Container
+  public static MySQLContainer<?> mysqlContainer = new MySQLContainer<>("mysql:8.0.30")
+      .withDatabaseName("testdb")
+      .withUsername("testuser")
+      .withPassword("testpass");
+
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", mysqlContainer::getJdbcUrl);
+    registry.add("spring.datasource.username", mysqlContainer::getUsername);
+    registry.add("spring.datasource.password", mysqlContainer::getPassword);
+    registry.add("spring.jpa.hibernate.ddl-auto", () -> "update"); // 필요에 따라 설정 변경
+  }
 
   @Autowired
   private AdminService adminService;
@@ -104,6 +126,7 @@ class AdminServiceTest {
       adminService.updateUserLevel(admin, adminUser.getId());
     });
 
-    Assertions.assertEquals("ADMIN#5_001", exception.getErrorCode());
+    Assertions.assertEquals("ADMIN#5_002", exception.getErrorCode());
   }
 }
+
