@@ -22,23 +22,24 @@ public class ReportService {
 
   @Transactional
   public void createReport(AuthUserInfo user, ReportCreateRequest request) {
-    User referenceUser = userRepository.getReferenceById(user.getId());
+    User reporter = userRepository.getReferenceById(user.getId());
+    User target = userRepository.getReferenceById(request.getTargetId());
 
-    if (referenceUser.getId().equals(request.getTargetId())) {
+    if (reporter.getId().equals(target.getId())) {
       throw new CustomException("REPORT#1_001", "본인을 신고할 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
     boolean isDuplicate = reportRepository.isDuplicateReport(
-        referenceUser.getId(),
-        request.getTargetId(),
+        reporter.getId(),
+        target.getId(),
         request.getReportCategory().name()
     );
     if (isDuplicate) {
       throw new CustomException("REPORT#2_001", "이미 신고한 대상입니다.", HttpStatus.BAD_REQUEST);
     }
 
-    Villain currentStatus = getCurrentVillainStatus(request.getTargetId());
-    saveReport(referenceUser.getId(), request, currentStatus);
+    Villain currentStatus = getCurrentVillainStatus(target.getId());
+    saveReport(reporter, target, request, currentStatus);
   }
 
   @Transactional(readOnly = true)
@@ -47,10 +48,11 @@ public class ReportService {
   }
 
   @Transactional
-  public void saveReport(Long reporterId, ReportCreateRequest request, Villain currentStatus) {
+  public void saveReport(User reporter, User target, ReportCreateRequest request,
+      Villain currentStatus) {
     Report report = Report.builder()
-        .reporterId(reporterId)
-        .targetId(request.getTargetId())
+        .reporterId(reporter)
+        .targetId(target)
         .reportCategory(request.getReportCategory())
         .reason(request.getReason())
         .status(currentStatus)

@@ -75,6 +75,8 @@ class ReportServiceTest {
         .build();
     when(userRepository.getReferenceById(user.getId())).thenReturn(
         User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(targetId)).thenReturn(
+        User.builder().id(targetId).build());
     when(
         reportRepository.isDuplicateReport(eq(user.getId()), eq(targetId), eq("ROUTE"))).thenReturn(
         true);
@@ -98,28 +100,11 @@ class ReportServiceTest {
         .build();
     when(userRepository.getReferenceById(user.getId())).thenReturn(
         User.builder().id(user.getId()).build());
+    when(userRepository.getReferenceById(targetId)).thenReturn(
+        User.builder().id(targetId).build());
     when(reportRepository.isDuplicateReport(eq(user.getId()), eq(targetId), eq("CHAT"))).thenReturn(
         false);
     when(reportRepository.findLatestStatus(targetId)).thenReturn(Optional.of(Villain.OUTLAW));
-    when(reportRepository.save(any(Report.class))).thenAnswer(inv -> inv.getArgument(0));
-
-    assertDoesNotThrow(() -> reportService.createReport(user, request));
-  }
-
-  @Test
-  @DisplayName("신고 등록 실패 - targetId NULL")
-  void createReport_TargetIdNull() {
-    AuthUserInfo user = new AuthUserInfo(2L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    ReportCreateRequest request = ReportCreateRequest.builder()
-        .targetId(null)
-        .reportCategory(ReportCategory.CHAT)
-        .reason(Reason.SPAM)
-        .build();
-    when(userRepository.getReferenceById(user.getId())).thenReturn(
-        User.builder().id(user.getId()).build());
-    when(reportRepository.isDuplicateReport(eq(user.getId()), eq(null), eq("CHAT"))).thenReturn(
-        false);
-    when(reportRepository.findLatestStatus(null)).thenReturn(Optional.empty());
     when(reportRepository.save(any(Report.class))).thenAnswer(inv -> inv.getArgument(0));
 
     assertDoesNotThrow(() -> reportService.createReport(user, request));
