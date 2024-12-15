@@ -50,7 +50,7 @@ public class AuthService {
 
   public String signUp(AuthSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-      throw new CustomException("USER_005", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
+      throw new CustomException("AUTH#4_001", "이미 존재하는 이메일입니다.", HttpStatus.CONFLICT);
     }
 
     User user = User.builder()
@@ -70,10 +70,10 @@ public class AuthService {
 
   public String login (AuthLoginRequest request) {
     User user = userRepository.findByEmail(request.getEmail())
-        .orElseThrow(() -> new CustomException("USER_006", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException("AUTH#3_002", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-      throw new CustomException("AUTH_030", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("AUTH#1_002", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
     }
 
     return jwtHelper.createToken(user);
@@ -138,7 +138,7 @@ public class AuthService {
       return jsonNode.get("access_token").asText();
     } catch (Exception e) {
       logger.error("액세스 토큰 파싱 실패: {}", e.getMessage());
-      throw new CustomException("AUTH_013", "액세스 토큰 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("AUTH#5_001", "액세스 토큰 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -151,14 +151,14 @@ public class AuthService {
       return new UserInfo(id, email, nickname);
     } catch (Exception e) {
       logger.error("사용자 정보 파싱 실패: {}", e.getMessage());
-      throw new CustomException("AUTH_014", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("AUTH#5_002", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 
   // 소셜 로그인 신규 가입자 전용 + 추가 정보 입력받음
   public String saveAdditionalInfo(SignUpAdditionalInfoRequest request, UserInfo tempUserInfo) {
     if (tempUserInfo == null) {
-      throw new CustomException("AUTH_016", "임시 사용자 정보가 없습니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("AUTH#5_003", "임시 사용자 정보가 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
     User newUser = User.builder()

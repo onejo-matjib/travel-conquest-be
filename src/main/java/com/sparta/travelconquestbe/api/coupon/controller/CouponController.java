@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.api.coupon.service.CouponService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +40,9 @@ public class CouponController {
   @PostMapping
   public ResponseEntity<CouponCreateResponse> createCoupon(
       @Valid @RequestBody CouponCreateRequest request,
-      @AuthUser Long userId
+      @AuthUser AuthUserInfo user
   ) {
-    CouponCreateResponse response = couponService.createCoupon(request, userId);
+    CouponCreateResponse response = couponService.createCoupon(request, user);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class TimeStampCreated {
 
-    @CreatedDate
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
+  @CreatedDate
+  @Temporal(TemporalType.TIMESTAMP)
+  private LocalDateTime createdAt;
 }

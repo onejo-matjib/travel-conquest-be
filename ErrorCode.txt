@@ -8,20 +8,24 @@ USER_003 / 비밀번호가 일치하지 않습니다. / BAD_REQUEST
 USER_004 / 유효하지 않은 사용자 등급 요청입니다. / BAD_REQUEST
 
 인증
-AUTH#1_001 / 에러 메시지 / UNAUTHORIZED
-AUTH#2_002 / 에러 메시지 / FORBIDDEN
-AUTH#3_003 / 에러 메시지 / UNAUTHORIZED
-AUTH#4_000 / 에러 메시지 / NOT_FOUND
+AUTH#1_007 / 에러 메시지 / UNAUTHORIZED
+AUTH#2_001 / 에러 메시지 / FORBIDDEN
+AUTH#3_002 / 에러 메시지 / NOT_FOUND
+AUTH#4_001 / 에러 메시지 / CONFLICT
+AUTH#5_003 / 에러 메시지 / BAD_REQUEST
+AUTH#6_001 / 에러 메시지 / INTERNAL_SERVER_ERROR
+
+관리자
+ADMIN#1_001 / 에러 메시지 / UNAUTHORIZED
+ADMIN#2_003 / 에러 메시지 / FORBIDDEN
+ADMIN#3_003 / 에러 메시지 / NOT_FOUND
+ADMIN#4_001 / 에러 메시지 / CONFLICT
+ADMIN#5_002 / 에러 메시지 / BAD_REQUEST
+ADMIN#6_000 / 에러 메시지 / INTERNAL_SERVER_ERROR
 
 신고
 REPORT_001 / 유효하지 않은 신고 유형입니다. / BAD_REQUEST
 REPORT_002 / 신고할 대상을 찾을 수 없습니다. / NOT_FOUND
-
-관리자
-CustomException("ADMIN#1_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
-ADMIN_002 / 사용자 등급 변경 오류. / BAD_REQUEST
-CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
-CustomException("ADMIN#4_001", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
 
 쿠폰
 COUPON#1_NNN / 해당 쿠폰을 저장할 수 없습니다. / BAD_REQUEST
@@ -52,7 +56,6 @@ S3#1_NNN / 파일 업로드가 실패했습니다. / INTERNAL_SERVER_ERROR
 S3#2_NNN / 허용되지 않은 파일 형식입니다. /  UNSUPPORTED_MEDIA_TYPE
 S3#3_NNN / 파일 크기가 허용 범위를 초과했습니다. / PAYLOAD_TOO_LARGE
 S3#4_NNN / key 값 디코딩이 실패했습니다. / BAD_REQUEST
-
 
 즐겨찾기
 BOOKMARK#1_NNN / 해당 즐겨찾기를 찾을 수 없습니다. / NOT_FOUND

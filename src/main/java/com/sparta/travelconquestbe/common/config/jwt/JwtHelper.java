@@ -33,7 +33,7 @@ public class JwtHelper {
       Key key = keyGenerator.generateKey();
       secretKey = Base64.getEncoder().encodeToString(key.getEncoded());
     } catch (Exception e) {
-      throw new RuntimeException("시크릿 키 생성 실패", e);
+      throw new CustomException("AUTH#7_001", "시크릿 키 생성 실패", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -64,7 +64,7 @@ public class JwtHelper {
       getClaims(token);
       return true;
     } catch (Exception e) {
-      throw new CustomException("AUTH_010", "인증 토큰이 만료되었습니다. 다시 로그인 해주세요.", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("AUTH#1_003", "인증 토큰이 만료되었습니다. 다시 로그인 해주세요.", HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -82,7 +82,7 @@ public class JwtHelper {
           .parseClaimsJws(token)
           .getBody();
     } catch (Exception e) {
-      throw new CustomException("AUTH_002", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("AUTH#1_004", "유효하지 않은 인증 토큰입니다.", HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -102,7 +102,7 @@ public class JwtHelper {
 
       return new AuthUserInfo(id, name, nickname, email, providerType, birth, type, title);
     } catch (Exception e) {
-      throw new CustomException("AUTH#1_001", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("AUTH#1_005", "유효하지 않은 토큰입니다.", HttpStatus.UNAUTHORIZED);
     }
   }
 
