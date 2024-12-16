@@ -57,9 +57,8 @@ public class User extends TimeStampAll {
   private Title title;
 
   @Column(nullable = false)
-  private int subUserCount = 0;
+  private int subscriptionCount = 0;
 
-  // Custom Methods
   public void changeNickname(String newNickname) {
     this.nickname = newNickname;
   }
@@ -80,13 +79,8 @@ public class User extends TimeStampAll {
     this.markDelete(LocalDateTime.now());
   }
 
-  public void incrementSubUserCount() {
-    this.subUserCount++;
-  }
-
-  public void decrementSubUserCount() {
-    if (this.subUserCount > 0) {
-      this.subUserCount--;
-    }
+  public void updateSubscriptionCount(int change) {
+    int newCount = this.subscriptionCount + change;
+    this.subscriptionCount = Math.max(newCount, 0);
   }
 }
