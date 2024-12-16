@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.domain.coupon.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
+import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
 import jakarta.persistence.CascadeType;
@@ -21,6 +22,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "coupons")
@@ -57,6 +59,10 @@ public class Coupon extends TimeStampCreateUpdate {
   private final List<MyCoupon> myCoupons = new ArrayList<>();
 
   public void decrementCount() {
+    if (this.count <= 0) {
+      throw new CustomException("COUPON#4_002",
+          "해당 쿠폰이 소진되었습니다.", HttpStatus.CONFLICT);
+    }
     this.count -= 1;
   }
 }
