@@ -44,7 +44,6 @@ public class User extends TimeStampAll {
   private String password;
 
   private String providerId;
-
   private String providerType;
 
   @Column(nullable = false, length = 10)
@@ -56,6 +55,9 @@ public class User extends TimeStampAll {
 
   @Enumerated(EnumType.STRING)
   private Title title;
+
+  @Column(nullable = false)
+  private int subUserCount = 0;
 
   // Custom Methods
   public void changeNickname(String newNickname) {
@@ -76,5 +78,15 @@ public class User extends TimeStampAll {
 
   public void delete() {
     this.markDelete(LocalDateTime.now());
+  }
+
+  public void incrementSubUserCount() {
+    this.subUserCount++;
+  }
+
+  public void decrementSubUserCount() {
+    if (this.subUserCount > 0) {
+      this.subUserCount--;
+    }
   }
 }

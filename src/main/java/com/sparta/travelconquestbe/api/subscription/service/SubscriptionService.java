@@ -47,6 +47,13 @@ public class SubscriptionService {
         .subUserId(subUserId)
         .build();
 
+    // 구독자 수 증가
+    User subUser = userRepository.findById(subUserId)
+        .orElseThrow(() -> new CustomException("SUBSCRIPTION#3_003", "구독 대상 사용자가 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND));
+    subUser.incrementSubUserCount();
+    userRepository.save(subUser);
+
     return SubscriptionCreateResponse.from(subscriptionRepository.save(subscription));
   }
 
@@ -62,6 +69,13 @@ public class SubscriptionService {
         );
 
     subscriptionRepository.delete(subscription);
+
+    // 구독자 수 감소
+    User subUser = userRepository.findById(subUserId)
+        .orElseThrow(() -> new CustomException("SUBSCRIPTION#3_004", "구독 대상 사용자가 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND));
+    subUser.decrementSubUserCount();
+    userRepository.save(subUser);
   }
 
   @Transactional(readOnly = true)
