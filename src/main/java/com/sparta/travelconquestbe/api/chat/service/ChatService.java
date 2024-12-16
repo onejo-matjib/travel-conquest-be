@@ -1,9 +1,13 @@
 package com.sparta.travelconquestbe.api.chat.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import com.sparta.travelconquestbe.api.chat.dto.request.ChatSendMessageRequest;
+import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.chat.entity.Chat;
 import com.sparta.travelconquestbe.domain.chat.entity.ChatRoom;
 import com.sparta.travelconquestbe.domain.chat.repository.ChatRepository;
@@ -12,37 +16,32 @@ import com.sparta.travelconquestbe.domain.chat.repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ChatService {
 
 	private final ChatRepository chatRepository;
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ChatRoomRepository chatRoomRepository;
+	private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
-	@Autowired
-	public ChatService(ChatRepository chatRepository, ChatRoomRepository chatRoomRepository, SimpMessagingTemplate messagingTemplate) {
-		this.chatRepository = chatRepository;
-		this.messagingTemplate = messagingTemplate;
-		this.chatRoomRepository = chatRoomRepository;
-	}
 
-	public Chat sendMessage(Long roomId, Chat message) {
-		// 채팅방 ID와 메시지를 처리하는 로직
+	public Chat sendMessage(Long roomId, ChatSendMessageRequest request) throws CustomException {
+		logger.info("채팅 메시지 저장 및 전송 시작 - roomId: {}", roomId);
 
-		// 채팅방 ID로 채팅방을 찾아서 채팅 메시지를 저장
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-			.orElseThrow(() -> new IllegalArgumentException("Invalid room ID"));
+			.orElseThrow(() -> new CustomException("CHAT#1_001", "해당 채팅방이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
 
-		// Chat 엔티티로 메시지 저장
 		Chat chat = Chat.builder()
 			.chatRoom(chatRoom)
-			.nickname(message.getNickname())
-			.message(message.getMessage())
+			.nickname(request.getNickname())
+			.message(request.getMessage())
 			.build();
 
-		chatRepository.save(chat); // DB에 메시지 저장
+		Chat savedChat = chatRepository.save(chat);
 
-		// 메시지를 구독자에게 전송
-		messagingTemplate.convertAndSend("/sub/chat/" + roomId, message);
-		return chat;
+		messagingTemplate.convertAndSend("/sub/chat/" + roomId, savedChat);
+		logger.info("채팅 메시지 저장 및 전송 완료 - roomId: {}", roomId);
+
+		return savedChat;
 	}
 }

@@ -43,27 +43,18 @@ public class ChatRoomController {
 	}
 
 	// 채팅방 입장 처리
-	@MessageMapping("/enter/{chatRoomId}")  // /pub/enter/{chatRoomId} 로 요청이 들어오면 이 메서드가 호출됩니다.
-	@SendTo("/sub/chatroom/{chatRoomId}")   // /sub/chatroom/{chatRoomId}로 메시지가 발송됩니다.
-	public ChatRoomEnterResponse enterChatRoom(@DestinationVariable Long chatRoomId,
-		@Header("userId") Long userId) {
-		// 채팅방 입장 처리 서비스 호출
-		chatRoomService.enterChatRoom(chatRoomId, userId);
-
-		// 응답 메시지 생성 (채팅방에 입장한 후 응답을 클라이언트로 발송)
+	@MessageMapping("/enter/{chatRoomId}")
+	@SendTo("/sub/chatroom/{chatRoomId}")
+	public ChatRoomEnterResponse enterChatRoom(@DestinationVariable Long chatRoomId) {
+		chatRoomService.enterChatRoom(chatRoomId);
 		return new ChatRoomEnterResponse(true, "채팅방에 입장했습니다.");
 	}
 
 	// 채팅방 퇴장 처리
 	@MessageMapping("/exit/{chatRoomId}")  // /pub/exit/{chatRoomId}로 요청이 들어오면 이 메서드가 호출됩니다.
 	@SendTo("/sub/chatroom/{chatRoomId}")  // /sub/chatroom/{chatRoomId}로 메시지가 발송됩니다.
-	public ChatRoomExitResponse exitChatRoom(@DestinationVariable Long chatRoomId,
-		@Header("userId") Long userId) {
-		// 채팅방 퇴장 처리 서비스 호출
-		chatRoomService.exitChatRoom(chatRoomId, userId);
-
-		// 응답 메시지 생성 (채팅방에서 퇴장한 후 응답을 클라이언트로 발송)
+	public ChatRoomExitResponse exitChatRoom(@DestinationVariable Long chatRoomId) {
+		chatRoomService.exitChatRoom(chatRoomId);
 		return new ChatRoomExitResponse(true, "채팅방에서 퇴장했습니다.");
 	}
 }
-

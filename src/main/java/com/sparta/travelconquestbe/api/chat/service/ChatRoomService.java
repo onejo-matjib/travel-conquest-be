@@ -1,9 +1,8 @@
 package com.sparta.travelconquestbe.api.chat.service;
 
-import static org.springframework.http.HttpStatus.*;
-
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.sparta.travelconquestbe.api.chat.dto.request.ChatRoomCreateRequest;
@@ -21,7 +20,6 @@ public class ChatRoomService {
 
 	private final ChatRoomRepository chatRoomRepository;
 
-
 	// 채팅방 생성
 	public ChatRoomCreateResponse createRoom(ChatRoomCreateRequest request) {
 		ChatRoom chatRoom = ChatRoom.builder()
@@ -29,7 +27,6 @@ public class ChatRoomService {
 			.maxUsers(request.getMaxUsers())
 			.password(request.getPassword())
 			.build();
-
 		ChatRoom savedChatRoom = chatRoomRepository.save(chatRoom);
 		return ChatRoomCreateResponse.fromChatRoom(savedChatRoom);
 	}
@@ -45,34 +42,25 @@ public class ChatRoomService {
 			.toList();
 	}
 
-
-	// 채팅방 입장 로직
-	public void enterChatRoom(Long chatRoomId, Long userId) {
-		// 1. 채팅방이 존재하는지 확인
+	public void enterChatRoom(Long chatRoomId) {
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-			.orElseThrow(() -> new RuntimeException("채팅방이 존재하지 않습니다."));
+			.orElseThrow(() -> new CustomException("CHAT#1_002", "해당 채팅방이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
 
-		// 2. 채팅방 입장 시 현재 사용자 수 증가
-		chatRoom.setCurrentUsers(chatRoom.getCurrentUsers() + 1);
+		if (chatRoom.getCurrentUsers() >= chatRoom.getMaxUsers()) {
+			throw new CustomException("CHAT#4_001", "입장 가능 인원이 초과되었습니다.", HttpStatus.FORBIDDEN);
+		}
 
-		// 3. 변경된 채팅방 데이터를 저장
+		chatRoom.addUser();
+		System.out.println("ENTER current users :" + chatRoom.getCurrentUsers() );
 		chatRoomRepository.save(chatRoom);
 	}
 
 	// 채팅방 퇴장 로직
-	public void exitChatRoom(Long chatRoomId, Long userId) {
-		// 1. 채팅방이 존재하는지 확인
+	public void exitChatRoom(Long chatRoomId) {
 		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-			.orElseThrow(() -> new RuntimeException("채팅방이 존재하지 않습니다."));
-
-		// 2. 채팅방 퇴장 시 현재 사용자 수 감소
-		if (chatRoom.getCurrentUsers() > 0) {
-			chatRoom.setCurrentUsers(chatRoom.getCurrentUsers() - 1);
-		} else {
-			throw new RuntimeException("채팅방에 아무도 없습니다.");
-		}
-
-		// 3. 변경된 채팅방 데이터를 저장
+			.orElseThrow(() -> new CustomException("CHAT#1_003", "해당 채팅방이 존재하지 않습니다.", HttpStatus.NOT_FOUND));
+		chatRoom.removeUser();
+		System.out.println("EXIT current users :" + chatRoom.getCurrentUsers() );
 		chatRoomRepository.save(chatRoom);
 	}
 }

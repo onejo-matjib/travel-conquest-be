@@ -27,9 +27,9 @@ document.getElementById('localLoginForm').addEventListener('submit', async funct
       // 필요하면 토큰을 localStorage에 저장:
       localStorage.setItem('authToken', token);
       // 이후 페이지 이동
-      //setTimeout(() => {
-       // window.location.href = '/'; // 로그인 성공 후 이동할 페이지
-      //}, 1000);
+      setTimeout(() => {
+       window.location.href = '/chat.html'; // 로그인 성공 후 이동할 페이지
+      }, 1000);
     } else {
       const errText = await response.text();
       messageEl.textContent = errText || '로그인 실패. 이메일 혹은 비밀번호를 확인해주세요.';

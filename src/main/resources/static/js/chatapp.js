@@ -14,18 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-// 채팅방 목록 불러오기
+    // 채팅방 목록 불러오기
     fetch('/api/chat/rooms')
         .then(response => response.json())
         .then(rooms => {
             rooms.forEach(room => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                <td>${room.title}</td>
-                <td>${room.currentUsers}/${room.maxUsers}</td>
-                <td>${room.hasPassword ? '🔒' : '-'}</td>
-                <td><button class="enter-button" onclick="enterRoom(${room.id}, ${room.hasPassword})">입장</button></td>
-            `;
+                    <td>${room.title}</td>
+                    <td>${room.currentUsers}/${room.maxUsers}</td>
+                    <td>${room.hasPassword ? '🔒' : '-'}</td>
+                    <td><button class="enter-button" onclick="enterRoom(${room.id}, ${room.hasPassword})">입장</button></td>
+                `;
                 chatRoomList.querySelector('tbody').appendChild(tr);
             });
         });
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fetch('/api/chat/rooms', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(roomData)
         })
             .then(response => response.json())
