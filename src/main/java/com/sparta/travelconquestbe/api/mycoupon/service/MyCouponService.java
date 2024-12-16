@@ -32,60 +32,88 @@ public class MyCouponService {
   // 쿠폰 저장
   public MyCouponSaveResponse createMyCoupon(Long couponId, AuthUserInfo userInfo) {
 
-    // 유저 권한 확인
+    validateUser(userInfo);
+    Coupon coupon = getCouponById(couponId);
+    validateCoupon(coupon, userInfo);
+
+    // 쿠폰 코드 발급
+    String couponCode = UUID.randomUUID().toString();
+
+    // 유저 프록시 객체
+    User referenceUser = getUserById(userInfo.getId());
+
+    // 쿠폰 저장
+    MyCoupon myCoupon = MyCoupon.builder()
+        .code(couponCode)
+        .status(UseStatus.AVAILABLE)
+        .user(referenceUser)
+        .coupon(coupon)
+        .build();
+    coupon.decrementCount();
+    myCouponRepository.save(myCoupon);
+
+    return buildResponse(myCoupon);
+  }
+
+  // 유저 권한 확인
+  public void validateUser(AuthUserInfo userInfo) {
     if (userInfo.getType().equals(UserType.USER)) {
       throw new CustomException("COUPON#3_002",
           "인증된 사용자가 아닙니다.",
           HttpStatus.FORBIDDEN);
     }
+  }
 
-    // 쿠폰 유효성 검사
-    Coupon coupon = couponRepository.findById(couponId).orElseThrow(
-        () -> new CustomException("COUPON#2_001",
-            "해당 쿠폰이 존재하지 않습니다.",
-            HttpStatus.NOT_FOUND));
-
-    // AVAILABLE 쿠폰 중복 검사
+  // 쿠폰 유효성 검사
+  public void validateCoupon(Coupon coupon, AuthUserInfo userInfo) {
     if (myCouponRepository.existsByCouponIdAndUserIdAndStatus(
-        coupon.getId(),
-        userInfo.getId(),
-        UseStatus.AVAILABLE)) {
+        coupon.getId(), userInfo.getId(), UseStatus.AVAILABLE)) {
       throw new CustomException("COUPON#4_001",
-          "중복된 쿠폰이 존재합니다.",
+          "중복된 사용 가능한 쿠폰이 존재합니다.",
           HttpStatus.CONFLICT);
     }
 
-    // 쿠폰 수량 확인
     if (coupon.getCount() <= 0) {
       throw new CustomException("COUPON#4_002",
           "해당 쿠폰이 소진되었습니다.",
           HttpStatus.CONFLICT);
     }
 
-    // 프리미엄 쿠폰 저장 시 유저 등급 확인
+    checkCouponExpiration(coupon);
+
     if (coupon.getType().equals(CouponType.PREMIUM)
-        && !(userInfo.getTitle().equals(Title.CONQUEROR))) {
-      throw new CustomException("COUPON#4_003 ",
+        && !userInfo.getTitle().equals(Title.CONQUEROR)) {
+      throw new CustomException("COUPON#4_003",
           "정복자 등급만 등록할 수 있는 쿠폰입니다.",
           HttpStatus.CONFLICT);
     }
+  }
 
-    // 쿠폰 코드 발급
-    String couponCode = UUID.randomUUID().toString();
+  // 쿠폰 유효기간 확인
+  public void checkCouponExpiration(Coupon coupon) {
+    LocalDate currentDate = LocalDate.now(clock);
+    if (currentDate.isAfter(coupon.getValidUntil())) {
+      throw new CustomException("COUPON#4_004",
+          "해당 쿠폰의 유효기간이 지났습니다.",
+          HttpStatus.CONFLICT);
+    }
+  }
 
-    // 유저 프록시 객체
-    User referenceUser = userRepository.getReferenceById(userInfo.getId());
+  // 쿠폰 조회
+  public Coupon getCouponById(Long couponId) {
+    return couponRepository.findById(couponId).orElseThrow(
+        () -> new CustomException("COUPON#2_001",
+            "해당 쿠폰이 존재하지 않습니다.",
+            HttpStatus.NOT_FOUND));
+  }
 
-    // 쿠폰 저장
-    MyCoupon myCoupon =
-        MyCoupon.builder()
-            .code(couponCode)
-            .status(UseStatus.AVAILABLE)
-            .user(referenceUser)
-            .coupon(coupon)
-            .build();
-    coupon.decrementCount();
-    myCouponRepository.save(myCoupon);
+  // 유저 조회
+  public User getUserById(Long userId) {
+    return userRepository.getReferenceById(userId);
+  }
+
+  // 응답 생성
+  public MyCouponSaveResponse buildResponse(MyCoupon myCoupon) {
     Coupon associatedCoupon = myCoupon.getCoupon();
 
     return MyCouponSaveResponse.builder()
@@ -98,13 +126,5 @@ public class MyCouponService {
         .validUntil(associatedCoupon.getValidUntil())
         .createdAt(myCoupon.getCreatedAt())
         .build();
-  }
-
-  // 쿠폰 유효기간 확인
-  public void checkCouponExpiration(Coupon coupon) {
-    LocalDate currentDate = LocalDate.now(clock);
-    if (currentDate.isAfter(coupon.getValidUntil())) {
-      throw new CustomException("COUPON#4_004", "해당 쿠폰의 유효기간이 지났습니다.", HttpStatus.CONFLICT);
-    }
   }
 }
