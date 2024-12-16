@@ -3,16 +3,19 @@ package com.sparta.travelconquestbe.domain.coupon.entity;
 import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,11 +53,10 @@ public class Coupon extends TimeStampCreateUpdate {
   @Column(nullable = false)
   private int count;
 
-  @OneToMany(mappedBy = "coupon")
-  @Column(nullable = false)
-  private List<MyCoupon> myCoupons;
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "coupon", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  private final List<MyCoupon> myCoupons = new ArrayList<>();
 
-  public void saveCoupon() {
+  public void decrementCount() {
     this.count -= 1;
   }
 }

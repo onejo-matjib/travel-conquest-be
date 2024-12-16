@@ -12,7 +12,7 @@ public class CouponCreateResponse {
 
   private Long id;
   private String name;
-  private String descriotion;
+  private String description;
   private CouponType type;
   private int discountAmount;
   private LocalDate validUntil;
