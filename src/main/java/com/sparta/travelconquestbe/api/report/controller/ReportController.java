@@ -36,12 +36,11 @@ public class ReportController {
 
   @GetMapping("/api/admins/reports")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Page<ReportSearchResponse>> getReports(
-      @RequestParam("targetId") Long targetId,
+  public ResponseEntity<Page<ReportSearchResponse>> searchAllReports(
       @Positive @RequestParam(defaultValue = "1", value = "page") int page,
       @Positive @RequestParam(defaultValue = "10", value = "limit") int limit
   ) {
-    Page<ReportSearchResponse> response = reportService.getReports(targetId, page, limit);
+    Page<ReportSearchResponse> response = reportService.searchAllReports(page, limit);
     return ResponseEntity.ok(response);
   }
 }

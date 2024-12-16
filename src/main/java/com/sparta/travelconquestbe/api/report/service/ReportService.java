@@ -71,9 +71,9 @@ public class ReportService {
   }
 
   @Transactional(readOnly = true)
-  public Page<ReportSearchResponse> getReports(Long targetId, int page, int limit) {
+  public Page<ReportSearchResponse> searchAllReports(int page, int limit) {
     PageRequest pageRequest = PageRequest.of(page - 1, limit);
-    return reportRepository.findAllByTargetId(targetId, pageRequest)
+    return reportRepository.findAllReports(pageRequest)
         .map(ReportSearchResponse::from);
   }
 }

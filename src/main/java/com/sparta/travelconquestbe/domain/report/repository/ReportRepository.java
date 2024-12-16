@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
@@ -33,12 +32,10 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
       "SELECT r.id, r.reporter_id, r.target_id, r.report_category, r.reason, " +
           "r.status, r.created_at, r.checked_at, r.admin_id " +
           "FROM reports r " +
-          "WHERE r.target_id = :targetId " +
           "ORDER BY r.id DESC",
       countQuery =
           "SELECT COUNT(*) " +
-              "FROM reports " +
-              "WHERE target_id = :targetId",
+              "FROM reports",
       nativeQuery = true)
-  Page<Report> findAllByTargetId(@Param("targetId") Long targetId, Pageable pageable);
+  Page<Report> findAllReports(Pageable pageable);
 }

@@ -230,7 +230,6 @@ class SubscriptionServiceTest {
     assertEquals(0, response.getTotalFollowings());
   }
 
-
   @Test
   @DisplayName("구독 삭제 실패 - 같은 유저")
   void deleteSubscription_SameUserAndTarget() {

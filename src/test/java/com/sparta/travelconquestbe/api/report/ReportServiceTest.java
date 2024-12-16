@@ -134,38 +134,13 @@ class ReportServiceTest {
   }
 
   @Test
-  @DisplayName("신고 실패 - 타겟 유저 없음")
-  void createReport_FailTargetUserNotFound() {
-    AuthUserInfo user = new AuthUserInfo(1L, "email", "name", "nick", "avatar", "bio", null, null);
-    ReportCreateRequest request = ReportCreateRequest.builder()
-        .targetId(2L)
-        .reportCategory(ReportCategory.CHAT)
-        .reason(Reason.SPAM)
-        .build();
-
-    when(userRepository.getReferenceById(user.getId())).thenReturn(
-        User.builder().id(user.getId()).build());
-    when(userRepository.getReferenceById(request.getTargetId())).thenThrow(new CustomException(
-        "USER#404", "타겟 유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      reportService.createReport(user, request);
-    });
-
-    assertEquals("USER#404", exception.getErrorCode());
-    assertEquals("타겟 유저를 찾을 수 없습니다.", exception.getErrorMessage());
-    assertEquals(HttpStatus.NOT_FOUND, exception.getHttpStatus());
-  }
-
-  @Test
-  @DisplayName("신고 목록 조회 성공")
-  void getReports_Success() {
-    Long targetId = 2L;
+  @DisplayName("모든 신고 목록 조회 성공")
+  void searchAllReports_Success() {
     PageRequest pageable = PageRequest.of(0, 10);
     Report report = Report.builder()
         .id(1L)
         .reporterId(User.builder().id(1L).build())
-        .targetId(User.builder().id(targetId).build())
+        .targetId(User.builder().id(2L).build())
         .reportCategory(ReportCategory.ROUTE)
         .reason(Reason.SPAM)
         .status(Villain.OUTLAW)
@@ -175,9 +150,9 @@ class ReportServiceTest {
 
     Page<Report> reportPage = new PageImpl<>(List.of(report), pageable, 1);
 
-    when(reportRepository.findAllByTargetId(targetId, pageable)).thenReturn(reportPage);
+    when(reportRepository.findAllReports(pageable)).thenReturn(reportPage);
 
-    Page<ReportSearchResponse> response = reportService.getReports(targetId, 1, 10);
+    Page<ReportSearchResponse> response = reportService.searchAllReports(1, 10);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());
@@ -186,15 +161,14 @@ class ReportServiceTest {
   }
 
   @Test
-  @DisplayName("신고 목록 조회 성공 - 빈 결과")
-  void getReports_EmptyResult() {
-    Long targetId = 2L;
+  @DisplayName("모든 신고 목록 조회 성공 - 빈 결과")
+  void searchAllReports_EmptyResult() {
     PageRequest pageable = PageRequest.of(0, 10);
     Page<Report> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
-    when(reportRepository.findAllByTargetId(targetId, pageable)).thenReturn(emptyPage);
+    when(reportRepository.findAllReports(pageable)).thenReturn(emptyPage);
 
-    Page<ReportSearchResponse> response = reportService.getReports(targetId, 1, 10);
+    Page<ReportSearchResponse> response = reportService.searchAllReports(1, 10);
 
     assertNotNull(response);
     assertEquals(0, response.getTotalElements());
