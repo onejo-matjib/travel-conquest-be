@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface ReportRepository extends JpaRepository<Report, Long> {
 
@@ -28,6 +29,15 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
       nativeQuery = true)
   Optional<Villain> findLatestStatus(Long targetId);
 
-  @Query("SELECT r FROM Report r WHERE r.targetId.id = :targetId ORDER BY r.id DESC")
-  Page<Report> findAllByTargetId(Long targetId, Pageable pageable);
+  @Query(value =
+      "SELECT * " +
+          "FROM reports " +
+          "WHERE target_id = :targetId " +
+          "ORDER BY id DESC",
+      countQuery =
+          "SELECT COUNT(*) " +
+              "FROM reports " +
+              "WHERE target_id = :targetId",
+      nativeQuery = true)
+  Page<Report> findAllByTargetId(@Param("targetId") Long targetId, Pageable pageable);
 }
