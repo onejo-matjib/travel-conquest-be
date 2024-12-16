@@ -49,27 +49,46 @@ class SubscriptionServiceTest {
   }
 
   @Test
-  @DisplayName("구독 생성 성공")
+  @DisplayName("구독 성공")
   void createSubscription_Success() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    when(userRepository.getReferenceById(user.getId())).thenReturn(
-        User.builder().id(user.getId()).build());
-    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId)).thenReturn(
-        "VALID");
-    Subscription saved = Subscription.builder().id(1L).userId(user.getId()).subUserId(subUserId)
+
+    User requestingUser = User.builder()
+        .id(user.getId())
+        .subscriptionCount(0)
         .build();
-    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(saved);
+
+    User targetUser = User.builder()
+        .id(subUserId)
+        .subscriptionCount(5)
+        .build();
+
+    Subscription savedSubscription = Subscription.builder()
+        .id(1L)
+        .userId(user.getId())
+        .subUserId(subUserId)
+        .build();
+
+    when(userRepository.getReferenceById(user.getId())).thenReturn(requestingUser);
+    when(userRepository.findById(subUserId)).thenReturn(Optional.of(targetUser));
+    when(subscriptionRepository.validateSubscriptionCreation(user.getId(), subUserId))
+        .thenReturn("VALID");
+    when(subscriptionRepository.save(any(Subscription.class))).thenReturn(
+        savedSubscription);
 
     SubscriptionCreateResponse response = subscriptionService.createSubscription(user, subUserId);
 
     assertNotNull(response);
     assertEquals(1L, response.getId());
     assertEquals(subUserId, response.getSubUserId());
+
+    verify(userRepository).save(targetUser);
+    assertEquals(6, targetUser.getSubscriptionCount());
   }
 
   @Test
-  @DisplayName("구독 생성 실패 - 자기 구독")
+  @DisplayName("구독 실패 - 자기 구독")
   void createSubscription_SelfSubscription() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     when(userRepository.getReferenceById(user.getId())).thenReturn(
@@ -84,7 +103,7 @@ class SubscriptionServiceTest {
   }
 
   @Test
-  @DisplayName("구독 생성 실패 - 구독 대상 없음")
+  @DisplayName("구독 실패 - 구독 대상 없음")
   void createSubscription_TargetUserNotFound() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
@@ -102,7 +121,7 @@ class SubscriptionServiceTest {
   }
 
   @Test
-  @DisplayName("구독 생성 실패 - 중복 구독")
+  @DisplayName("구독 실패 - 중복 구독")
   void createSubscription_DuplicateSubscription() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
@@ -124,15 +143,33 @@ class SubscriptionServiceTest {
   void deleteSubscription_Success() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long subUserId = 2L;
-    Subscription subscription = Subscription.builder().id(1L).userId(user.getId())
-        .subUserId(subUserId).build();
-    when(userRepository.getReferenceById(user.getId())).thenReturn(
-        User.builder().id(user.getId()).build());
-    when(subscriptionRepository.findSubscription(user.getId(), subUserId)).thenReturn(
-        Optional.of(subscription));
+
+    User requestingUser = User.builder()
+        .id(user.getId())
+        .subscriptionCount(1)
+        .build();
+
+    User targetUser = User.builder()
+        .id(subUserId)
+        .subscriptionCount(5)
+        .build();
+
+    Subscription existingSubscription = Subscription.builder()
+        .id(1L)
+        .userId(user.getId())
+        .subUserId(subUserId)
+        .build();
+
+    when(userRepository.getReferenceById(user.getId())).thenReturn(requestingUser);
+    when(subscriptionRepository.findSubscription(user.getId(), subUserId))
+        .thenReturn(Optional.of(existingSubscription));
+    when(userRepository.findById(subUserId)).thenReturn(Optional.of(targetUser));
 
     assertDoesNotThrow(() -> subscriptionService.deleteSubscription(user, subUserId));
-    verify(subscriptionRepository).delete(subscription);
+
+    verify(subscriptionRepository).delete(existingSubscription);
+    assertEquals(4, targetUser.getSubscriptionCount());
+    verify(userRepository).save(targetUser);
   }
 
   @Test
