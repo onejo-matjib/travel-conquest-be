@@ -44,7 +44,7 @@ public class MyCouponService {
       Coupon coupon = validateAndGetCoupon(couponId, userInfo); // 쿠폰 정보 검증
 
       String couponCode = UUID.randomUUID().toString(); // 쿠폰 고유번호 랜덤 생성
-      User referenceUser = userRepository.getUserById(userInfo.getId()); // 프록시 객체 생성
+      User referenceUser = userRepository.getReferenceById(userInfo.getId()); // 프록시 객체 생성
 
       MyCoupon myCoupon = saveMyCoupon(coupon, referenceUser, couponCode);
       coupon.decrementCount(); // 쿠폰 수량 -1
