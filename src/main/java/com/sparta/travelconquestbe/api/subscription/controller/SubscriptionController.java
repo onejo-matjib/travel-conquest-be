@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionCre
 import com.sparta.travelconquestbe.api.subscription.dto.response.SubscriptionListResponse;
 import com.sparta.travelconquestbe.api.subscription.service.SubscriptionService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -27,34 +28,38 @@ public class SubscriptionController {
 
   @PostMapping
   public ResponseEntity<SubscriptionCreateResponse> createSubscription(
-      @AuthUser Long userId,
-      @Valid @RequestBody SubscriptionCreateRequest request) {
-    SubscriptionCreateResponse response = subscriptionService.createSubscription(userId,
+      @AuthUser AuthUserInfo user,
+      @Valid @RequestBody SubscriptionCreateRequest request
+  ) {
+    SubscriptionCreateResponse response = subscriptionService.createSubscription(user,
         request.getSubUserId());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @DeleteMapping("/{subUserId}")
   public ResponseEntity<Void> deleteSubscription(
-      @AuthUser Long userId,
-      @PathVariable Long subUserId) {
-    subscriptionService.deleteSubscription(userId, subUserId);
+      @AuthUser AuthUserInfo user,
+      @PathVariable Long subUserId
+  ) {
+    subscriptionService.deleteSubscription(user, subUserId);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/followings")
   public ResponseEntity<SubscriptionListResponse> searchMyFollowings(
-      @AuthUser Long userId,
-      Pageable pageable) {
-    SubscriptionListResponse response = subscriptionService.searchFollowings(userId, pageable);
+      @AuthUser AuthUserInfo user,
+      Pageable pageable
+  ) {
+    SubscriptionListResponse response = subscriptionService.searchFollowings(user, pageable);
     return ResponseEntity.ok(response);
   }
 
   @GetMapping("/followers")
   public ResponseEntity<SubscriptionListResponse> searchMyFollowers(
-      @AuthUser Long userId,
-      Pageable pageable) {
-    SubscriptionListResponse response = subscriptionService.searchFollowers(userId, pageable);
+      @AuthUser AuthUserInfo user,
+      Pageable pageable
+  ) {
+    SubscriptionListResponse response = subscriptionService.searchFollowers(user, pageable);
     return ResponseEntity.ok(response);
   }
 }
