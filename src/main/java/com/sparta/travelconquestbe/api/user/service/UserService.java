@@ -45,6 +45,8 @@ public class UserService {
       throw new CustomException("USER#4_001", "이미 탈퇴한 유저입니다.", HttpStatus.CONFLICT);
     }
 
+    String deletedNickname = "delete_" + user.getNickname();
+    user.changeNickname(deletedNickname);
     user.delete();
     userRepository.save(user);
   }

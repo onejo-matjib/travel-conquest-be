@@ -73,7 +73,7 @@ public class AdminService {
         .orElseThrow(
             () -> new CustomException("ADMIN#3_003", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-    String deletedNickname = "delete_" + user.getNickname();
+    String deletedNickname = "resign_" + user.getNickname();
     user.changeNickname(deletedNickname);
     user.delete();
 
