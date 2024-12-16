@@ -30,10 +30,11 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
   Optional<Villain> findLatestStatus(Long targetId);
 
   @Query(value =
-      "SELECT * " +
-          "FROM reports " +
-          "WHERE target_id = :targetId " +
-          "ORDER BY id DESC",
+      "SELECT r.id, r.reporter_id, r.target_id, r.report_category, r.reason, " +
+          "r.status, r.created_at, r.checked_at, r.admin_id " +
+          "FROM reports r " +
+          "WHERE r.target_id = :targetId " +
+          "ORDER BY r.id DESC",
       countQuery =
           "SELECT COUNT(*) " +
               "FROM reports " +
