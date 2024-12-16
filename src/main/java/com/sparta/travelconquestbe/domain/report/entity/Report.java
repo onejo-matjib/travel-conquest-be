@@ -5,17 +5,7 @@ import com.sparta.travelconquestbe.domain.report.enums.Reason;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
 import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import com.sparta.travelconquestbe.domain.user.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,4 +46,12 @@ public class Report extends TimeStampCreated {
 
   @Column
   private LocalDateTime checkedAt;
+
+  @Column
+  private Long adminId;
+
+  public void markProcessed(Long adminId) {
+    this.checkedAt = LocalDateTime.now();
+    this.adminId = adminId;
+  }
 }

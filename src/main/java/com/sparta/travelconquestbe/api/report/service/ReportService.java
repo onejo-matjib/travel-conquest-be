@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.api.report.service;
 
 import com.sparta.travelconquestbe.api.report.dto.request.ReportCreateRequest;
 import com.sparta.travelconquestbe.api.report.dto.response.ReportCreateResponse;
+import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
@@ -10,6 +11,8 @@ import com.sparta.travelconquestbe.domain.report.repository.ReportRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +36,7 @@ public class ReportService {
     boolean isDuplicate = reportRepository.isDuplicateReport(
         reporter.getId(), target.getId(), request.getReportCategory().name());
     if (isDuplicate) {
-      throw new CustomException("REPORT#2_001", "이미 신고한 대상입니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("REPORT#2_001", "이미 신고가 처리 중입니다.", HttpStatus.CONFLICT);
     }
 
     Villain currentStatus = getCurrentVillainStatus(target.getId());
@@ -65,5 +68,12 @@ public class ReportService {
         .build();
 
     return reportRepository.save(report);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<ReportSearchResponse> getReports(Long targetId, int page, int limit) {
+    PageRequest pageRequest = PageRequest.of(page - 1, limit);
+    return reportRepository.findAllByTargetId(targetId, pageRequest)
+        .map(ReportSearchResponse::from);
   }
 }
