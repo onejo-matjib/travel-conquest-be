@@ -137,18 +137,20 @@ class ReportServiceTest {
   @DisplayName("모든 신고 목록 조회 성공")
   void searchAllReports_Success() {
     PageRequest pageable = PageRequest.of(0, 10);
-    Report report = Report.builder()
-        .id(1L)
-        .reporterId(User.builder().id(1L).build())
-        .targetId(User.builder().id(2L).build())
-        .reportCategory(ReportCategory.ROUTE)
-        .reason(Reason.SPAM)
-        .status(Villain.OUTLAW)
-        .checkedAt(LocalDateTime.now())
-        .adminId(3L)
-        .build();
 
-    Page<Report> reportPage = new PageImpl<>(List.of(report), pageable, 1);
+    ReportSearchResponse reportResponse = new ReportSearchResponse(
+        1L,
+        1L,
+        2L,
+        ReportCategory.ROUTE,
+        Reason.SPAM,
+        Villain.OUTLAW,
+        LocalDateTime.now(),
+        LocalDateTime.now(),
+        3L
+    );
+
+    Page<ReportSearchResponse> reportPage = new PageImpl<>(List.of(reportResponse), pageable, 1);
 
     when(reportRepository.findAllReports(pageable)).thenReturn(reportPage);
 
@@ -164,7 +166,8 @@ class ReportServiceTest {
   @DisplayName("모든 신고 목록 조회 성공 - 빈 결과")
   void searchAllReports_EmptyResult() {
     PageRequest pageable = PageRequest.of(0, 10);
-    Page<Report> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+    Page<ReportSearchResponse> emptyPage = new PageImpl<>(List.of(), pageable, 0);
 
     when(reportRepository.findAllReports(pageable)).thenReturn(emptyPage);
 

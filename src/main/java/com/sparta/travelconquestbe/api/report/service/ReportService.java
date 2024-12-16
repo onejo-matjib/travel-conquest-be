@@ -73,7 +73,6 @@ public class ReportService {
   @Transactional(readOnly = true)
   public Page<ReportSearchResponse> searchAllReports(int page, int limit) {
     PageRequest pageRequest = PageRequest.of(page - 1, limit);
-    return reportRepository.findAllReports(pageRequest)
-        .map(ReportSearchResponse::from);
+    return reportRepository.findAllReports(pageRequest);
   }
 }

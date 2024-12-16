@@ -1,5 +1,6 @@
 package com.sparta.travelconquestbe.domain.report.repository;
 
+import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
 import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import java.util.Optional;
@@ -28,14 +29,9 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
       nativeQuery = true)
   Optional<Villain> findLatestStatus(Long targetId);
 
-  @Query(value =
-      "SELECT r.id, r.reporter_id, r.target_id, r.report_category, r.reason, " +
-          "r.status, r.created_at, r.checked_at, r.admin_id " +
-          "FROM reports r " +
-          "ORDER BY r.id DESC",
-      countQuery =
-          "SELECT COUNT(*) " +
-              "FROM reports",
-      nativeQuery = true)
-  Page<Report> findAllReports(Pageable pageable);
+  @Query("SELECT new com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse(" +
+      "r.id, r.reporterId.id, r.targetId.id, r.reportCategory, r.reason, " +
+      "r.status, r.createdAt, r.checkedAt, r.adminId) " +
+      "FROM Report r ORDER BY r.id DESC")
+  Page<ReportSearchResponse> findAllReports(Pageable pageable);
 }

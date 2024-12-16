@@ -1,6 +1,5 @@
 package com.sparta.travelconquestbe.api.report.dto.response;
 
-import com.sparta.travelconquestbe.domain.report.entity.Report;
 import com.sparta.travelconquestbe.domain.report.enums.Reason;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
 import com.sparta.travelconquestbe.domain.report.enums.Villain;
@@ -22,17 +21,17 @@ public class ReportSearchResponse {
   private LocalDateTime checkedAt;
   private Long adminId;
 
-  public static ReportSearchResponse from(Report report) {
-    return ReportSearchResponse.builder()
-        .reportId(report.getId())
-        .reporterId(report.getReporterId().getId())
-        .targetId(report.getTargetId().getId())
-        .reportCategory(report.getReportCategory())
-        .reason(report.getReason())
-        .status(report.getStatus())
-        .createdAt(report.getCreatedAt())
-        .checkedAt(report.getCheckedAt())
-        .adminId(report.getAdminId())
-        .build();
+  public ReportSearchResponse(Long reportId, Long reporterId, Long targetId,
+      ReportCategory reportCategory, Reason reason, Villain status,
+      LocalDateTime createdAt, LocalDateTime checkedAt, Long adminId) {
+    this.reportId = reportId;
+    this.reporterId = reporterId;
+    this.targetId = targetId;
+    this.reportCategory = reportCategory;
+    this.reason = reason;
+    this.status = status;
+    this.createdAt = createdAt;
+    this.checkedAt = checkedAt;
+    this.adminId = adminId;
   }
 }
