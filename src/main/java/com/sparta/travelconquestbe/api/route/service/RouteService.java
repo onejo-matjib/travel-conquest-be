@@ -8,7 +8,7 @@ import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
-import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationRequestDTO;
+import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationSearchRequest;
 import com.sparta.travelconquestbe.api.routelocation.dto.respones.LocationSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationService;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -115,7 +115,7 @@ public class RouteService {
     List<RouteLocation> locations = route.getLocations();
 
     RouteLineResponse routeLine =
-        kakaoMapApiService.searchRouteLine(buildLocationRequestDTO(locations));
+        kakaoMapApiService.searchRouteLine(buildLocationSearchRequest(locations));
 
     return RouteSearchResponse.builder()
         .title(route.getTitle())
@@ -148,21 +148,21 @@ public class RouteService {
         .build();
   }
 
-  private LocationRequestDTO buildLocationRequestDTO(List<RouteLocation> locations) {
-    return LocationRequestDTO.builder()
+  private LocationSearchRequest buildLocationSearchRequest(List<RouteLocation> locations) {
+    return LocationSearchRequest.builder()
         .origin(
-            new LocationRequestDTO.Origin(
+            new LocationSearchRequest.Origin(
                 locations.get(0).getLongitude().doubleValue(),
                 locations.get(0).getLatitude().doubleValue()))
         .destination(
-            new LocationRequestDTO.Destination(
+            new LocationSearchRequest.Destination(
                 locations.get(locations.size() - 1).getLongitude().doubleValue(),
                 locations.get(locations.size() - 1).getLatitude().doubleValue()))
         .waypoints(
             locations.subList(1, locations.size() - 1).stream()
                 .map(
                     location ->
-                        new LocationRequestDTO.Waypoint(
+                        new LocationSearchRequest.Waypoint(
                             location.getLocationName(),
                             location.getLongitude().doubleValue(),
                             location.getLatitude().doubleValue()))

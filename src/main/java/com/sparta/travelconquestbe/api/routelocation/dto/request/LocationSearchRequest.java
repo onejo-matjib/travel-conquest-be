@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class LocationRequestDTO {
+public class LocationSearchRequest {
   @NotNull private Origin origin;
 
   @NotNull private Destination destination;
@@ -15,7 +15,7 @@ public class LocationRequestDTO {
   private List<Waypoint> waypoints;
 
   @Builder
-  public LocationRequestDTO(Origin origin, Destination destination, List<Waypoint> waypoints) {
+  public LocationSearchRequest(Origin origin, Destination destination, List<Waypoint> waypoints) {
     this.origin = origin;
     this.destination = destination;
     this.waypoints = waypoints;

@@ -9,20 +9,20 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RouteLineResponse {
-  private List<RouteDTO> routes;
+  private List<Route> routes;
 
   @Getter
   @Setter
   @NoArgsConstructor
-  public static class RouteDTO {
-    private SummaryDTO summary;
-    private List<SectionDTO> sections;
+  public static class Route {
+    private Summary summary;
+    private List<Section> sections;
   }
 
   @Getter
   @Setter
   @NoArgsConstructor
-  public static class SummaryDTO {
+  public static class Summary {
     private int distance;
     private int duration;
   }
@@ -30,15 +30,15 @@ public class RouteLineResponse {
   @Getter
   @Setter
   @NoArgsConstructor
-  public static class SectionDTO {
-    private List<RoadDTO> roads;
-    private List<GuideDTO> guides;
+  public static class Section {
+    private List<Road> roads;
+    private List<Guide> guides;
   }
 
   @Getter
   @Setter
   @NoArgsConstructor
-  public static class RoadDTO {
+  public static class Road {
     private String name;
     private int distance;
     private int duration;
@@ -50,7 +50,7 @@ public class RouteLineResponse {
   @Getter
   @Setter
   @NoArgsConstructor
-  public static class GuideDTO {
+  public static class Guide {
     private String name;
     private int distance;
     private int duration;

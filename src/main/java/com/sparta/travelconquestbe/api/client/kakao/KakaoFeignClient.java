@@ -1,7 +1,7 @@
 package com.sparta.travelconquestbe.api.client.kakao;
 
 import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
-import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationRequestDTO;
+import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationSearchRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,5 +14,5 @@ public interface KakaoFeignClient {
   @PostMapping(value = "/v1/waypoints/directions", consumes = "application/json")
   ResponseEntity<RouteLineResponse> searchRouteLine(
       @RequestHeader("Authorization") String authorization,
-      @RequestBody LocationRequestDTO location);
+      @RequestBody LocationSearchRequest location);
 }
