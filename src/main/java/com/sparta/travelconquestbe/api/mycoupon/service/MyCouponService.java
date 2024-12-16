@@ -45,7 +45,11 @@ public class MyCouponService {
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
 
-    if (myCouponRepository.existsByCouponIdAndUserId(coupon.getId(), userInfo.getId())) {
+    // AVAILABLE 쿠폰 중복 검사
+    if (myCouponRepository.existsByCouponIdAndUserIdAndStatus(
+        coupon.getId(),
+        userInfo.getId(),
+        UseStatus.AVAILABLE)) {
       throw new CustomException("COUPON#4_001",
           "중복된 쿠폰이 존재합니다.",
           HttpStatus.CONFLICT);
