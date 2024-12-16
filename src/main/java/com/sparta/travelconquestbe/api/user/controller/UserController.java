@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,5 +24,11 @@ public class UserController {
   public ResponseEntity<UserResponse> getUser(@PathVariable Long id, @AuthUser AuthUserInfo user) {
     UserResponse userResponse = userService.getUserInfo(id, user);
     return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+  }
+
+  @PutMapping()
+  public ResponseEntity<Void> deleteUser(@AuthUser AuthUserInfo userInfo) {
+    userService.deleteUser(userInfo);
+    return ResponseEntity.noContent().build();
   }
 }

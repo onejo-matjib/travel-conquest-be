@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +34,19 @@ public class UserService {
         .title(targetUser.getTitle().name())
         .subscriptionsCount(targetUser.getSubscriptionsCount())
         .build();
+  }
+
+  @Transactional
+  public void deleteUser(AuthUserInfo userInfo) {
+    User user = userRepository.findById(userInfo.getId())
+        .orElseThrow(() -> new CustomException("USER#3_002", "유저를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    if (user.getDeletedAt() != null) {
+      throw new CustomException("USER#4_001", "이미 탈퇴한 유저입니다.", HttpStatus.CONFLICT);
+    }
+
+    user.delete();
+    userRepository.save(user);
   }
 
 }

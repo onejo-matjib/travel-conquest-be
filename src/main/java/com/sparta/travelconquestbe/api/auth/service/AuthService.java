@@ -72,6 +72,10 @@ public class AuthService {
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new CustomException("AUTH#3_002", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
 
+    if (user.getDeletedAt() != null) {
+      throw new CustomException("AUTH#4_002", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
+    }
+
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
       throw new CustomException("AUTH#1_002", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
     }
@@ -92,6 +96,9 @@ public class AuthService {
 
     if (existingUser.isPresent()) {
       User user = existingUser.get();
+      if (user.getDeletedAt() != null) {
+        throw new CustomException("AUTH#4_003", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
+      }
       String jwtToken = jwtHelper.createToken(user);
       return KakaoLoginResult.existingUser(jwtToken);
     } else {
