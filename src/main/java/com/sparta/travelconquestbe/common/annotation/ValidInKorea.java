@@ -3,13 +3,12 @@ package com.sparta.travelconquestbe.common.annotation;
 import com.sparta.travelconquestbe.common.validator.KoreaLatitudeLongitudeValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.ANNOTATION_TYPE, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = KoreaLatitudeLongitudeValidator.class)
 public @interface ValidInKorea {

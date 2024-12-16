@@ -10,15 +10,16 @@ public class KoreaLatitudeLongitudeValidator
     implements ConstraintValidator<ValidInKorea, RouteLocationInfo> {
   @Override
   public boolean isValid(RouteLocationInfo location, ConstraintValidatorContext context) {
-    // 대한민국 내 위도 범위 검사
-    boolean isLatitudeValid =
-        location.getLatitude().compareTo(new BigDecimal(36.0)) >= 0
-            && location.getLatitude().compareTo(new BigDecimal(38.6)) <= 0;
+    BigDecimal latitude = location.getLatitude();
+    BigDecimal longitude = location.getLongitude();
 
-    // 대한민국 내 경도 범위 검사
+    // 대한민국 내 위도 및 경도 조합 검사
+    boolean isLatitudeValid =
+        latitude.compareTo(new BigDecimal("33.0")) >= 0
+            && latitude.compareTo(new BigDecimal("38.6")) <= 0;
     boolean isLongitudeValid =
-        location.getLongitude().compareTo(new BigDecimal(126.0)) >= 0
-            && location.getLongitude().compareTo(new BigDecimal(130.5)) <= 0;
+        longitude.compareTo(new BigDecimal("124.0")) >= 0
+            && longitude.compareTo(new BigDecimal("132.0")) <= 0;
 
     return isLatitudeValid && isLongitudeValid;
   }
