@@ -3,13 +3,14 @@ package com.sparta.travelconquestbe.api.route.controller;
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.route.service.RouteService;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
 import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.domain.route.enums.RouteSort;
-import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
@@ -34,7 +35,7 @@ public class RouteController {
   public ResponseEntity<RouteCreateResponse> routeCreate(
       @Valid @RequestPart(value = "routeCreateRequest") RouteCreateRequest routeCreateRequest,
       @RequestPart(value = "mediaFiles", required = false) List<MultipartFile> mediaFiles,
-      @AuthUser Long userId)
+      @AuthUser AuthUserInfo userId)
       throws Exception {
 
     List<RouteLocationInfo> updatedLocations =
@@ -58,9 +59,14 @@ public class RouteController {
         .body(routeService.routeSearchAll(page, limit, routeSort));
   }
 
+  @GetMapping("/{id}")
+  public ResponseEntity<RouteSearchResponse> routeSearch(@PathVariable Long id) {
+    return ResponseEntity.status(HttpStatus.OK).body(routeService.routeSearch(id));
+  }
+
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> routeDelete(@PathVariable Long id, @AuthUser Long userId) {
-    routeService.routeDelete(id, userId);
+  public ResponseEntity<Void> routeDelete(@PathVariable Long id, @AuthUser AuthUserInfo user) {
+    routeService.routeDelete(id, user);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }

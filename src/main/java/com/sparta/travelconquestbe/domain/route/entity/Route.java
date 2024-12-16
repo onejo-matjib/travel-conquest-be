@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.http.HttpStatus;
 
 @Entity
@@ -35,10 +36,13 @@ public class Route extends TimeStampCreateUpdate {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
+  @ColumnDefault("0")
   private Long totalDistance;
 
+  @ColumnDefault("0")
   private int money;
 
+  @ColumnDefault("0")
   private String estimatedTime;
 
   @ManyToOne
@@ -59,7 +63,7 @@ public class Route extends TimeStampCreateUpdate {
       cascade = CascadeType.REMOVE,
       orphanRemoval = true)
   @BatchSize(size = 100)
-  private List<Review> reviews = new ArrayList<>();
+  private final List<Review> reviews = new ArrayList<>();
 
   @OneToMany(
       fetch = FetchType.LAZY,
@@ -67,7 +71,7 @@ public class Route extends TimeStampCreateUpdate {
       cascade = CascadeType.REMOVE,
       orphanRemoval = true)
   @BatchSize(size = 100)
-  private List<Bookmark> bookmarks = new ArrayList<>();
+  private final List<Bookmark> bookmarks = new ArrayList<>();
 
   public void validCreatorOrAdmin(Long userId, UserType type) {
     if (!Objects.equals(userId, this.getUser().getId()) && type != UserType.ADMIN) {
