@@ -75,4 +75,4 @@ CHAT#4_001 / 입장 가능 인원이 초과되었습니다. / FORBIDDEN
 
 신고
 REPORT#1_001 / "본인을 신고할 수 없습니다." / BAD_REQUEST
-REPORT#2_001 / "이미 신고된 대상입니다." / CONFLICT
+REPORT#2_001 / "이미 신고가 처리 중입니다." / CONFLICT
