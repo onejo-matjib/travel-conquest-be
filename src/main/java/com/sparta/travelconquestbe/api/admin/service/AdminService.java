@@ -3,9 +3,6 @@ package com.sparta.travelconquestbe.api.admin.service;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
-import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
-import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
-import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -90,7 +87,8 @@ public class AdminService {
     verifyAdmin(admin);
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(
+            () -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     if (user.getType() != UserType.USER) {
       throw new CustomException("ADMIN#5_002", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
@@ -132,15 +130,23 @@ public class AdminService {
           HttpStatus.FORBIDDEN);
     }
 
-    Coupon coupon =
-        Coupon.builder()
-            .name(request.getName())
-            .description(request.getDescription())
-            .type(CouponType.valueOf(request.getType()))
-            .discountAmount(request.getDiscountAmount())
-            .validUntil(request.getValidUntil())
-            .count(request.getCount())
-            .build();
+    CouponType requestCouponType;
+    try {
+      requestCouponType = CouponType.valueOf(request.getType());
+    } catch (IllegalArgumentException e) {
+      throw new CustomException("COUPON#1_001",
+          "유효하지 않은 쿠폰 타입입니다.: " + request.getType(),
+          HttpStatus.BAD_REQUEST);
+    }
+
+    Coupon coupon = Coupon.builder()
+        .name(request.getName())
+        .description(request.getDescription())
+        .type(requestCouponType)
+        .discountAmount(request.getDiscountAmount())
+        .validUntil(request.getValidUntil())
+        .count(request.getCount())
+        .build();
     couponRepository.save(coupon);
 
     return CouponCreateResponse.builder()
