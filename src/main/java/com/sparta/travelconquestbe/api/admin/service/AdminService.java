@@ -130,15 +130,7 @@ public class AdminService {
           HttpStatus.FORBIDDEN);
     }
 
-    CouponType requestCouponType;
-    try {
-      requestCouponType = CouponType.valueOf(request.getType());
-    } catch (IllegalArgumentException e) {
-      throw new CustomException("COUPON#1_001",
-          "유효하지 않은 쿠폰 타입입니다.: " + request.getType(),
-          HttpStatus.BAD_REQUEST);
-    }
-
+    CouponType requestCouponType = CouponType.valueOf(request.getType());
     Coupon coupon = Coupon.builder()
         .name(request.getName())
         .description(request.getDescription())

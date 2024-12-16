@@ -19,7 +19,7 @@ public class CouponCreateRequest {
   private String description;
 
   @NotNull(message = "쿠폰 유형은 필수입니다.")
-  @ValidEnum(enumClass = CouponType.class)
+  @ValidEnum(enumClass = CouponType.class, message = "유효하지 않은 쿠폰 타입입니다.")
   private String type;
 
   @NotNull(message = "할인 금액은 필수입니다.")
