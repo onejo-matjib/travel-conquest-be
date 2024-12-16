@@ -70,6 +70,7 @@ public class User extends TimeStampAll {
   public void updateUserType() {
     if (this.type == UserType.USER) {
       this.type = UserType.AUTHENTICATED_USER;
+      this.title = Title.PIONEER;
     } else {
       throw new CustomException("ADMIN#5_002", "등급 업그레이드가 불가능한 상태입니다.", HttpStatus.BAD_REQUEST);
     }
