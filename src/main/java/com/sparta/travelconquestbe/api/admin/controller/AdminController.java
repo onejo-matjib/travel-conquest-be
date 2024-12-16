@@ -5,7 +5,6 @@ import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminUpdateUserRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.api.admin.service.AdminService;
-import com.sparta.travelconquestbe.api.auth.dto.request.AuthSignUpRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
@@ -14,14 +13,12 @@ import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.admin.enums.AdminAction;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import jakarta.validation.Valid;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -56,7 +53,8 @@ public class AdminController {
   }
 
   @PutMapping("/users/{userId}")
-  public ResponseEntity<AdminUpdateUserResponse> updateUser(@AuthUser AuthUserInfo admin, @PathVariable long userId,
+  public ResponseEntity<AdminUpdateUserResponse> updateUser(@AuthUser AuthUserInfo admin,
+      @PathVariable long userId,
       @Valid @RequestBody AdminUpdateUserRequest updateRequest) {
 
     AdminAction action = updateRequest.getAction();
@@ -72,7 +70,7 @@ public class AdminController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/admins/coupons")
+  @PostMapping("/coupons")
   public ResponseEntity<CouponCreateResponse> createCoupon(
       @Valid @RequestBody CouponCreateRequest request,
       @AuthUser AuthUserInfo user
@@ -81,7 +79,7 @@ public class AdminController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/admins/coupons/{id}")
+  @DeleteMapping("/coupons/{id}")
   public ResponseEntity<String> deleteCoupon(
       @PathVariable Long id,
       @AuthUser AuthUserInfo user
