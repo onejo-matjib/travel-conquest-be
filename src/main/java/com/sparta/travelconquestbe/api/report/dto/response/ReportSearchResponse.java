@@ -1,6 +1,9 @@
 package com.sparta.travelconquestbe.api.report.dto.response;
 
 import com.sparta.travelconquestbe.domain.report.entity.Report;
+import com.sparta.travelconquestbe.domain.report.enums.Reason;
+import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
+import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +15,9 @@ public class ReportSearchResponse {
   private Long reportId;
   private Long reporterId;
   private Long targetId;
-  private String reason;
+  private ReportCategory reportCategory;
+  private Reason reason;
+  private Villain status;
   private LocalDateTime createdAt;
   private LocalDateTime checkedAt;
   private Long adminId;
@@ -22,7 +27,9 @@ public class ReportSearchResponse {
         .reportId(report.getId())
         .reporterId(report.getReporterId().getId())
         .targetId(report.getTargetId().getId())
-        .reason(String.valueOf(report.getReason()))
+        .reportCategory(report.getReportCategory())
+        .reason(report.getReason())
+        .status(report.getStatus())
         .createdAt(report.getCreatedAt())
         .checkedAt(report.getCheckedAt())
         .adminId(report.getAdminId())
