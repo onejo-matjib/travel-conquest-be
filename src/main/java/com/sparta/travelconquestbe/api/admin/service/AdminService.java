@@ -135,7 +135,7 @@ public class AdminService {
         .email(user.getEmail())
         .birth(user.getBirth())
         .title(user.getTitle().name())
-        .subscriptionsCount(user.getSubscriptionsCount())
+        .subscriptionsCount(user.getSubscriptionCount())
         .build()).getContent();
     return new PageImpl<>(userResponses, limitedPageable, userPage.getTotalElements());
   }
