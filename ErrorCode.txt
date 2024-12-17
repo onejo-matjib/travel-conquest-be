@@ -38,12 +38,10 @@ COUPON#4_NNN / 해당 쿠폰이 소진되었습니다. / CONFLICT
 COUPON#4_NNN / 정복자 등급만 등록할 수 있는 쿠폰입니다. / CONFLICT
 COUPON#4_NNN / 해당 쿠폰의 유효기간이 지났습니다. / CONFLICT
 
-
 리뷰
-REVIEW#1_NNN / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
-REVIEW#2_NNN / 해당 리뷰를 찾을 수 없습니다. / NOT_FOUND
-REVIEW#3_NNN / 본인의 리뷰만 삭제할 수 있습니다. / FORBIDDEN
-
+REVIEW#1_004 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST
+REVIEW#2_001 / 해당 리뷰를 찾을 수 없습니다. / NOT_FOUND
+REVIEW#3_001 / 본인의 리뷰만 삭제할 수 있습니다. / FORBIDDEN
 
 루트
 ROUTE#1_NNN / 해당 루트를 찾을 수 없습니다. / NOT_FOUND
@@ -58,14 +56,14 @@ S3#3_NNN / 파일 크기가 허용 범위를 초과했습니다. / PAYLOAD_TOO_L
 S3#4_NNN / key 값 디코딩이 실패했습니다. / BAD_REQUEST
 
 즐겨찾기
-BOOKMARK#1_NNN / 해당 즐겨찾기를 찾을 수 없습니다. / NOT_FOUND
-BOOKMARK#2_NNN / 이미 등록된 즐겿찾기입니다. / CONFLICT
-BOOKMARK#3_NNN / 본인의 즐겨찾기만 삭제할 수 있습니다. / FORBIDDEN
+BOOKMARK#1_003 / 해당 즐겨찾기를 찾을 수 없습니다. / NOT_FOUND
+BOOKMARK#2_001 / 이미 등록된 즐겿찾기입니다. / CONFLICT
+BOOKMARK#3_001 / 본인의 즐겨찾기만 삭제할 수 있습니다. / FORBIDDEN
 
 구독
-SUBSCRIPTION#1_NNN / 본인을 구독할 수 없습니다. / BAD_REQUEST
-SUBSCRIPTION#2_NNN / 이미 구독 중입니다. / CONFLICT
-SUBSCRIPTION#3_NNN / 구독 관계를 찾을 수 없습니다. / NOT_FOUND
+SUBSCRIPTION#1_001 / 본인을 구독할 수 없습니다. / BAD_REQUEST
+SUBSCRIPTION#2_001 / 이미 구독 중입니다. / CONFLICT
+SUBSCRIPTION#3_002 / 구독 관계를 찾을 수 없습니다. / NOT_FOUND
 
 채팅
 CHAT#1_003 / 해당 채팅방이 존재하지 않습니다. / NOT_FOUND
@@ -75,4 +73,4 @@ CHAT#4_001 / 입장 가능 인원이 초과되었습니다. / FORBIDDEN
 
 신고
 REPORT#1_001 / "본인을 신고할 수 없습니다." / BAD_REQUEST
-REPORT#2_001 / "이미 신고된 대상입니다." / CONFLICT
+REPORT#2_001 / "이미 신고가 처리 중입니다." / CONFLICT

@@ -10,7 +10,7 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +67,6 @@ public class SubscriptionService {
             () -> new CustomException("SUBSCRIPTION#3_002", "구독 관계를 찾을 수 없습니다.",
                 HttpStatus.NOT_FOUND)
         );
-
     subscriptionRepository.delete(subscription);
 
     User subUser = userRepository.findById(subUserId)
@@ -79,20 +78,22 @@ public class SubscriptionService {
   }
 
   @Transactional(readOnly = true)
-  public SubscriptionListResponse searchFollowings(AuthUserInfo user, Pageable pageable) {
+  public SubscriptionListResponse searchFollowings(AuthUserInfo user, int page, int limit) {
     User referenceUser = userRepository.getReferenceById(user.getId());
+    PageRequest pageRequest = PageRequest.of(page - 1, limit);
     Page<Subscription> subscriptions = subscriptionRepository.findAllByUserId(referenceUser.getId(),
-        pageable);
+        pageRequest);
     Long totalFollowings = subscriptions.getTotalElements();
 
     return SubscriptionListResponse.from(subscriptions, totalFollowings);
   }
 
   @Transactional(readOnly = true)
-  public SubscriptionListResponse searchFollowers(AuthUserInfo user, Pageable pageable) {
+  public SubscriptionListResponse searchFollowers(AuthUserInfo user, int page, int limit) {
     User referenceUser = userRepository.getReferenceById(user.getId());
+    PageRequest pageRequest = PageRequest.of(page - 1, limit);
     Page<Subscription> subscriptions = subscriptionRepository.findAllBySubUserId(
-        referenceUser.getId(), pageable);
+        referenceUser.getId(), pageRequest);
     Long totalFollowers = subscriptions.getTotalElements();
 
     return SubscriptionListResponse.from(subscriptions, totalFollowers);

@@ -7,8 +7,8 @@ import com.sparta.travelconquestbe.api.subscription.service.SubscriptionService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -48,18 +49,20 @@ public class SubscriptionController {
   @GetMapping("/followings")
   public ResponseEntity<SubscriptionListResponse> searchMyFollowings(
       @AuthUser AuthUserInfo user,
-      Pageable pageable
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int limit
   ) {
-    SubscriptionListResponse response = subscriptionService.searchFollowings(user, pageable);
+    SubscriptionListResponse response = subscriptionService.searchFollowings(user, page, limit);
     return ResponseEntity.ok(response);
   }
 
   @GetMapping("/followers")
   public ResponseEntity<SubscriptionListResponse> searchMyFollowers(
       @AuthUser AuthUserInfo user,
-      Pageable pageable
+      @Positive @RequestParam(defaultValue = "1", value = "page") int page,
+      @Positive @RequestParam(defaultValue = "10", value = "limit") int limit
   ) {
-    SubscriptionListResponse response = subscriptionService.searchFollowers(user, pageable);
+    SubscriptionListResponse response = subscriptionService.searchFollowers(user, page, limit);
     return ResponseEntity.ok(response);
   }
 }

@@ -194,15 +194,18 @@ class SubscriptionServiceTest {
   @DisplayName("구독 목록 조회 성공")
   void searchFollowings_Success() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    PageRequest pageable = PageRequest.of(0, 10);
+    int page = 1;
+    int limit = 10;
+
     Subscription s = Subscription.builder().id(1L).userId(user.getId()).subUserId(2L).build();
-    Page<Subscription> page = new PageImpl<>(List.of(s), pageable, 1);
+    Page<Subscription> mockPage = new PageImpl<>(List.of(s), PageRequest.of(page - 1, limit), 1);
 
     when(userRepository.getReferenceById(user.getId())).thenReturn(
         User.builder().id(user.getId()).build());
-    when(subscriptionRepository.findAllByUserId(user.getId(), pageable)).thenReturn(page);
+    when(subscriptionRepository.findAllByUserId(user.getId(), PageRequest.of(page - 1, limit)))
+        .thenReturn(mockPage);
 
-    SubscriptionListResponse response = subscriptionService.searchFollowings(user, pageable);
+    SubscriptionListResponse response = subscriptionService.searchFollowings(user, page, limit);
     assertNotNull(response);
     assertEquals(1, response.getTotalFollowings());
     assertEquals(1, response.getFollowings().size());
@@ -212,14 +215,17 @@ class SubscriptionServiceTest {
   @DisplayName("구독 목록 비어있음")
   void searchFollowings_EmptyResult() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    PageRequest pageable = PageRequest.of(0, 10);
-    Page<Subscription> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+    int page = 1;
+    int limit = 10;
+
+    Page<Subscription> emptyPage = new PageImpl<>(List.of(), PageRequest.of(page - 1, limit), 0);
 
     when(userRepository.getReferenceById(user.getId())).thenReturn(
         User.builder().id(user.getId()).build());
-    when(subscriptionRepository.findAllByUserId(user.getId(), pageable)).thenReturn(emptyPage);
+    when(subscriptionRepository.findAllByUserId(user.getId(), PageRequest.of(page - 1, limit)))
+        .thenReturn(emptyPage);
 
-    SubscriptionListResponse response = subscriptionService.searchFollowings(user, pageable);
+    SubscriptionListResponse response = subscriptionService.searchFollowings(user, page, limit);
     assertNotNull(response);
     assertEquals(0, response.getTotalFollowings());
   }
@@ -243,16 +249,20 @@ class SubscriptionServiceTest {
   @DisplayName("내 구독자 목록 조회 성공")
   void searchMyFollowers_Success() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    PageRequest pageable = PageRequest.of(0, 10);
+    int page = 1;
+    int limit = 10;
+
     Subscription s1 = Subscription.builder().id(1L).userId(2L).subUserId(user.getId()).build();
     Subscription s2 = Subscription.builder().id(2L).userId(3L).subUserId(user.getId()).build();
-    Page<Subscription> mockPage = new PageImpl<>(List.of(s1, s2), pageable, 2);
+    Page<Subscription> mockPage = new PageImpl<>(List.of(s1, s2), PageRequest.of(page - 1, limit),
+        2);
 
     when(userRepository.getReferenceById(user.getId())).thenReturn(
         User.builder().id(user.getId()).build());
-    when(subscriptionRepository.findAllBySubUserId(user.getId(), pageable)).thenReturn(mockPage);
+    when(subscriptionRepository.findAllBySubUserId(user.getId(), PageRequest.of(page - 1, limit)))
+        .thenReturn(mockPage);
 
-    SubscriptionListResponse response = subscriptionService.searchFollowers(user, pageable);
+    SubscriptionListResponse response = subscriptionService.searchFollowers(user, page, limit);
     assertNotNull(response);
     assertEquals(2, response.getTotalFollowings());
     assertEquals(2, response.getFollowings().size());
