@@ -3,6 +3,7 @@ package com.sparta.travelconquestbe.api.admin.service;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
+import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -15,7 +16,11 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,7 @@ public class AdminService {
   private final JwtHelper jwtHelper;
   private final PasswordEncoder passwordEncoder;
   private final CouponRepository couponRepository;
+  private static final int MAX_PAGE_SIZE = 100;
 
   public void signUp(AdminSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -111,6 +117,27 @@ public class AdminService {
     user.changeNickname(originalNickname);
 
     userRepository.save(user);
+  }
+
+  public Page<UserResponse> getAllUsers(Pageable pageable) {
+    if (pageable.getPageNumber() < 0 || pageable.getPageSize() <= 0) {
+      throw new CustomException("ADMIN#5_003", "페이지 번호와 사이즈는 양수여야 합니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    int pageSize = pageable.getPageSize() > MAX_PAGE_SIZE ? MAX_PAGE_SIZE : pageable.getPageSize();
+    Pageable limitedPageable = Pageable.ofSize(pageSize).withPage(pageable.getPageNumber());
+
+    Page<User> userPage = userRepository.findAll(limitedPageable);
+    List<UserResponse> userResponses = userPage.map(user -> UserResponse.builder()
+        .id(user.getId())
+        .name(user.getName())
+        .nickname(user.getNickname())
+        .email(user.getEmail())
+        .birth(user.getBirth())
+        .title(user.getTitle().name())
+        .subscriptionsCount(user.getSubscriptionsCount())
+        .build()).getContent();
+    return new PageImpl<>(userResponses, limitedPageable, userPage.getTotalElements());
   }
 
   public CouponCreateResponse createCoupon(CouponCreateRequest request, AuthUserInfo userInfo) {
