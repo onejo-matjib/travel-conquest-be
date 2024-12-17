@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
       MethodArgumentNotValidException ex) {
     String errorMessage = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
     ErrorResponse response =
-        new ErrorResponse("COMMON_001", errorMessage, 400, System.currentTimeMillis());
+        new ErrorResponse("COMMON", errorMessage, 400, System.currentTimeMillis());
     return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatus()));
   }
 
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
       ConstraintViolationException ex) {
     String errorMessage = ex.getMessage();
     ErrorResponse response =
-        new ErrorResponse("COMMON_001", errorMessage, 400, System.currentTimeMillis());
+        new ErrorResponse("COMMON", errorMessage, 400, System.currentTimeMillis());
     return new ResponseEntity<>(response, HttpStatusCode.valueOf(response.getHttpStatus()));
   }
 }

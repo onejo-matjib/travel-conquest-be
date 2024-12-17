@@ -72,6 +72,10 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+
+    // OpenFeign
+    implementation platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     // websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     // STOMP
