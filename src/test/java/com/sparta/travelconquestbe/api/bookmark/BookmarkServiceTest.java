@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
+import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkRankingResponse;
 import com.sparta.travelconquestbe.api.bookmark.service.BookmarkService;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -21,6 +21,7 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,16 +65,37 @@ class BookmarkServiceTest {
     when(userRepository.getReferenceById(user.getId())).thenReturn(mockUser);
     when(bookmarkRepository.validateBookmarkCreation(user.getId(), routeId)).thenReturn("VALID");
     when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-    when(bookmarkRepository.save(any(Bookmark.class))).thenAnswer(inv -> {
-      Bookmark b = inv.getArgument(0);
-      return Bookmark.builder().id(3L).route(b.getRoute()).user(b.getUser()).build();
-    });
+    when(bookmarkRepository.save(any(Bookmark.class))).thenReturn(
+        Bookmark.builder().id(3L).user(mockUser).route(route).build()
+    );
 
     BookmarkCreateResponse response = bookmarkService.createBookmark(routeId, user);
 
     assertNotNull(response);
     assertEquals(routeId, response.getRouteId());
     verify(bookmarkRepository).validateBookmarkCreation(user.getId(), routeId);
+  }
+
+  @Test
+  @DisplayName("즐겨찾기 목록 조회 성공 - 페이징 검증")
+  void searchBookmarks_Success() {
+    AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
+    int page = 1, size = 10;
+    PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+    Page<BookmarkListResponse> mockPage = new PageImpl<>(Collections.singletonList(
+        new BookmarkListResponse(1L, 2L, "Test Route", LocalDateTime.now())
+    ));
+
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(bookmarkRepository.getUserBookmarks(user.getId(), pageRequest)).thenReturn(mockPage);
+
+    Page<BookmarkListResponse> result = bookmarkService.searchBookmarks(user, page, size);
+
+    assertNotNull(result);
+    assertEquals(1, result.getContent().size());
+    verify(bookmarkRepository).getUserBookmarks(user.getId(), pageRequest);
   }
 
   @Test
@@ -111,23 +133,6 @@ class BookmarkServiceTest {
 
     assertEquals("BOOKMARK#2_001", exception.getErrorCode());
     assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
-  }
-
-  @Test
-  @DisplayName("즐겨찾기 목록 조회 성공")
-  void getBookmarks_Success() {
-    AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    Page<BookmarkListResponse> page = new PageImpl<>(Collections.singletonList(
-        new BookmarkListResponse(1L, 2L, "Test Route", null)
-    ));
-    when(userRepository.getReferenceById(user.getId())).thenReturn(
-        User.builder().id(user.getId()).build());
-    when(bookmarkRepository.getUserBookmarks(eq(user.getId()), any(PageRequest.class))).thenReturn(
-        page);
-
-    Page<BookmarkListResponse> result = bookmarkService.getBookmarks(user, PageRequest.of(0, 10));
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
   }
 
   @Test
@@ -183,5 +188,89 @@ class BookmarkServiceTest {
 
     assertEquals("BOOKMARK#3_001", exception.getErrorCode());
     assertEquals(HttpStatus.FORBIDDEN, exception.getHttpStatus());
+  }
+
+  @Test
+  @DisplayName("월별 루트 랭킹 조회 성공 - updatedAt이 null")
+  void getMonthlyRankings_UpdatedAtNull() {
+    int year = 2024, month = 5;
+    LocalDateTime createdAt = LocalDateTime.now();
+    PageRequest pageable = PageRequest.of(0, 10);
+
+    BookmarkRankingResponse rankingResponse = new BookmarkRankingResponse(
+        "User1", "Route Title", "Description", null, createdAt
+    );
+    Page<BookmarkRankingResponse> mockPage = new PageImpl<>(
+        Collections.singletonList(rankingResponse));
+
+    when(bookmarkRepository.findMonthlyRankings(year, month, pageable)).thenReturn(mockPage);
+
+    Page<BookmarkRankingResponse> result = bookmarkService.getMonthlyRankings(year, month, 1, 10);
+
+    assertNotNull(result);
+    assertEquals(1, result.getContent().size());
+    assertEquals(createdAt, result.getContent().get(0).getUpdatedAt());
+  }
+
+  @Test
+  @DisplayName("월별 루트 랭킹 조회 실패 - 미래 날짜 입력")
+  void getMonthlyRankings_FutureDate() {
+    int year = 2025, month = 12;
+
+    CustomException exception = assertThrows(CustomException.class, () ->
+        bookmarkService.getMonthlyRankings(year, month, 1, 10)
+    );
+
+    assertEquals("BOOKMARK#4_002", exception.getErrorCode());
+    assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
+    assertEquals("미래 날짜로 조회할 수 없습니다.", exception.getErrorMessage());
+  }
+
+  @Test
+  @DisplayName("월별 루트 랭킹 조회 실패 - 잘못된 월 입력")
+  void getMonthlyRankings_InvalidMonth() {
+    int year = 2024, month = 13;
+
+    CustomException exception = assertThrows(CustomException.class, () -> {
+      bookmarkService.getMonthlyRankings(year, month, 1, 10);
+    });
+
+    assertEquals("BOOKMARK#4_001", exception.getErrorCode());
+    assertEquals("월은 1~12 사이여야 합니다.", exception.getErrorMessage());
+  }
+
+  @Test
+  @DisplayName("실시간 루트 랭킹 조회 성공 - 데이터 없음")
+  void getRealtimeRankings_Empty() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    Page<BookmarkRankingResponse> emptyPage = new PageImpl<>(Collections.emptyList());
+
+    when(bookmarkRepository.findRealtimeRankings(pageable)).thenReturn(emptyPage);
+
+    Page<BookmarkRankingResponse> result = bookmarkService.getRealtimeRankings(1, 10);
+
+    assertNotNull(result);
+    assertEquals(0, result.getContent().size());
+  }
+
+  @Test
+  @DisplayName("역대 루트 랭킹 조회 성공 - updatedAt이 null")
+  void getAlltimeRankings_UpdatedAtNull() {
+    PageRequest pageable = PageRequest.of(0, 10);
+    LocalDateTime createdAt = LocalDateTime.now();
+
+    BookmarkRankingResponse rankingResponse = new BookmarkRankingResponse(
+        "User1", "Route Title", "Description", null, createdAt
+    );
+    Page<BookmarkRankingResponse> mockPage = new PageImpl<>(
+        Collections.singletonList(rankingResponse));
+
+    when(bookmarkRepository.findAlltimeRankings(pageable)).thenReturn(mockPage);
+
+    Page<BookmarkRankingResponse> result = bookmarkService.getAlltimeRankings(1, 10);
+
+    assertNotNull(result);
+    assertEquals(1, result.getContent().size());
+    assertEquals(createdAt, result.getContent().get(0).getUpdatedAt());
   }
 }
