@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.api.route.controller;
 
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.route.service.RouteService;
@@ -80,6 +81,15 @@ public class RouteController {
   @GetMapping("/{id}")
   public ResponseEntity<RouteSearchResponse> routeSearch(@PathVariable Long id) {
     return ResponseEntity.status(HttpStatus.OK).body(routeService.routeSearch(id));
+  }
+
+  @GetMapping("/{id}/origin/{originSequence}/destination/{destinationSequence}")
+  public ResponseEntity<RouteLineResponse> routeSearchDetails(
+      @PathVariable Long id,
+      @Positive(message = "장소 순번을 양수로 입력해주세요.") @PathVariable Long originSequence,
+      @Positive(message = "장소 순번을 양수로 입력해주세요.") @PathVariable Long destinationSequence) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(routeService.routeSearchDetails(id, originSequence, destinationSequence));
   }
 
   @DeleteMapping("/{id}")

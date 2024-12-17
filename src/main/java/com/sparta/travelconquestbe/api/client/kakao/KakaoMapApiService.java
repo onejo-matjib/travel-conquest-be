@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.api.client.kakao;
 
 import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
+import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationDetailsRequest;
 import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationSearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,11 +16,23 @@ public class KakaoMapApiService {
   @Value("${kakao.client-id}")
   private String apiKey;
 
-  public RouteLineResponse searchRouteLine(LocationSearchRequest location) {
-    String authorization = "KakaoAK " + apiKey;
-    ResponseEntity<RouteLineResponse> response =
-        kakaoFeignClient.searchRouteLine(authorization, location);
+  private String getAuthorization() {
+    return "KakaoAK " + apiKey;
+  }
 
+  public RouteLineResponse searchRouteLine(LocationSearchRequest location) {
+    ResponseEntity<RouteLineResponse> response =
+        kakaoFeignClient.searchRouteLine(getAuthorization(), location);
+
+    return response.getBody();
+  }
+
+  public RouteLineResponse searchRouteLinesDetails(LocationDetailsRequest locationDetailsRequest) {
+    ResponseEntity<RouteLineResponse> response =
+        kakaoFeignClient.searchRouteLinesDetails(
+            getAuthorization(),
+            locationDetailsRequest.getOrigin(),
+            locationDetailsRequest.getDestination());
     return response.getBody();
   }
 }
