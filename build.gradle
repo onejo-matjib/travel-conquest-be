@@ -72,6 +72,11 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    // websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // STOMP
+    implementation group: 'org.webjars', name: 'stomp-websocket', version: '2.3.3-1'
+
 }
 
 tasks.named('test') {

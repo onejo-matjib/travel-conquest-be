@@ -1,22 +1,14 @@
 package com.sparta.travelconquestbe.api.chat.dto.respones;
 
-import com.sparta.travelconquestbe.domain.chat.entity.ChatRoom;
-
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
-@Getter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
 public class ChatRoomSearchResponse {
 	private Long id;
 	private String title;
-	private int maxPlayers;
-
-	public ChatRoomSearchResponse(ChatRoom chatRoom) {
-		this.id = chatRoom.getId();
-		this.title = chatRoom.getTitle();
-		this.maxPlayers = chatRoom.getMaxPlayers();
-	}
+	private int maxUsers;
+	private int currentUsers;
+	private boolean hasPassword;
 }

@@ -1,7 +1,9 @@
 package com.sparta.travelconquestbe.domain.chat.entity;
 
+import java.time.LocalDateTime;
+
 import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
-import com.sparta.travelconquestbe.domain.user.entity.User;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,10 +22,13 @@ public class Chat extends TimeStampCreated {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false,columnDefinition = "TEXT")
-    private String content;
-
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "chat_room_id", nullable = false)
+    private ChatRoom chatRoom; // 채팅방과의 관계
+
+    @Column(nullable = false)
+    private String nickname; // 작성자 닉네임
+
+    @Column(nullable = false)
+    private String message; // 메시지 내용
 }
