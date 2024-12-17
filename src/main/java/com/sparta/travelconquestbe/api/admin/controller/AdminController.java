@@ -91,12 +91,12 @@ public class AdminController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/coupons/{id}")
+  @DeleteMapping("/coupons/{couponId}")
   public ResponseEntity<String> deleteCoupon(
-      @PathVariable Long id,
+      @PathVariable Long couponId,
       @AuthUser AuthUserInfo user
   ) {
-    adminService.deleteCoupon(id, user);
+    adminService.deleteCoupon(couponId, user);
     return ResponseEntity.noContent().build();
   }
 }

@@ -173,14 +173,14 @@ public class AdminService {
   }
 
   @Transactional
-  public void deleteCoupon(Long id, AuthUserInfo userInfo) {
+  public void deleteCoupon(Long couponId, AuthUserInfo userInfo) {
     if (!(userInfo.getType().equals(UserType.ADMIN))) {
       throw new CustomException("COUPON#3_003",
           "해당 리소스에 접근할 권한이 없습니다.",
           HttpStatus.FORBIDDEN);
     }
 
-    Coupon coupon = couponRepository.findById(id).orElseThrow
+    Coupon coupon = couponRepository.findById(couponId).orElseThrow
         (() -> new CustomException("COUPON#2_002",
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
