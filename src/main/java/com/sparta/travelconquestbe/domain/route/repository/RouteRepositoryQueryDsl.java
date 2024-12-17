@@ -7,5 +7,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface RouteRepositoryQueryDsl {
 
-    Page<RouteSearchAllResponse> routeSearchAll(Pageable pageable, RouteSort sort);
+  Page<RouteSearchAllResponse> routeSearchAll(Pageable pageable, RouteSort sort);
+
+  Page<RouteSearchAllResponse> routeSearchByKeyword(
+      Pageable pageable, RouteSort sort, String keyword);
 }

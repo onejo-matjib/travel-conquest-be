@@ -12,7 +12,9 @@ import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.domain.route.enums.RouteSort;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -57,6 +59,22 @@ public class RouteController {
     RouteSort routeSort = RouteSort.valueOf(sort.toUpperCase());
     return ResponseEntity.status(HttpStatus.OK)
         .body(routeService.routeSearchAll(page, limit, routeSort));
+  }
+
+  @GetMapping("/search")
+  public ResponseEntity<Page<RouteSearchAllResponse>> routeSearchByKeyword(
+      @Positive @RequestParam(defaultValue = "1", value = "page") int page,
+      @Positive @RequestParam(defaultValue = "10", value = "limit") int limit,
+      @ValidEnum(enumClass = RouteSort.class, message = "정렬할 컬럼값을 정확하게 입력해주세요.")
+          @RequestParam(defaultValue = "UPDATE_AT")
+          String sort,
+      @NotBlank(message = "검색할 단어를 입력해주세요.")
+          @Size(min = 2, max = 10, message = "검색어는 2글자 이상 10글자 이하로 검색해주세요.")
+          @RequestParam
+          String keyword) {
+    RouteSort routeSort = RouteSort.valueOf(sort.toUpperCase());
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(routeService.routeSearchByKeyword(page, limit, routeSort, keyword));
   }
 
   @GetMapping("/{id}")
