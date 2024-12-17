@@ -33,7 +33,7 @@ public class JwtHelper {
       Key key = keyGenerator.generateKey();
       secretKey = Base64.getEncoder().encodeToString(key.getEncoded());
     } catch (Exception e) {
-      throw new CustomException("AUTH#7_001", "시크릿 키 생성 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new CustomException("AUTH#6_001", "시크릿 키 생성 실패", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

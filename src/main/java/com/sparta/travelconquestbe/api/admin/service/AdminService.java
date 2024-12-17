@@ -55,7 +55,7 @@ public class AdminService {
             () -> new CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
 
     if (!UserType.ADMIN.equals(user.getType())) {
-      throw new CustomException("ADMIN#2_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("ADMIN#2_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
     }
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -83,8 +83,7 @@ public class AdminService {
   @Transactional
   public AdminUpdateUserResponse updateUserLevel(Long userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     if (user.getType() != UserType.USER) {
       throw new CustomException("ADMIN#5_002", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
@@ -96,28 +95,22 @@ public class AdminService {
     return mapToResponse(user);
   }
 
+  @Transactional
   public void restoreUser(Long userId) {
-
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new CustomException("ADMIN#3_004", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
+    if (user.getDeletedAt() == null) {
+      throw new CustomException("ADMIN#4_002", "이미 활성화된 유저입니다.", HttpStatus.CONFLICT);
+    }
 
-  }
+    user.restore();
 
-  private AdminUpdateUserResponse mapToResponse(User user) {
-    return AdminUpdateUserResponse.builder()
-        .userId(user.getId())
-        .name(user.getName())
-        .nickname(user.getNickname())
-        .email(user.getEmail())
-        .providerType(user.getProviderType())
-        .birth(user.getBirth())
-        .userType(user.getType())
-        .title(user.getTitle())
-        .createdAt(user.getCreatedAt())
-        .updatedAt(user.getUpdatedAt())
-        .deletedAt(user.getDeletedAt())
-        .build();
+    // 닉네임에서 delete_, resign_ 제거
+    String originalNickname = removePrefixFromNickname(user.getNickname());
+    user.changeNickname(originalNickname);
+
+    userRepository.save(user);
   }
 
   public CouponCreateResponse createCoupon(CouponCreateRequest request, AuthUserInfo userInfo) {
@@ -165,5 +158,30 @@ public class AdminService {
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
     couponRepository.delete(coupon);
+  }
+
+  private AdminUpdateUserResponse mapToResponse(User user) {
+    return AdminUpdateUserResponse.builder()
+        .userId(user.getId())
+        .name(user.getName())
+        .nickname(user.getNickname())
+        .email(user.getEmail())
+        .providerType(user.getProviderType())
+        .birth(user.getBirth())
+        .userType(user.getType())
+        .title(user.getTitle())
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .deletedAt(user.getDeletedAt())
+        .build();
+  }
+
+  private String removePrefixFromNickname(String nickname) {
+    if (nickname.startsWith("delete_")) {
+      return nickname.substring("delete_".length());
+    } else if (nickname.startsWith("resign_")) {
+      return nickname.substring("resign_".length());
+    }
+    return nickname;
   }
 }

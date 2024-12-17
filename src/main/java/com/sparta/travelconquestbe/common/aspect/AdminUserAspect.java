@@ -22,10 +22,10 @@ public class AdminUserAspect {
     Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     if (principal instanceof AuthUserInfo userInfo) {
       if (userInfo.getType() != UserType.ADMIN) {
-        throw new CustomException("AUTH#2_003", "관리자 권한이 필요합니다.", HttpStatus.FORBIDDEN);
+        throw new CustomException("ADMIN#2_002", "관리자 권한이 필요합니다.", HttpStatus.FORBIDDEN);
       }
     } else {
-      throw new CustomException("AUTH#1_008", "인증되지 않은 사용자입니다.", HttpStatus.UNAUTHORIZED);
+      throw new CustomException("ADMIN#1_002", "인증되지 않은 사용자입니다.", HttpStatus.UNAUTHORIZED);
     }
   }
 }

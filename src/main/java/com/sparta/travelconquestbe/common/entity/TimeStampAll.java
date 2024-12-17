@@ -28,4 +28,8 @@ public abstract class TimeStampAll {
       this.deletedAt = deletedAt;
   }
 
+  protected void markRestore() {
+    this.deletedAt = null;
+  }
+
 }
