@@ -2,11 +2,8 @@ package com.sparta.travelconquestbe.api.chat.dto.respones;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 public class ChatRoomSearchResponse {
 	private Long id;

@@ -25,7 +25,7 @@ public class ChatService {
 	private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
 
-	public Chat sendMessage(Long roomId, ChatSendMessageRequest request) throws CustomException {
+	public Chat sendMessage(Long roomId, ChatSendMessageRequest request) {
 		logger.info("채팅 메시지 저장 및 전송 시작 - roomId: {}", roomId);
 
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)

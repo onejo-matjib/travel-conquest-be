@@ -20,6 +20,7 @@ import com.sparta.travelconquestbe.api.chat.dto.respones.ChatRoomExitResponse;
 import com.sparta.travelconquestbe.api.chat.dto.respones.ChatRoomSearchResponse;
 import com.sparta.travelconquestbe.api.chat.service.ChatRoomService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,7 +32,7 @@ public class ChatRoomController {
 
 	// 채팅방 생성
 	@PostMapping
-	public ResponseEntity<ChatRoomCreateResponse> createRoom(@RequestBody ChatRoomCreateRequest request) {
+	public ResponseEntity<ChatRoomCreateResponse> createRoom(@Valid @RequestBody ChatRoomCreateRequest request) {
 		ChatRoomCreateResponse response = chatRoomService.createRoom(request);
 		return ResponseEntity.ok(response);
 	}
