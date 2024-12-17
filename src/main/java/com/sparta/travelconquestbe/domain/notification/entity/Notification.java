@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.domain.notification.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.domain.notification.enums.NotificationType;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,8 +20,11 @@ public class Notification extends TimeStampCreated {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false)
     private String message;
+
+    @Enumerated(EnumType.STRING)
+    private NotificationType notificationType;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
