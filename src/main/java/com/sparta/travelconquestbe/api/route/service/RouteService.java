@@ -22,7 +22,6 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.validation.constraints.Positive;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -90,6 +89,7 @@ public class RouteService {
     return routeRepository.routeSearchAll(pageable, sort);
   }
 
+  @Transactional(readOnly = true)
   public Page<RouteSearchAllResponse> routeSearchByKeyword(
       @Positive int page, @Positive int limit, RouteSort sort, String keyword) {
     Pageable pageable = PageRequest.of(page - 1, limit);
@@ -173,7 +173,7 @@ public class RouteService {
                             location.getLocationName(),
                             location.getLongitude().doubleValue(),
                             location.getLatitude().doubleValue()))
-                .collect(Collectors.toList()))
+                .toList())
         .build();
   }
 }
