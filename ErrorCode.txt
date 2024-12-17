@@ -26,15 +26,10 @@ ADMIN#6_000 / 에러 메시지 / INTERNAL_SERVER_ERROR
 
 쿠폰
 COUPON#1_NNN / 유효하지 않은 쿠폰 타입입니다. / BAD_REQUEST
-COUPON#2_NNN / 해당 쿠폰이 존재하지 않습니다. / NOT_FOUND
-COUPON#2_NNN / 해당 유저가 존재하지 않습니다. / NOT_FOUND
-COUPON#3_NNN / 해당 리소스에 접근할 권한이 없습니다. / FORBIDDEN
-COUPON#4_NNN / 중복된 쿠폰이 존재합니다. / CONFLICT
-COUPON#3_NNN / 등업된 사용자가 아닙니다. / FORBIDDEN
-COUPON#4_NNN / 해당 쿠폰이 소진되었습니다. / CONFLICT
-COUPON#4_NNN / 정복자 등급만 등록할 수 있는 쿠폰입니다. / CONFLICT
-COUPON#4_NNN / 해당 쿠폰의 유효기간이 지났습니다. / CONFLICT
-COUPON#5_NNN / "쿠폰 발급 중 내부적인 문제가 발생했습니다." / INTERNAL_SERVER_ERROR
+COUPON#2_002 / 해당 쿠폰이 존재하지 않습니다. / NOT_FOUND
+COUPON#3_003 / 해당 리소스에 접근할 권한이 없습니다. / FORBIDDEN
+COUPON#4_003 / 중복된 쿠폰이 존재합니다. / CONFLICT
+COUPON#5_002 / "쿠폰 발급 중 내부적인 문제가 발생했습니다." / INTERNAL_SERVER_ERROR
 
 리뷰
 REVIEW#1_004 / 이미 해당 루트에 리뷰를 작성했습니다. / BAD_REQUEST

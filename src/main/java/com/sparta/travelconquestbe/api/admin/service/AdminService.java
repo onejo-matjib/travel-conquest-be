@@ -181,7 +181,7 @@ public class AdminService {
     }
 
     Coupon coupon = couponRepository.findById(id).orElseThrow
-        (() -> new CustomException("COUPON#2_003",
+        (() -> new CustomException("COUPON#2_002",
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
     couponRepository.delete(coupon);
