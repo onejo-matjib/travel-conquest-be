@@ -14,11 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -44,5 +40,16 @@ public class ReportController {
   ) {
     Page<ReportSearchResponse> response = reportService.searchAllReports(page, limit);
     return ResponseEntity.ok(response);
+  }
+
+  @PutMapping("/api/admins/reports/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  public ResponseEntity<Void> judgeReport(
+      @AuthUser AuthUserInfo admin,
+      @PathVariable Long id,
+      @RequestParam("guilty") boolean isGuilty
+  ) {
+    reportService.judgeReport(id, isGuilty, admin);
+    return ResponseEntity.noContent().build();
   }
 }

@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class ReportService {
@@ -39,26 +41,8 @@ public class ReportService {
       throw new CustomException("REPORT#2_001", "이미 신고가 처리 중입니다.", HttpStatus.CONFLICT);
     }
 
-    Villain currentStatus = getCurrentVillainStatus(target.getId());
-    Report report = saveReport(reporter, target, request, currentStatus);
+    Villain currentStatus = reportRepository.findLatestStatus(target.getId()).orElse(Villain.SAINT);
 
-    return ReportCreateResponse.builder()
-        .reportId(report.getId())
-        .reportCategory(report.getReportCategory())
-        .reason(report.getReason())
-        .targetId(report.getTargetId().getId())
-        .createdAt(report.getCreatedAt())
-        .build();
-  }
-
-  @Transactional(readOnly = true)
-  public Villain getCurrentVillainStatus(Long targetId) {
-    return reportRepository.findLatestStatus(targetId).orElse(Villain.SAINT);
-  }
-
-  @Transactional
-  public Report saveReport(User reporter, User target, ReportCreateRequest request,
-      Villain currentStatus) {
     Report report = Report.builder()
         .reporterId(reporter)
         .targetId(target)
@@ -67,12 +51,75 @@ public class ReportService {
         .status(currentStatus)
         .build();
 
-    return reportRepository.save(report);
+    Report saved = reportRepository.save(report);
+
+    return ReportCreateResponse.builder()
+        .reportId(saved.getId())
+        .reportCategory(saved.getReportCategory())
+        .reason(saved.getReason())
+        .targetId(saved.getTargetId().getId())
+        .createdAt(saved.getCreatedAt())
+        .build();
   }
 
   @Transactional(readOnly = true)
   public Page<ReportSearchResponse> searchAllReports(int page, int limit) {
     PageRequest pageRequest = PageRequest.of(page - 1, limit);
     return reportRepository.findAllReports(pageRequest);
+  }
+
+  // 신고 처리
+  @Transactional
+  public void judgeReport(Long id, boolean isGuilty, AuthUserInfo admin) {
+
+    Report report = reportRepository.findById(id)
+        .orElseThrow(() -> new CustomException("REPORT#3_001", "해당 신고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    if (report.getCheckedAt() != null && report.getAdminId() != null) {
+      throw new CustomException("REPORT#2_002", "이미 처리된 신고입니다.", HttpStatus.CONFLICT);
+    }
+
+    if (!isGuilty) {
+      // 무죄
+      report.markProcessed(admin.getId());
+      reportRepository.save(report);
+      return;
+    }
+
+    // 유죄
+    User targetUser = report.getTargetId();
+    Villain currentVillain = report.getStatus();
+
+    switch (currentVillain) {
+      case SAINT -> {
+        report.markProcessed(admin.getId());
+        report.updateVillainStatus(Villain.OUTLAW);
+        // OUTLAW: 프론트에서 "경고 상태" 모달 한 번 띄우기?
+      }
+      case OUTLAW -> {
+        report.markProcessed(admin.getId());
+        report.updateVillainStatus(Villain.DEVIL);
+        // DEVIL => banUntil + 7일, 모달 메세지 띄우기
+        targetUser.setBanUntil(LocalDateTime.now().plusDays(7));
+        userRepository.save(targetUser);
+      }
+      case DEVIL -> {
+        // DEVIL 상태에서 또 유죄 => 강퇴
+        report.markProcessed(admin.getId());
+        banUser(targetUser);
+      }
+      default -> {
+        throw new CustomException("REPORT#2_003", "이미 처리 불가 상태거나 강퇴된 사용자 입니다.", HttpStatus.CONFLICT);
+      }
+    }
+
+    reportRepository.save(report);
+  }
+
+  private void banUser(User user) {
+    String deletedNickname = "delete_" + user.getNickname();
+    user.changeNickname(deletedNickname);
+    user.delete();
+    userRepository.save(user);
   }
 }

@@ -85,4 +85,11 @@ public class User extends TimeStampAll {
     int newCount = this.subscriptionCount + change;
     this.subscriptionCount = Math.max(newCount, 0);
   }
+
+  // DEVIL 상태되면 1주 정지를 위한 만료 시점
+  private LocalDateTime banUntil;
+
+  public void setBanUntil(LocalDateTime banUntil) {
+    this.banUntil = banUntil;
+  }
 }
