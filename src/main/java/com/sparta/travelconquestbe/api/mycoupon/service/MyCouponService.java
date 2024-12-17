@@ -32,6 +32,7 @@ public class MyCouponService {
 
   private static final long LOCK_TIMEOUT = 1000L; // 타임아웃
   private static final long RETRY_DELAY = 100L; // 재시도 간격
+  private static final String COUPON_COUNT_KEY_PREFIX = "coupon_count:";
 
   @Transactional
   public MyCouponSaveResponse createMyCoupon(Long couponId, AuthUserInfo userInfo) {
@@ -43,11 +44,29 @@ public class MyCouponService {
       validateUser(userInfo); // 사용자 인증과 권한을 확인
       Coupon coupon = validateAndGetCoupon(couponId, userInfo); // 쿠폰 정보 검증
 
+      // 쿠폰 수량을 Redis에서 가져오기
+      String redisKey = COUPON_COUNT_KEY_PREFIX + couponId;
+      String cachedCount = redisTemplate.opsForValue().get(redisKey);
+
+      // Redis에 수량이 없다면 초기화
+      if (cachedCount == null) {
+        redisTemplate.opsForValue().set(redisKey, String.valueOf(coupon.getCount()));
+        cachedCount = String.valueOf(coupon.getCount()); // 초기 DB 값을 Redis에 저장
+      }
+
+      // Redis 수량 감소 (쿠폰 발급)
+      int redisCount = Integer.parseInt(cachedCount);
+      if (redisCount <= 0) {
+        throw new CustomException("COUPON#4_002", "해당 쿠폰이 소진되었습니다.", HttpStatus.CONFLICT);
+      }
+      redisTemplate.opsForValue().set(redisKey, String.valueOf(redisCount - 1)); // 수량 감소
+
       String couponCode = UUID.randomUUID().toString(); // 쿠폰 고유번호 랜덤 생성
       User referenceUser = userRepository.getReferenceById(userInfo.getId()); // 프록시 객체 생성
-
       MyCoupon myCoupon = saveMyCoupon(coupon, referenceUser, couponCode);
-      coupon.decrementCount(); // 쿠폰 수량 -1
+
+      // 최종적으로 DB 갱신 (Redis에서 변경된 수량을 DB에 반영)
+      syncCouponCountToDatabase(coupon, redisCount - 1);
 
       return buildResponse(myCoupon);
     } catch (Exception e) {
@@ -56,6 +75,12 @@ public class MyCouponService {
     } finally {
       releaseLock(lockKey);
     }
+  }
+
+  // Redis에서 발급된 쿠폰 수량을 DB로 동기화
+  public void syncCouponCountToDatabase(Coupon coupon, int newRedisCount) {
+    coupon.setCount(newRedisCount); // DB의 쿠폰 수량 업데이트
+    couponRepository.save(coupon); // DB에 저장
   }
 
   public void acquireLock(String lockKey, String lockValue) {
@@ -89,7 +114,7 @@ public class MyCouponService {
     if (coupon.getType().equals(CouponType.PREMIUM) && !userInfo.getTitle()
         .equals(Title.CONQUEROR)) {
       throw new CustomException("COUPON#4_003",
-          "정복자 등급만 등록할 수 있는 쿠폰입니다.", HttpStatus.CONFLICT);
+          "정복자 등급(CONQUEROR)만 등록할 수 있는 쿠폰입니다.", HttpStatus.CONFLICT);
     }
 
     if (myCouponRepository.existsByCouponIdAndUserIdAndStatus(coupon.getId(), userInfo.getId(),

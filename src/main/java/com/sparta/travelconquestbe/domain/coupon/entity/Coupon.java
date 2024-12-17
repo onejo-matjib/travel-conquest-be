@@ -22,12 +22,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.BatchSize;
 import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "coupons")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
