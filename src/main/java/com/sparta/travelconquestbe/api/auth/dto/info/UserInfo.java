@@ -1,23 +1,17 @@
 package com.sparta.travelconquestbe.api.auth.dto.info;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 public class UserInfo {
   private String id;
   private String email;
   private String nickname;
   private String providerType;
-
-  @Builder
-  public UserInfo(String id, String email, String nickname) {
-    this.id = id;
-    this.email = email;
-    this.nickname = nickname;
-  }
 
   public void saveProviderType(String providerType) {
     this.providerType = providerType;

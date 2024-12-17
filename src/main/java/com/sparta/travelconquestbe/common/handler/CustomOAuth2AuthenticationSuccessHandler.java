@@ -33,7 +33,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
     OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
     OAuth2User oAuth2User = oauthToken.getPrincipal();
 
-    String providerType = oauthToken.getAuthorizedClientRegistrationId();
+    String providerType = oauthToken.getAuthorizedClientRegistrationId(); // "google"
     String providerId = oAuth2User.getAttribute("sub");
     String email = oAuth2User.getAttribute("email");
 
@@ -65,6 +65,7 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
           .id(providerId)
           .email(email)
           .nickname(oAuth2User.getAttribute("name"))
+          .providerType(providerType)
           .build());
     }
     response.sendRedirect("/api/users/additional-info");

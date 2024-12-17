@@ -25,12 +25,15 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     // 사용자 정보 확인
     if (providerId == null || email == null) {
-      throw new CustomException("AUTH#1_031", "사용자 정보 로드 실패", HttpStatus.NOT_FOUND);
+      throw new CustomException("AUTH#3_003", "사용자 정보 로드 실패", HttpStatus.NOT_FOUND);
     }
 
-    UserInfo userInfo = new UserInfo(providerId, email, name); // 구글 토큰에서 추출한 정보
-    userInfo.saveProviderType(providerType);
-
+    UserInfo.builder()
+        .id(providerId)
+        .email(email)
+        .nickname(name)
+        .providerType(providerType)
+        .build();
 
     return oAuth2User;
   }

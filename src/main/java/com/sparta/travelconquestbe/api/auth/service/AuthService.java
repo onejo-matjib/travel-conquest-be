@@ -102,7 +102,7 @@ public class AuthService {
       String jwtToken = jwtHelper.createToken(user);
       return KakaoLoginResult.existingUser(jwtToken);
     } else {
-      kakaoUserInfo.saveProviderType("KAKAO");
+      kakaoUserInfo.saveProviderType("kakao");
       return KakaoLoginResult.newUser(kakaoUserInfo);
     }
   }
@@ -155,7 +155,11 @@ public class AuthService {
       String id = jsonNode.get("id").toString();
       String email = jsonNode.path("kakao_account").path("email").asText(null);
       String nickname = jsonNode.path("properties").path("nickname").asText();
-      return new UserInfo(id, email, nickname);
+      return UserInfo.builder()
+          .id(id)
+          .email(email)
+          .nickname(nickname)
+          .build();
     } catch (Exception e) {
       logger.error("사용자 정보 파싱 실패: {}", e.getMessage());
       throw new CustomException("AUTH#5_002", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);
