@@ -72,6 +72,10 @@ public class AuthService {
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new CustomException("AUTH#3_002", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
 
+    if (user.getDeletedAt() != null) {
+      throw new CustomException("AUTH#4_002", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
+    }
+
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
       throw new CustomException("AUTH#1_002", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
     }
@@ -92,10 +96,13 @@ public class AuthService {
 
     if (existingUser.isPresent()) {
       User user = existingUser.get();
+      if (user.getDeletedAt() != null) {
+        throw new CustomException("AUTH#4_003", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
+      }
       String jwtToken = jwtHelper.createToken(user);
       return KakaoLoginResult.existingUser(jwtToken);
     } else {
-      kakaoUserInfo.saveProviderType("KAKAO");
+      kakaoUserInfo.saveProviderType("kakao");
       return KakaoLoginResult.newUser(kakaoUserInfo);
     }
   }
@@ -148,7 +155,11 @@ public class AuthService {
       String id = jsonNode.get("id").toString();
       String email = jsonNode.path("kakao_account").path("email").asText(null);
       String nickname = jsonNode.path("properties").path("nickname").asText();
-      return new UserInfo(id, email, nickname);
+      return UserInfo.builder()
+          .id(id)
+          .email(email)
+          .nickname(nickname)
+          .build();
     } catch (Exception e) {
       logger.error("사용자 정보 파싱 실패: {}", e.getMessage());
       throw new CustomException("AUTH#5_002", "사용자 정보 파싱에 실패했습니다.", HttpStatus.BAD_REQUEST);

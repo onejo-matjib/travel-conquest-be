@@ -4,14 +4,7 @@ import com.sparta.travelconquestbe.common.entity.TimeStampAll;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,6 +37,7 @@ public class User extends TimeStampAll {
   private String password;
 
   private String providerId;
+
   private String providerType;
 
   @Column(nullable = false, length = 10)
@@ -59,6 +53,7 @@ public class User extends TimeStampAll {
   @Column(nullable = false)
   private int subscriptionCount = 0;
 
+  // Custom Methods
   public void changeNickname(String newNickname) {
     this.nickname = newNickname;
   }
@@ -70,6 +65,7 @@ public class User extends TimeStampAll {
   public void updateUserType() {
     if (this.type == UserType.USER) {
       this.type = UserType.AUTHENTICATED_USER;
+      this.title = Title.PIONEER;
     } else {
       throw new CustomException("ADMIN#5_002", "등급 업그레이드가 불가능한 상태입니다.", HttpStatus.BAD_REQUEST);
     }
@@ -77,6 +73,10 @@ public class User extends TimeStampAll {
 
   public void delete() {
     this.markDelete(LocalDateTime.now());
+  }
+
+  public void restore() {
+    this.markRestore();
   }
 
   public void updateSubscriptionCount(int change) {

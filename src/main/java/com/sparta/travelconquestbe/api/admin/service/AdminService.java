@@ -3,6 +3,7 @@ package com.sparta.travelconquestbe.api.admin.service;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
+import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -15,7 +16,11 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,7 @@ public class AdminService {
   private final JwtHelper jwtHelper;
   private final PasswordEncoder passwordEncoder;
   private final CouponRepository couponRepository;
+  private static final int MAX_PAGE_SIZE = 100;
 
   public void signUp(AdminSignUpRequest request) {
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -55,7 +61,7 @@ public class AdminService {
             () -> new CustomException("ADMIN#3_001", "존재하지 않는 관리자입니다.", HttpStatus.NOT_FOUND));
 
     if (!UserType.ADMIN.equals(user.getType())) {
-      throw new CustomException("ADMIN#2_002", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("ADMIN#2_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
     }
 
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -66,14 +72,12 @@ public class AdminService {
   }
 
   @Transactional
-  public AdminUpdateUserResponse banUser(AuthUserInfo admin, Long userId) {
-    verifyAdmin(admin);
-
+  public AdminUpdateUserResponse banUser(Long userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new CustomException("ADMIN#3_003", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
-    String deletedNickname = "delete_" + user.getNickname();
+    String deletedNickname = "resign_" + user.getNickname();
     user.changeNickname(deletedNickname);
     user.delete();
 
@@ -83,12 +87,9 @@ public class AdminService {
   }
 
   @Transactional
-  public AdminUpdateUserResponse updateUserLevel(AuthUserInfo admin, Long userId) {
-    verifyAdmin(admin);
-
+  public AdminUpdateUserResponse updateUserLevel(Long userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(
-            () -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(() -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     if (user.getType() != UserType.USER) {
       throw new CustomException("ADMIN#5_002", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
@@ -100,26 +101,43 @@ public class AdminService {
     return mapToResponse(user);
   }
 
-  private void verifyAdmin(AuthUserInfo admin) {
-    if (!(admin.getType() == UserType.ADMIN)) {
-      throw new CustomException("ADMIN#2_003", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
+  @Transactional
+  public void restoreUser(Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException("ADMIN#3_004", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    if (user.getDeletedAt() == null) {
+      throw new CustomException("ADMIN#4_002", "이미 활성화된 유저입니다.", HttpStatus.CONFLICT);
     }
+
+    user.restore();
+
+    // 닉네임에서 delete_, resign_ 제거
+    String originalNickname = removePrefixFromNickname(user.getNickname());
+    user.changeNickname(originalNickname);
+
+    userRepository.save(user);
   }
 
-  private AdminUpdateUserResponse mapToResponse(User user) {
-    return AdminUpdateUserResponse.builder()
-        .userId(user.getId())
+  public Page<UserResponse> getAllUsers(Pageable pageable) {
+    if (pageable.getPageNumber() < 0 || pageable.getPageSize() <= 0) {
+      throw new CustomException("ADMIN#5_003", "페이지 번호와 사이즈는 양수여야 합니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    int pageSize = pageable.getPageSize() > MAX_PAGE_SIZE ? MAX_PAGE_SIZE : pageable.getPageSize();
+    Pageable limitedPageable = Pageable.ofSize(pageSize).withPage(pageable.getPageNumber());
+
+    Page<User> userPage = userRepository.findAll(limitedPageable);
+    List<UserResponse> userResponses = userPage.map(user -> UserResponse.builder()
+        .id(user.getId())
         .name(user.getName())
         .nickname(user.getNickname())
         .email(user.getEmail())
-        .providerType(user.getProviderType())
         .birth(user.getBirth())
-        .userType(user.getType())
-        .title(user.getTitle())
-        .createdAt(user.getCreatedAt())
-        .updatedAt(user.getUpdatedAt())
-        .deletedAt(user.getDeletedAt())
-        .build();
+        .title(user.getTitle().name())
+        .subscriptionsCount(user.getSubscriptionCount())
+        .build()).getContent();
+    return new PageImpl<>(userResponses, limitedPageable, userPage.getTotalElements());
   }
 
   public CouponCreateResponse createCoupon(CouponCreateRequest request, AuthUserInfo userInfo) {
@@ -167,5 +185,30 @@ public class AdminService {
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
     couponRepository.delete(coupon);
+  }
+
+  private AdminUpdateUserResponse mapToResponse(User user) {
+    return AdminUpdateUserResponse.builder()
+        .userId(user.getId())
+        .name(user.getName())
+        .nickname(user.getNickname())
+        .email(user.getEmail())
+        .providerType(user.getProviderType())
+        .birth(user.getBirth())
+        .userType(user.getType())
+        .title(user.getTitle())
+        .createdAt(user.getCreatedAt())
+        .updatedAt(user.getUpdatedAt())
+        .deletedAt(user.getDeletedAt())
+        .build();
+  }
+
+  private String removePrefixFromNickname(String nickname) {
+    if (nickname.startsWith("delete_")) {
+      return nickname.substring("delete_".length());
+    } else if (nickname.startsWith("resign_")) {
+      return nickname.substring("resign_".length());
+    }
+    return nickname;
   }
 }

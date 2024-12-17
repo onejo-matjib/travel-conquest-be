@@ -1,18 +1,16 @@
 package com.sparta.travelconquestbe.common.auth;
 
-import io.jsonwebtoken.Claims;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
 import java.util.Collections;
 
 public class JwtAuthentication extends AbstractAuthenticationToken {
 
-  private final Claims claims;
+  private final AuthUserInfo authUserInfo;
 
-  public JwtAuthentication(Claims claims) {
+  public JwtAuthentication(AuthUserInfo authUserInfo) {
     super(Collections.singletonList(new SimpleGrantedAuthority("USER")));
-    this.claims = claims;
+    this.authUserInfo = authUserInfo;
     setAuthenticated(true);
   }
 
@@ -23,10 +21,10 @@ public class JwtAuthentication extends AbstractAuthenticationToken {
 
   @Override
   public Object getPrincipal() {
-    return claims.get("userId"); // 사용자 ID를 principal로 사용
+    return authUserInfo;
   }
 
-  public Claims getClaims() {
-    return claims;
+  public AuthUserInfo getAuthUserInfo() {
+    return authUserInfo;
   }
 }
