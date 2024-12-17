@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.sparta.travelconquestbe.api.notification.service.NotificationSerivce;
+import com.sparta.travelconquestbe.api.notification.service.NotificationService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
-	private final NotificationSerivce notificationSerivce;
+	private final NotificationService notificationService;
 
 
 	@GetMapping(value = "/subscribe", produces = "text/event-stream")
@@ -29,7 +29,7 @@ public class NotificationController {
 		@RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "")
 		String lastEventId
 	) {
-		return notificationSerivce.subscribe(user.getId(), lastEventId);
+		return notificationService.subscribe(user.getId(), lastEventId);
 	}
 	// 실제 클라이언트로부터 오는 알림 구독 요청을 받는다.
 	// 누구로부터 온 알림 구독인지는 AuthUserInfo 사용

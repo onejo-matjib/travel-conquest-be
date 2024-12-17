@@ -12,14 +12,14 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
-public class NotificationSerivce {
+public class NotificationService {
 
 	private final EmitterRepository emitterRepository;
-	private Long timeout = 60L * 1000L * 60L;
+	private static final Long DEFAULT_TIMEOUT = 60L * 1000L * 60L;
 
 	public SseEmitter subscribe(Long userId, String lastEventId) {
 		String emitterId = makeTimeIncludeId(userId);
-		SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(timeout));
+		SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(DEFAULT_TIMEOUT));
 		emitter.onCompletion(()->emitterRepository.deleteById(emitterId));
 		emitter.onTimeout(()-> emitterRepository.deleteById(emitterId));
 

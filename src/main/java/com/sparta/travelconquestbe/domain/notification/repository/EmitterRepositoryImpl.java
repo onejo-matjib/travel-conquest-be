@@ -3,6 +3,7 @@ package com.sparta.travelconquestbe.domain.notification.repository;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
@@ -14,8 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmitterRepositoryImpl implements EmitterRepository {
 
-	private final Map<String, SseEmitter> emitters = new HashMap<>();
-	private final Map<String, Object> eventCache = new HashMap<>();
+	private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+	private final Map<String, Object> eventCache = new ConcurrentHashMap<>();
 
 	@Override
 	public SseEmitter save(String emitterId, SseEmitter sseEmitter) {
