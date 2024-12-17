@@ -51,7 +51,7 @@ public class User extends TimeStampAll {
   private Title title;
 
   @Column(nullable = false)
-  private int subscriptionsCount = 0;
+  private int subscriptionCount = 0;
 
   // Custom Methods
   public void changeNickname(String newNickname) {
@@ -80,7 +80,7 @@ public class User extends TimeStampAll {
   }
 
   public void updateSubscriptionCount(int change) {
-    int newCount = this.subscriptionsCount + change;
-    this.subscriptionsCount = Math.max(newCount, 0);
+    int newCount = this.subscriptionCount + change;
+    this.subscriptionCount = Math.max(newCount, 0);
   }
 }
