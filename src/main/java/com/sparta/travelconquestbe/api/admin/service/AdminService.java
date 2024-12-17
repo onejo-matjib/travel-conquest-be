@@ -66,9 +66,7 @@ public class AdminService {
   }
 
   @Transactional
-  public AdminUpdateUserResponse banUser(AuthUserInfo admin, Long userId) {
-    verifyAdmin(admin);
-
+  public AdminUpdateUserResponse banUser(Long userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new CustomException("ADMIN#3_003", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
@@ -83,9 +81,7 @@ public class AdminService {
   }
 
   @Transactional
-  public AdminUpdateUserResponse updateUserLevel(AuthUserInfo admin, Long userId) {
-    verifyAdmin(admin);
-
+  public AdminUpdateUserResponse updateUserLevel(Long userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
@@ -100,10 +96,12 @@ public class AdminService {
     return mapToResponse(user);
   }
 
-  private void verifyAdmin(AuthUserInfo admin) {
-    if (!(admin.getType() == UserType.ADMIN)) {
-      throw new CustomException("ADMIN#2_003", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
-    }
+  public void restoreUser(Long userId) {
+
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new CustomException("ADMIN#3_004", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+
   }
 
   private AdminUpdateUserResponse mapToResponse(User user) {

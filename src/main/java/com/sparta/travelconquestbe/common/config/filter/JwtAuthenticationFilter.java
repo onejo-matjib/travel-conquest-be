@@ -1,5 +1,6 @@
 package com.sparta.travelconquestbe.common.config.filter;
 
+import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.auth.JwtAuthentication;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -29,8 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (authHeader != null && authHeader.startsWith("Bearer ")) {
       String token = authHeader.substring(7);
       try {
-        Claims claims = jwtHelper.validateAndGetClaims(token);
-        JwtAuthentication authentication = new JwtAuthentication(claims);
+        AuthUserInfo authUserInfo= jwtHelper.getAuthUserInfoFromToken(token);
+        JwtAuthentication authentication = new JwtAuthentication(authUserInfo);
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
       } catch (CustomException e) {

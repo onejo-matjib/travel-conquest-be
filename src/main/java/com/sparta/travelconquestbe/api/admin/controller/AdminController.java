@@ -5,13 +5,13 @@ import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminUpdateUserRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.api.admin.service.AdminService;
+import com.sparta.travelconquestbe.common.annotation.AdminUser;
 import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.admin.enums.AdminAction;
-import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -32,14 +32,9 @@ public class AdminController {
 
   private final AdminService adminService;
 
+  @AdminUser
   @PostMapping("/signup")
-  public ResponseEntity<Void> signUp(@Valid @RequestBody AdminSignUpRequest request,
-      @AuthUser AuthUserInfo user) {
-
-    if (!UserType.ADMIN.equals(user.getType())) {
-      throw new CustomException("ADMIN#2_001", "관리자 권한이 없습니다.", HttpStatus.FORBIDDEN);
-    }
-
+  public ResponseEntity<Void> signUp(@Valid @RequestBody AdminSignUpRequest request) {
     adminService.signUp(request);
     return ResponseEntity.status(HttpStatus.CREATED).build();
   }
@@ -52,19 +47,22 @@ public class AdminController {
         .build();
   }
 
+  @AdminUser
   @PutMapping("/users/{userId}")
-  public ResponseEntity<AdminUpdateUserResponse> updateUser(@AuthUser AuthUserInfo admin,
-      @PathVariable long userId,
+  public ResponseEntity<AdminUpdateUserResponse> updateUser(@PathVariable long userId,
       @Valid @RequestBody AdminUpdateUserRequest updateRequest) {
 
     AdminAction action = updateRequest.getAction();
     AdminUpdateUserResponse response;
 
     if (action == AdminAction.BAN) {
-      response = adminService.banUser(admin, userId);
+      response = adminService.banUser(userId);
     } else if (action == AdminAction.UPDATE) {
-      response = adminService.updateUserLevel(admin, userId);
-    } else {
+      response = adminService.updateUserLevel(userId);
+    } else if (action == AdminAction.RESTORE) {
+      adminService.restoreUser(userId);
+      return ResponseEntity.ok().build();
+  } else {
       throw new CustomException("ADMIN#5_001", "올바르지 않은 요청입니다.", HttpStatus.BAD_REQUEST);
     }
     return ResponseEntity.ok(response);
