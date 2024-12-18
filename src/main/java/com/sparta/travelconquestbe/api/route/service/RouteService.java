@@ -8,6 +8,7 @@ import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
+import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationDetailsRequest;
 import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationSearchRequest;
 import com.sparta.travelconquestbe.api.routelocation.dto.respones.LocationSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationService;
@@ -122,7 +123,7 @@ public class RouteService {
     List<RouteLocation> locations = route.getLocations();
 
     RouteLineResponse routeLine =
-        kakaoMapApiService.searchRouteLine(buildLocationSearchRequest(locations));
+        kakaoMapApiService.searchRouteLine(buildLocationSearchAllRequest(locations));
 
     return RouteSearchResponse.builder()
         .title(route.getTitle())
@@ -155,7 +156,21 @@ public class RouteService {
         .build();
   }
 
-  private LocationSearchRequest buildLocationSearchRequest(List<RouteLocation> locations) {
+  @Transactional(readOnly = true)
+  public RouteLineResponse routeSearchDetails(
+      Long id, Long originSequence, Long destinationSequence) {
+    Route route =
+        routeRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new CustomException("ROUTE#1_004", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    List<RouteLocation> locations = route.getLocations();
+    return kakaoMapApiService.searchRouteLinesDetails(
+        buildLocationSearchDetailsRequest(locations, originSequence, destinationSequence));
+  }
+
+  private LocationSearchRequest buildLocationSearchAllRequest(List<RouteLocation> locations) {
     return LocationSearchRequest.builder()
         .origin(
             new LocationSearchRequest.Origin(
@@ -175,5 +190,19 @@ public class RouteService {
                             location.getLatitude().doubleValue()))
                 .toList())
         .build();
+  }
+
+  private LocationDetailsRequest buildLocationSearchDetailsRequest(
+      List<RouteLocation> locations, Long originSequence, Long destinationSequence) {
+    if (originSequence >= locations.size() || destinationSequence > locations.size()) {
+      throw new CustomException("ROUTE#2_002", "해당 장소가 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+    }
+    RouteLocation originLocation = locations.get((int) (originSequence - 1));
+    RouteLocation destinationLocation = locations.get((int) (destinationSequence - 1));
+
+    String origin = originLocation.getLongitude() + "," + originLocation.getLatitude();
+    String destination =
+        destinationLocation.getLongitude() + "," + destinationLocation.getLatitude();
+    return LocationDetailsRequest.builder().origin(origin).destination(destination).build();
   }
 }
