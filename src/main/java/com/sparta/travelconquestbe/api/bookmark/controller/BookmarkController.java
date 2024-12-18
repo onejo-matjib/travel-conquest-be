@@ -62,10 +62,10 @@ public class BookmarkController {
   // 월별 TOP 100
   @GetMapping("/rankings/monthly")
   public ResponseEntity<Page<BookmarkRankingResponse>> getMonthlyRankings(
-      @Positive @RequestParam int year,
-      @Positive @RequestParam int month,
-      @Positive @RequestParam(defaultValue = "1") int page,
-      @Positive @RequestParam(defaultValue = "10") int size) {
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int year,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int month,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
     Page<BookmarkRankingResponse> rankings = bookmarkService.getMonthlyRankings(year, month, page,
         size);
     return ResponseEntity.ok(rankings);
@@ -74,8 +74,8 @@ public class BookmarkController {
   // 이번 달 실시간 TOP 100
   @GetMapping("/rankings/realtime")
   public ResponseEntity<Page<BookmarkRankingResponse>> getRealtimeRankings(
-      @Positive @RequestParam(defaultValue = "1") int page,
-      @Positive @RequestParam(defaultValue = "10") int size) {
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
     Page<BookmarkRankingResponse> rankings = bookmarkService.getRealtimeRankings(page, size);
     return ResponseEntity.ok(rankings);
   }
@@ -83,8 +83,8 @@ public class BookmarkController {
   // 역대 TOP 100
   @GetMapping("/rankings/alltime")
   public ResponseEntity<Page<BookmarkRankingResponse>> getAlltimeRankings(
-      @Positive @RequestParam(defaultValue = "1") int page,
-      @Positive @RequestParam(defaultValue = "10") int size) {
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
     Page<BookmarkRankingResponse> rankings = bookmarkService.getAlltimeRankings(page, size);
     return ResponseEntity.ok(rankings);
   }

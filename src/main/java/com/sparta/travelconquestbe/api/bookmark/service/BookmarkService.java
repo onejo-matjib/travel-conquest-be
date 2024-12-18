@@ -78,19 +78,19 @@ public class BookmarkService {
   public Page<BookmarkRankingResponse> getMonthlyRankings(int year, int month, int page, int size) {
     validateYearAndMonth(year, month);
 
-    PageRequest pageRequest = PageRequest.of(page - 1, size);
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
     return bookmarkRepository.findMonthlyRankings(year, month, pageRequest);
   }
 
   @Transactional(readOnly = true)
   public Page<BookmarkRankingResponse> getRealtimeRankings(int page, int size) {
-    PageRequest pageRequest = PageRequest.of(page - 1, size);
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
     return bookmarkRepository.findRealtimeRankings(pageRequest);
   }
 
   @Transactional(readOnly = true)
   public Page<BookmarkRankingResponse> getAlltimeRankings(int page, int size) {
-    PageRequest pageRequest = PageRequest.of(page - 1, size);
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
     return bookmarkRepository.findAlltimeRankings(pageRequest);
   }
 
@@ -101,7 +101,7 @@ public class BookmarkService {
 
     YearMonth inputDate = YearMonth.of(year, month);
     if (inputDate.isAfter(YearMonth.now())) {
-      throw new CustomException("BOOKMARK#4_002", "미래 날짜로 조회할 수 없습니다.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("BOOKMARK#4_002", "요청하신 날짜는 현재 날짜보다 미래일 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 }
