@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.springframework.http.HttpStatus;
 
 @Entity
@@ -51,7 +52,8 @@ public class User extends TimeStampAll {
   private Title title;
 
   @Column(nullable = false)
-  private int subscriptionCount = 0;
+  @ColumnDefault("0")
+  private int subscriptionCount;
 
   // Custom Methods
   public void changeNickname(String newNickname) {
