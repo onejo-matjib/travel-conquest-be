@@ -17,6 +17,7 @@ public class RouteSearchAllResponse {
   private Long locationCount;
   private Long reviewCount;
   private Long bookmarkCount;
+  private Double reviewAvg;
   private LocalDateTime updatedAt;
 
   public RouteSearchAllResponse(
@@ -28,6 +29,7 @@ public class RouteSearchAllResponse {
       Long locationCount,
       Long reviewCount,
       Long bookmarkCount,
+      Double reviewAvg,
       LocalDateTime updatedAt) {
     this.id = id;
     this.title = title;
@@ -37,6 +39,7 @@ public class RouteSearchAllResponse {
     this.locationCount = locationCount;
     this.reviewCount = reviewCount;
     this.bookmarkCount = bookmarkCount;
+    this.reviewAvg = reviewAvg;
     this.updatedAt = updatedAt;
   }
 }

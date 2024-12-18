@@ -32,7 +32,7 @@ public class UserService {
         .email(targetUser.getEmail())
         .birth(targetUser.getBirth())
         .title(targetUser.getTitle().name())
-        .subscriptionsCount(targetUser.getSubscriptionsCount())
+        .subscriptionsCount(targetUser.getSubscriptionCount())
         .build();
   }
 

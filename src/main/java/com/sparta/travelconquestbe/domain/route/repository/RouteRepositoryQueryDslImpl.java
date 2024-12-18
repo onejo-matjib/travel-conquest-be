@@ -1,6 +1,10 @@
 package com.sparta.travelconquestbe.domain.route.repository;
 
+import static org.springframework.util.StringUtils.hasText;
+
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.domain.bookmark.entity.QBookmark;
@@ -44,7 +48,8 @@ public class RouteRepositoryQueryDslImpl implements RouteRepositoryQueryDsl {
                 location.mediaUrl.max().as("mediaUrl"),
                 route.locations.size().longValue().as("locationCount"),
                 review.countDistinct().longValue().as("reviewCount"),
-                bookmark.countDistinct().longValue().as("bookmarkCount")))
+                bookmark.countDistinct().longValue().as("bookmarkCount"),
+                review.rating.avg().coalesce(0.0).as("reviewAvg")))
         .from(route)
         .leftJoin(route.reviews, review)
         .leftJoin(route.bookmarks, bookmark)
@@ -53,13 +58,7 @@ public class RouteRepositoryQueryDslImpl implements RouteRepositoryQueryDsl {
         .groupBy(route.id)
         .distinct();
 
-    // 동적 정렬 컬럼 처리
-    switch (sort) {
-      case REVIEW_COUNT -> query.orderBy(review.count().desc(), route.updatedAt.desc());
-      case BOOKMARK_COUNT -> query.orderBy(bookmark.count().desc(), route.updatedAt.desc());
-      default -> query.orderBy(route.updatedAt.desc());
-    }
-
+    query.orderBy(getSortOrder(sort));
     query.offset(pageable.getOffset());
     query.limit(pageable.getPageSize());
     List<RouteSearchAllResponse> result = query.fetch();
@@ -67,5 +66,80 @@ public class RouteRepositoryQueryDslImpl implements RouteRepositoryQueryDsl {
     long total = query.fetchCount();
 
     return new PageImpl<>(result, pageable, total);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<RouteSearchAllResponse> routeSearchByKeyword(
+      Pageable pageable, RouteSort sort, String keyword) {
+    JPAQuery<RouteSearchAllResponse> query = new JPAQuery<>(entityManager);
+    query
+        .select(
+            Projections.fields(
+                RouteSearchAllResponse.class,
+                route.id.as("id"),
+                route.title.as("title"),
+                route.description.as("description"),
+                user.nickname.as("creator"),
+                route.updatedAt.as("updatedAt"),
+                location.mediaUrl.max().as("mediaUrl"),
+                route.locations.size().longValue().as("locationCount"),
+                review.countDistinct().longValue().as("reviewCount"),
+                bookmark.countDistinct().longValue().as("bookmarkCount"),
+                review.rating.avg().coalesce(0.0).as("reviewAvg")))
+        .from(route)
+        .leftJoin(route.reviews, review)
+        .leftJoin(route.bookmarks, bookmark)
+        .leftJoin(route.user, user)
+        .leftJoin(route.locations, location)
+        .where(
+            hasTitle(keyword)
+                .or(hasDescription(keyword))
+                .or(hasAuthor(keyword).or(hasLocation(keyword))))
+        .groupBy(route.id)
+        .distinct();
+    query.orderBy(getSortOrder(sort));
+    query.offset(pageable.getOffset());
+    query.limit(pageable.getPageSize());
+    List<RouteSearchAllResponse> result = query.fetch();
+
+    long total = query.fetchCount();
+
+    return new PageImpl<>(result, pageable, total);
+  }
+
+  private OrderSpecifier<?>[] getSortOrder(RouteSort sort) {
+    switch (sort) {
+      case REVIEW_COUNT -> {
+        return new OrderSpecifier[] {review.count().desc(), route.updatedAt.desc()};
+      }
+      case BOOKMARK_COUNT -> {
+        return new OrderSpecifier[] {bookmark.count().desc(), route.updatedAt.desc()};
+      }
+      case REVIEW_AVG -> {
+        return new OrderSpecifier[] {review.rating.avg().desc(), route.updatedAt.desc()};
+      }
+      default -> {
+        return new OrderSpecifier[] {route.updatedAt.desc()};
+      }
+    }
+  }
+
+  private BooleanExpression hasTitle(String keyword) {
+    return hasText(keyword) ? QRoute.route.title.containsIgnoreCase(keyword) : null;
+  }
+
+  private BooleanExpression hasDescription(String keyword) {
+    return hasText(keyword) ? QRoute.route.description.containsIgnoreCase(keyword) : null;
+  }
+
+  private BooleanExpression hasAuthor(String keyword) {
+    return hasText(keyword) ? QUser.user.nickname.containsIgnoreCase(keyword) : null;
+  }
+
+  private BooleanExpression hasLocation(String keyword) {
+    return hasText(keyword)
+        ? QRouteLocation.routeLocation.locationName.containsIgnoreCase(keyword)
+        : null;
   }
 }
