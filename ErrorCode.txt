@@ -4,16 +4,16 @@ COMMON / 잘못된 입력값 입니다. / BAD_REQUEST
 유저
 USER#1_000 / 에러 메시지 / UNAUTHORIZED
 USER#2_001 / 에러 메시지 / FORBIDDEN
-USER#3_001 / 에러 메시지 / NOT_FOUND
+USER#3_003 / 에러 메시지 / NOT_FOUND
 USER#4_001 / 에러 메시지 / CONFLICT
 USER#5_000 / 에러 메시지 / BAD_REQUEST
 
 인증
-AUTH#1_007 / 에러 메시지 / UNAUTHORIZED
+AUTH#1_008 / 에러 메시지 / UNAUTHORIZED
 AUTH#2_000 / 에러 메시지 / FORBIDDEN
 AUTH#3_003 / 에러 메시지 / NOT_FOUND
 AUTH#4_004 / 에러 메시지 / CONFLICT
-AUTH#5_003 / 에러 메시지 / BAD_REQUEST
+AUTH#5_004 / 에러 메시지 / BAD_REQUEST
 AUTH#6_001 / 에러 메시지 / INTERNAL_SERVER_ERROR
 
 관리자

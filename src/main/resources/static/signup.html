@@ -94,7 +94,7 @@
             `<strong>회원가입 성공!</strong><br>JWT 토큰 : <code>${token}</code>`;
         setTimeout(() => {
         window.location.href = '/login.html'; // 회원가입 성공 후 이동할 페이지
-        }, 10000);
+        }, 100000);
       } else {
         throw new Error('JWT 토큰이 반환되지 않았습니다.');
       }
