@@ -24,7 +24,7 @@ public class CouponScheduler {
   private final RedisTemplate<String, String> redisTemplate;
   private static final String COUPON_COUNT_KEY_PREFIX = "coupon_count:";
 
-  // 매일 자정 실행
+  // 만료 쿠폰 자동 삭제
   @Scheduled(cron = "0 00 00 * * *")
   @Transactional
   public void deleteExpiredCoupons() {
@@ -40,6 +40,27 @@ public class CouponScheduler {
     } else {
       log.info("유효기간 지난 쿠폰 없음.");
     }
+  }
+
+  // 쿠폰 DB 동기화
+  @Scheduled(cron = "0 00 00 * * *")
+  @Transactional
+  public void syncRedisToDatabase() {
+    log.info("Redis 데이터를 DB와 동기화 시작...");
+
+    // DB의 모든 쿠폰 조회
+    couponRepository.findAll().forEach(coupon -> {
+      String redisKey = COUPON_COUNT_KEY_PREFIX + coupon.getId();
+      String redisValue = redisTemplate.opsForValue().get(redisKey);
+
+      if (redisValue != null) {
+        // Redis 값으로 DB 업데이트
+        coupon.setCount(Integer.parseInt(redisValue));
+        couponRepository.save(coupon);
+      }
+    });
+
+    log.info("Redis 데이터를 DB와 동기화 완료.");
   }
 
   // Redis 키 삭제 병렬 처리
@@ -89,4 +110,6 @@ public class CouponScheduler {
       return false;
     }
   }
+
+
 }
