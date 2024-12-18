@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.review.dto.respones.ReviewSearchResponse;
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
@@ -22,6 +23,7 @@ import com.sparta.travelconquestbe.domain.routelocation.repository.RouteLocation
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.validation.constraints.Positive;
+import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -204,5 +206,35 @@ public class RouteService {
     String destination =
         destinationLocation.getLongitude() + "," + destinationLocation.getLatitude();
     return LocationDetailsRequest.builder().origin(origin).destination(destination).build();
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RouteRankingResponse> getMonthlyRankings(int year, int month, int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
+    return routeRepository.findMonthlyRankings(year, month, pageRequest);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RouteRankingResponse> getRealtimeRankings(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
+    return routeRepository.findRealtimeRankings(pageRequest);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RouteRankingResponse> getAlltimeRankings(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
+    return routeRepository.findAlltimeRankings(pageRequest);
+  }
+
+  private void validateYearAndMonth(int year, int month) {
+    if (month < 1 || month > 12) {
+      throw new CustomException("BOOKMARK#4_001", "월은 1~12 사이여야 합니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    YearMonth inputDate = YearMonth.of(year, month);
+    if (inputDate.isAfter(YearMonth.now())) {
+      throw new CustomException("BOOKMARK#4_002", "요청하신 날짜는 현재 날짜보다 미래일 수 없습니다.",
+          HttpStatus.BAD_REQUEST);
+    }
   }
 }

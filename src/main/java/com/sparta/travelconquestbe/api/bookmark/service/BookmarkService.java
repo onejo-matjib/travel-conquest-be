@@ -12,7 +12,7 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,9 +49,11 @@ public class BookmarkService {
   }
 
   @Transactional(readOnly = true)
-  public Page<BookmarkListResponse> getBookmarks(AuthUserInfo user, Pageable pageable) {
+  public Page<BookmarkListResponse> searchBookmarks(AuthUserInfo user, int page, int size) {
     User referenceUser = userRepository.getReferenceById(user.getId());
-    return bookmarkRepository.getUserBookmarks(referenceUser.getId(), pageable);
+    
+    PageRequest pageRequest = PageRequest.of(page - 1, size);
+    return bookmarkRepository.getUserBookmarks(referenceUser.getId(), pageRequest);
   }
 
   @Transactional
