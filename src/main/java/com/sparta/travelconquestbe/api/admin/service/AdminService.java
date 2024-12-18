@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.api.admin.service;
 
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
+import com.sparta.travelconquestbe.api.admin.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
