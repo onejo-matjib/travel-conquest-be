@@ -1,9 +1,9 @@
 package com.sparta.travelconquestbe.api.route.controller;
 
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
-import com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.route.service.RouteService;
@@ -23,7 +23,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor

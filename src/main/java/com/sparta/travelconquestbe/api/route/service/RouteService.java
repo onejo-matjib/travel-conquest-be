@@ -210,8 +210,6 @@ public class RouteService {
 
   @Transactional(readOnly = true)
   public Page<RouteRankingResponse> getMonthlyRankings(int year, int month, int page, int size) {
-    validateYearAndMonth(year, month);
-
     PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
     return routeRepository.findMonthlyRankings(year, month, pageRequest);
   }

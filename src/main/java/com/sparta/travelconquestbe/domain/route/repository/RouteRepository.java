@@ -24,44 +24,41 @@ public interface RouteRepository extends JpaRepository<Route, Long>, RouteReposi
   void deleteRouteLocationsReviewsAndRoute(@Param("routeId") Long routeId);
 
   // 월별 TOP 100
-  @Query("""
-          SELECT new com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse(
-                 r.user.nickname, r.title, r.description,
-                 COALESCE(r.updatedAt, r.createdAt), r.createdAt)
-          FROM Bookmark b
-          JOIN b.route r
-          WHERE YEAR(r.createdAt) = :year AND MONTH(r.createdAt) = :month
+  @Query(value = """
+          SELECT r.user_nickname AS creatorName, r.title AS title, r.description AS description,
+                 COALESCE(r.updated_at, r.created_at) AS updatedAt, r.created_at AS createdAt
+          FROM bookmarks b
+          JOIN routes r ON b.route_id = r.id
+          WHERE YEAR(r.created_at) = :year AND MONTH(r.created_at) = :month
           GROUP BY r.id
-          ORDER BY COUNT(b.id) DESC, r.createdAt ASC
-      """)
-  Page<RouteRankingResponse> findMonthlyRankings(
-      @Param("year") int year,
-      @Param("month") int month,
-      Pageable pageable
-  );
+          ORDER BY COUNT(b.id) DESC, r.created_at ASC
+          LIMIT 100
+      """, nativeQuery = true)
+  Page<RouteRankingResponse> findMonthlyRankings(@Param("year") int year, @Param("month") int month,
+      Pageable pageable);
 
   // 이번달 실시간 TOP 100
-  @Query("""
-          SELECT new com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse(
-                 r.user.nickname, r.title, r.description,
-                 COALESCE(r.updatedAt, r.createdAt), r.createdAt)
-          FROM Bookmark b
-          JOIN b.route r
-          WHERE YEAR(r.createdAt) = YEAR(CURRENT_DATE) AND MONTH(r.createdAt) = MONTH(CURRENT_DATE)
+  @Query(value = """
+          SELECT r.user_nickname AS creatorName, r.title AS title, r.description AS description,
+                 COALESCE(r.updated_at, r.created_at) AS updatedAt, r.created_at AS createdAt
+          FROM bookmarks b
+          JOIN routes r ON b.route_id = r.id
+          WHERE YEAR(r.created_at) = YEAR(CURRENT_DATE) AND MONTH(r.created_at) = MONTH(CURRENT_DATE)
           GROUP BY r.id
-          ORDER BY COUNT(b.id) DESC, r.createdAt ASC
-      """)
+          ORDER BY COUNT(b.id) DESC, r.created_at ASC
+          LIMIT 100
+      """, nativeQuery = true)
   Page<RouteRankingResponse> findRealtimeRankings(Pageable pageable);
 
   // 역대 TOP 100
-  @Query("""
-          SELECT new com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse(
-                 r.user.nickname, r.title, r.description,
-                 COALESCE(r.updatedAt, r.createdAt), r.createdAt)
-          FROM Bookmark b
-          JOIN b.route r
+  @Query(value = """
+          SELECT r.user_nickname AS creatorName, r.title AS title, r.description AS description,
+                 COALESCE(r.updated_at, r.created_at) AS updatedAt, r.created_at AS createdAt
+          FROM bookmarks b
+          JOIN routes r ON b.route_id = r.id
           GROUP BY r.id
-          ORDER BY COUNT(b.id) DESC, r.createdAt ASC
-      """)
+          ORDER BY COUNT(b.id) DESC, r.created_at ASC
+          LIMIT 100
+      """, nativeQuery = true)
   Page<RouteRankingResponse> findAlltimeRankings(Pageable pageable);
 }
