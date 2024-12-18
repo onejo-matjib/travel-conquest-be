@@ -1,11 +1,17 @@
 package com.sparta.travelconquestbe.api.user.service;
 
+import com.sparta.travelconquestbe.api.user.dto.respones.UserRankingResponse;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.sparta.travelconquestbe.domain.user.entity.User;
@@ -49,6 +55,27 @@ public class UserService {
     user.changeNickname(deletedNickname);
     user.delete();
     userRepository.save(user);
+  }
+
+  // 캐싱
+  @Cacheable(value = "topUsersCache", key = "'top100Users'")
+  public List<UserRankingResponse> getTop100UsersBySubscriptions() {
+    return userRepository.findTop100UsersBySubscriptions(PageRequest.of(0, 100))
+        .stream()
+        .map(user -> UserRankingResponse.builder()
+            .id(user.getId())
+            .nickname(user.getNickname())
+            .subscriptionCount(user.getSubscriptionCount())
+            .title(user.getTitle())
+            .build())
+        .toList();
+  }
+
+  @Transactional
+  public void updateTitlesForEligibleUsers() {
+    List<User> usersToUpdate = userRepository.findUsersToUpdateTitle();
+    usersToUpdate.forEach(user -> user.changeTitle(Title.CONQUEROR));
+    userRepository.saveAll(usersToUpdate);
   }
 
 }
