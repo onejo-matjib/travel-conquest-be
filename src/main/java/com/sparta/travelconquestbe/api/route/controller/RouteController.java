@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.api.route.controller;
 
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
@@ -96,5 +97,35 @@ public class RouteController {
   public ResponseEntity<Void> routeDelete(@PathVariable Long id, @AuthUser AuthUserInfo user) {
     routeService.routeDelete(id, user);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  // 월별 TOP 100
+  @GetMapping("/rankings/monthly")
+  public ResponseEntity<Page<RouteRankingResponse>> getMonthlyRankings(
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int year,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int month,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
+    Page<RouteRankingResponse> rankings = routeService.getMonthlyRankings(year, month, page,
+        size);
+    return ResponseEntity.ok(rankings);
+  }
+
+  // 이번 달 실시간 TOP 100
+  @GetMapping("/rankings/realtime")
+  public ResponseEntity<Page<RouteRankingResponse>> getRealtimeRankings(
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
+    Page<RouteRankingResponse> rankings = routeService.getRealtimeRankings(page, size);
+    return ResponseEntity.ok(rankings);
+  }
+
+  // 역대 TOP 100
+  @GetMapping("/rankings/alltime")
+  public ResponseEntity<Page<RouteRankingResponse>> getAlltimeRankings(
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
+    Page<RouteRankingResponse> rankings = routeService.getAlltimeRankings(page, size);
+    return ResponseEntity.ok(rankings);
   }
 }

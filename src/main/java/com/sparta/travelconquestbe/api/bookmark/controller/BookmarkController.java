@@ -3,7 +3,6 @@ package com.sparta.travelconquestbe.api.bookmark.controller;
 import com.sparta.travelconquestbe.api.bookmark.dto.request.BookmarkCreateRequest;
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
-import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkRankingResponse;
 import com.sparta.travelconquestbe.api.bookmark.service.BookmarkService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -57,35 +56,5 @@ public class BookmarkController {
   ) {
     bookmarkService.deleteBookmark(id, user);
     return ResponseEntity.noContent().build();
-  }
-
-  // 월별 TOP 100
-  @GetMapping("/rankings/monthly")
-  public ResponseEntity<Page<BookmarkRankingResponse>> getMonthlyRankings(
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int year,
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int month,
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
-    Page<BookmarkRankingResponse> rankings = bookmarkService.getMonthlyRankings(year, month, page,
-        size);
-    return ResponseEntity.ok(rankings);
-  }
-
-  // 이번 달 실시간 TOP 100
-  @GetMapping("/rankings/realtime")
-  public ResponseEntity<Page<BookmarkRankingResponse>> getRealtimeRankings(
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
-    Page<BookmarkRankingResponse> rankings = bookmarkService.getRealtimeRankings(page, size);
-    return ResponseEntity.ok(rankings);
-  }
-
-  // 역대 TOP 100
-  @GetMapping("/rankings/alltime")
-  public ResponseEntity<Page<BookmarkRankingResponse>> getAlltimeRankings(
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
-    Page<BookmarkRankingResponse> rankings = bookmarkService.getAlltimeRankings(page, size);
-    return ResponseEntity.ok(rankings);
   }
 }

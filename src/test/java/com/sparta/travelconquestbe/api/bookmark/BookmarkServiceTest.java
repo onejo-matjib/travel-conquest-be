@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkCreateResponse;
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
-import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkRankingResponse;
 import com.sparta.travelconquestbe.api.bookmark.service.BookmarkService;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -188,89 +187,5 @@ class BookmarkServiceTest {
 
     assertEquals("BOOKMARK#3_001", exception.getErrorCode());
     assertEquals(HttpStatus.FORBIDDEN, exception.getHttpStatus());
-  }
-
-  @Test
-  @DisplayName("월별 루트 랭킹 조회 성공 - updatedAt이 null")
-  void getMonthlyRankings_UpdatedAtNull() {
-    int year = 2024, month = 5;
-    LocalDateTime createdAt = LocalDateTime.now();
-    PageRequest pageable = PageRequest.of(0, 10);
-
-    BookmarkRankingResponse rankingResponse = new BookmarkRankingResponse(
-        "User1", "Route Title", "Description", null, createdAt
-    );
-    Page<BookmarkRankingResponse> mockPage = new PageImpl<>(
-        Collections.singletonList(rankingResponse));
-
-    when(bookmarkRepository.findMonthlyRankings(year, month, pageable)).thenReturn(mockPage);
-
-    Page<BookmarkRankingResponse> result = bookmarkService.getMonthlyRankings(year, month, 1, 10);
-
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
-    assertEquals(createdAt, result.getContent().get(0).getUpdatedAt());
-  }
-
-  @Test
-  @DisplayName("월별 루트 랭킹 조회 실패 - 미래 날짜 입력")
-  void getMonthlyRankings_FutureDate() {
-    int year = 2025, month = 12;
-
-    CustomException exception = assertThrows(CustomException.class, () ->
-        bookmarkService.getMonthlyRankings(year, month, 1, 10)
-    );
-
-    assertEquals("BOOKMARK#4_002", exception.getErrorCode());
-    assertEquals(HttpStatus.BAD_REQUEST, exception.getHttpStatus());
-    assertEquals("미래 날짜로 조회할 수 없습니다.", exception.getErrorMessage());
-  }
-
-  @Test
-  @DisplayName("월별 루트 랭킹 조회 실패 - 잘못된 월 입력")
-  void getMonthlyRankings_InvalidMonth() {
-    int year = 2024, month = 13;
-
-    CustomException exception = assertThrows(CustomException.class, () -> {
-      bookmarkService.getMonthlyRankings(year, month, 1, 10);
-    });
-
-    assertEquals("BOOKMARK#4_001", exception.getErrorCode());
-    assertEquals("월은 1~12 사이여야 합니다.", exception.getErrorMessage());
-  }
-
-  @Test
-  @DisplayName("실시간 루트 랭킹 조회 성공 - 데이터 없음")
-  void getRealtimeRankings_Empty() {
-    PageRequest pageable = PageRequest.of(0, 10);
-    Page<BookmarkRankingResponse> emptyPage = new PageImpl<>(Collections.emptyList());
-
-    when(bookmarkRepository.findRealtimeRankings(pageable)).thenReturn(emptyPage);
-
-    Page<BookmarkRankingResponse> result = bookmarkService.getRealtimeRankings(1, 10);
-
-    assertNotNull(result);
-    assertEquals(0, result.getContent().size());
-  }
-
-  @Test
-  @DisplayName("역대 루트 랭킹 조회 성공 - updatedAt이 null")
-  void getAlltimeRankings_UpdatedAtNull() {
-    PageRequest pageable = PageRequest.of(0, 10);
-    LocalDateTime createdAt = LocalDateTime.now();
-
-    BookmarkRankingResponse rankingResponse = new BookmarkRankingResponse(
-        "User1", "Route Title", "Description", null, createdAt
-    );
-    Page<BookmarkRankingResponse> mockPage = new PageImpl<>(
-        Collections.singletonList(rankingResponse));
-
-    when(bookmarkRepository.findAlltimeRankings(pageable)).thenReturn(mockPage);
-
-    Page<BookmarkRankingResponse> result = bookmarkService.getAlltimeRankings(1, 10);
-
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
-    assertEquals(createdAt, result.getContent().get(0).getUpdatedAt());
   }
 }
