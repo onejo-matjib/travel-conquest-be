@@ -4,7 +4,7 @@ COMMON / 잘못된 입력값 입니다. / BAD_REQUEST
 유저
 USER#1_000 / 에러 메시지 / UNAUTHORIZED
 USER#2_001 / 에러 메시지 / FORBIDDEN
-USER#3_002 / 에러 메시지 / NOT_FOUND
+USER#3_003 / 에러 메시지 / NOT_FOUND
 USER#4_001 / 에러 메시지 / CONFLICT
 USER#5_000 / 에러 메시지 / BAD_REQUEST
 

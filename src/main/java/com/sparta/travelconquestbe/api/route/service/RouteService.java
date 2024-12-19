@@ -237,4 +237,28 @@ public class RouteService {
           HttpStatus.BAD_REQUEST);
     }
   }
+
+  //추가함
+  @Transactional
+  public Route createRouteDirectly(RouteCreateRequest routeCreateRequest, User user) {
+    // 등급 업 신청 시 전달받은 route 정보로 바로 Route 생성
+    // 기존 routeCreate 로직 재활용 가능
+    // media 업로드가 필요없다고 가정하거나, 기존 로직 사용
+    // 여기서는 간략하게 만 표시중...
+
+    Route route = Route.builder()
+        .title(routeCreateRequest.getTitle())
+        .description(routeCreateRequest.getDescription())
+        .estimatedTime(routeCreateRequest.getEstimatedTime())
+        .money(routeCreateRequest.getMoney())
+        .totalDistance(routeCreateRequest.getTotalDistance())
+        .user(user)
+        .build();
+
+    Route savedRoute = routeRepository.save(route);
+    // 위치 정보도 반영 필요하면 기존 bulkSave로 locations 처리
+    // 여기서는 단순히 등급업 신청을 위한 Route라고 가정하에 로직을 짯습니다.
+
+    return savedRoute;
+  }
 }
