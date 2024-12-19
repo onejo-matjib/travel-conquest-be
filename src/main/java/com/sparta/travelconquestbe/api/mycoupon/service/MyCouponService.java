@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.api.mycoupon.service;
 
-import com.sparta.travelconquestbe.api.mycoupon.dto.respones.MyCouponSaveResponse;
+import com.sparta.travelconquestbe.api.mycoupon.dto.response.MyCouponListResponse;
+import com.sparta.travelconquestbe.api.mycoupon.dto.response.MyCouponSaveResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
@@ -17,6 +18,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -36,44 +41,54 @@ public class MyCouponService {
   private static final long RETRY_DELAY = 100L; // 재시도 간격
   private static final String COUPON_COUNT_KEY_PREFIX = "coupon_count:";
 
+  public Page<MyCouponListResponse> searchAllMyCoupon(AuthUserInfo userInfo, int page, int limit,
+      String sort, String direction) {
+    Pageable pageable = PageRequest.of(page - 1, limit,
+        direction.equalsIgnoreCase("DESC") ? Sort.by(sort).descending()
+            : Sort.by(sort).ascending());
+
+    return myCouponRepository.searchAllMyCoupon(userInfo.getId(), pageable);
+  }
+
   @Transactional
   public MyCouponSaveResponse createMyCoupon(Long couponId, AuthUserInfo userInfo) {
     String lockKey = "couponId:" + couponId;
     String lockValue = String.valueOf(couponId);
 
     try {
-      acquireLock(lockKey, lockValue); // Redis 락을 획득
-      validateUser(userInfo); // 사용자 인증과 권한을 확인
-      Coupon coupon = validateAndGetCoupon(couponId, userInfo); // 쿠폰 정보 검증
+      acquireLock(lockKey, lockValue); // Redis 락 획득
 
-      // 쿠폰 수량을 Redis에서 가져오기
+      validateUser(userInfo); // 사용자 검증
+      Coupon coupon = validateAndGetCoupon(couponId, userInfo); // 쿠폰 검증
+
       String redisKey = COUPON_COUNT_KEY_PREFIX + couponId;
       String cachedCount = redisTemplate.opsForValue().get(redisKey);
 
-      // Redis에 수량이 없다면 초기화
       if (cachedCount == null) {
         redisTemplate.opsForValue().set(redisKey, String.valueOf(coupon.getCount()));
-        cachedCount = String.valueOf(coupon.getCount()); // 초기 DB 값을 Redis에 저장
+        cachedCount = String.valueOf(coupon.getCount());
       }
 
-      // Redis 수량 감소 (쿠폰 발급)
       int redisCount = Integer.parseInt(cachedCount);
       if (redisCount <= 0) {
         throw new CustomException("COUPON#4_002", "해당 쿠폰이 소진되었습니다.", HttpStatus.CONFLICT);
       }
 
-      redisTemplate.opsForValue().set(redisKey, String.valueOf(redisCount - 1)); // 수량 감소
-
-      String couponCode = UUID.randomUUID().toString(); // 쿠폰 고유번호 랜덤 생성
-      User referenceUser = userRepository.getReferenceById(userInfo.getId()); // 프록시 객체 생성
+      redisTemplate.opsForValue().set(redisKey, String.valueOf(redisCount - 1));
+      String couponCode = UUID.randomUUID().toString();
+      User referenceUser = userRepository.getReferenceById(userInfo.getId());
       MyCoupon myCoupon = saveMyCoupon(coupon, referenceUser, couponCode);
 
-      // Redis 수량이 0일 때 DB 동기화
       if (redisCount - 1 == 0) {
         syncCouponCountToDatabase(coupon, 0);
       }
 
       return buildResponse(myCoupon);
+
+    } catch (CustomException e) {
+      throw e;  // 이미 처리된 커스텀 예외는 다시 던지기
+    } catch (NumberFormatException e) {
+      throw new CustomException("COUPON#5_002", "쿠폰 수량 변환 중 오류 발생.", HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       throw new CustomException("COUPON#5_001", "쿠폰 발급 중 내부적인 문제가 발생했습니다.",
           HttpStatus.INTERNAL_SERVER_ERROR);
@@ -81,6 +96,7 @@ public class MyCouponService {
       releaseLock(lockKey);
     }
   }
+
 
   // Redis에서 발급된 쿠폰 수량을 DB로 동기화
   public void syncCouponCountToDatabase(Coupon coupon, int newRedisCount) {
