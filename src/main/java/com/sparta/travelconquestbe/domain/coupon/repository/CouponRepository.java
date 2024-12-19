@@ -15,6 +15,6 @@ public interface CouponRepository extends JpaRepository<Coupon, Long>, CouponRep
 
   @Modifying
   @Transactional
-  @Query("DELETE FROM Coupon c WHERE c.id IN :ids")
+  @Query("DELETE FROM Coupon c WHERE c.id IN :couponIds")
   void deleteByIds(List<Long> couponIds);
 }
