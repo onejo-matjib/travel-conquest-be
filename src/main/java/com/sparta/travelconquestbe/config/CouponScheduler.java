@@ -45,7 +45,6 @@ public class CouponScheduler {
     }
   }
 
-
   // 쿠폰 DB 동기화
   @Scheduled(cron = "0 00 00 * * *")
   @Transactional
@@ -87,6 +86,4 @@ public class CouponScheduler {
       return false;
     }
   }
-
-
 }
