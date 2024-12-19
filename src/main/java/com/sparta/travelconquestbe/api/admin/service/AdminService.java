@@ -2,10 +2,10 @@ package com.sparta.travelconquestbe.api.admin.service;
 
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
+import com.sparta.travelconquestbe.api.admin.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
+import com.sparta.travelconquestbe.api.admin.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
-import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
-import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -89,7 +89,8 @@ public class AdminService {
   @Transactional
   public AdminUpdateUserResponse updateUserLevel(Long userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(
+            () -> new CustomException("ADMIN#3_002", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     if (user.getType() != UserType.USER) {
       throw new CustomException("ADMIN#5_002", "이미 등급이 업그레이드된 사용자입니다.", HttpStatus.BAD_REQUEST);
@@ -104,7 +105,8 @@ public class AdminService {
   @Transactional
   public void restoreUser(Long userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new CustomException("ADMIN#3_004", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+        .orElseThrow(
+            () -> new CustomException("ADMIN#3_004", "해당 사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
 
     if (user.getDeletedAt() == null) {
       throw new CustomException("ADMIN#4_002", "이미 활성화된 유저입니다.", HttpStatus.CONFLICT);
@@ -173,15 +175,15 @@ public class AdminService {
   }
 
   @Transactional
-  public void deleteCoupon(Long id, AuthUserInfo userInfo) {
+  public void deleteCoupon(Long couponId, AuthUserInfo userInfo) {
     if (!(userInfo.getType().equals(UserType.ADMIN))) {
       throw new CustomException("COUPON#3_003",
           "해당 리소스에 접근할 권한이 없습니다.",
           HttpStatus.FORBIDDEN);
     }
 
-    Coupon coupon = couponRepository.findById(id).orElseThrow
-        (() -> new CustomException("COUPON#2_003",
+    Coupon coupon = couponRepository.findById(couponId).orElseThrow
+        (() -> new CustomException("COUPON#2_002",
             "해당 쿠폰이 존재하지 않습니다.",
             HttpStatus.NOT_FOUND));
     couponRepository.delete(coupon);

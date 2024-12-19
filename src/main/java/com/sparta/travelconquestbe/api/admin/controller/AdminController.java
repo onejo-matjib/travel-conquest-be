@@ -3,14 +3,12 @@ package com.sparta.travelconquestbe.api.admin.controller;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminLoginRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.AdminUpdateUserRequest;
+import com.sparta.travelconquestbe.api.admin.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
+import com.sparta.travelconquestbe.api.admin.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.api.admin.service.AdminService;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.common.annotation.AdminUser;
-import com.sparta.travelconquestbe.common.annotation.AuthUser;
-import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
-import com.sparta.travelconquestbe.api.coupon.dto.request.CouponCreateRequest;
-import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
@@ -22,9 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -69,7 +66,7 @@ public class AdminController {
     } else if (action == AdminAction.RESTORE) {
       adminService.restoreUser(userId);
       return ResponseEntity.ok().build();
-  } else {
+    } else {
       throw new CustomException("ADMIN#5_001", "올바르지 않은 요청입니다.", HttpStatus.BAD_REQUEST);
     }
     return ResponseEntity.ok(response);
@@ -91,12 +88,12 @@ public class AdminController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  @DeleteMapping("/coupons/{id}")
+  @DeleteMapping("/coupons/{couponId}")
   public ResponseEntity<String> deleteCoupon(
-      @PathVariable Long id,
+      @PathVariable Long couponId,
       @AuthUser AuthUserInfo user
   ) {
-    adminService.deleteCoupon(id, user);
+    adminService.deleteCoupon(couponId, user);
     return ResponseEntity.noContent().build();
   }
 }
