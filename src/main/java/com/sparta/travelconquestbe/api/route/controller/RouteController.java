@@ -2,6 +2,8 @@ package com.sparta.travelconquestbe.api.route.controller;
 
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.route.service.RouteService;
@@ -21,7 +23,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
@@ -82,9 +91,48 @@ public class RouteController {
     return ResponseEntity.status(HttpStatus.OK).body(routeService.routeSearch(id));
   }
 
+  @GetMapping("/{id}/origin/{originSequence}/destination/{destinationSequence}")
+  public ResponseEntity<RouteLineResponse> routeSearchDetails(
+      @PathVariable Long id,
+      @Positive(message = "장소 순번을 양수로 입력해주세요.") @PathVariable Long originSequence,
+      @Positive(message = "장소 순번을 양수로 입력해주세요.") @PathVariable Long destinationSequence) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(routeService.routeSearchDetails(id, originSequence, destinationSequence));
+  }
+
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> routeDelete(@PathVariable Long id, @AuthUser AuthUserInfo user) {
     routeService.routeDelete(id, user);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  // 월별 TOP 100
+  @GetMapping("/rankings/monthly")
+  public ResponseEntity<Page<RouteRankingResponse>> getMonthlyRankings(
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int year,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int month,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
+    Page<RouteRankingResponse> rankings = routeService.getMonthlyRankings(year, month, page,
+        size);
+    return ResponseEntity.ok(rankings);
+  }
+
+  // 이번 달 실시간 TOP 100
+  @GetMapping("/rankings/realtime")
+  public ResponseEntity<Page<RouteRankingResponse>> getRealtimeRankings(
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
+    Page<RouteRankingResponse> rankings = routeService.getRealtimeRankings(page, size);
+    return ResponseEntity.ok(rankings);
+  }
+
+  // 역대 TOP 100
+  @GetMapping("/rankings/alltime")
+  public ResponseEntity<Page<RouteRankingResponse>> getAlltimeRankings(
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
+      @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
+    Page<RouteRankingResponse> rankings = routeService.getAlltimeRankings(page, size);
+    return ResponseEntity.ok(rankings);
   }
 }

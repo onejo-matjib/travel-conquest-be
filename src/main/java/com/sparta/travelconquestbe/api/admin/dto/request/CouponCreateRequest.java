@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.api.coupon.dto.request;
+package com.sparta.travelconquestbe.api.admin.dto.request;
 
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;

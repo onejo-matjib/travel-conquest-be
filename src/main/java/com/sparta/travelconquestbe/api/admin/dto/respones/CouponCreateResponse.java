@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.api.coupon.dto.respones;
+package com.sparta.travelconquestbe.api.admin.dto.respones;
 
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import java.time.LocalDate;

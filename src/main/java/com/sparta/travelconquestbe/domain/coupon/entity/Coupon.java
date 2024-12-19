@@ -21,10 +21,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "coupons")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -54,9 +57,6 @@ public class Coupon extends TimeStampCreateUpdate {
   private int count;
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "coupon", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @BatchSize(size = 100)
   private final List<MyCoupon> myCoupons = new ArrayList<>();
-
-  public void decrementCount() {
-    this.count -= 1;
-  }
 }

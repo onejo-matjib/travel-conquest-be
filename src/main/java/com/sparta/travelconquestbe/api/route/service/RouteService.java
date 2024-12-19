@@ -5,9 +5,11 @@ import com.sparta.travelconquestbe.api.review.dto.respones.ReviewSearchResponse;
 import com.sparta.travelconquestbe.api.route.dto.request.RouteCreateRequest;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteCreateResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteLineResponse;
+import com.sparta.travelconquestbe.api.route.dto.response.RouteRankingResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchAllResponse;
 import com.sparta.travelconquestbe.api.route.dto.response.RouteSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.dto.info.RouteLocationInfo;
+import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationDetailsRequest;
 import com.sparta.travelconquestbe.api.routelocation.dto.request.LocationSearchRequest;
 import com.sparta.travelconquestbe.api.routelocation.dto.respones.LocationSearchResponse;
 import com.sparta.travelconquestbe.api.routelocation.service.RouteLocationService;
@@ -21,6 +23,7 @@ import com.sparta.travelconquestbe.domain.routelocation.repository.RouteLocation
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.validation.constraints.Positive;
+import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -122,7 +125,7 @@ public class RouteService {
     List<RouteLocation> locations = route.getLocations();
 
     RouteLineResponse routeLine =
-        kakaoMapApiService.searchRouteLine(buildLocationSearchRequest(locations));
+        kakaoMapApiService.searchRouteLine(buildLocationSearchAllRequest(locations));
 
     return RouteSearchResponse.builder()
         .title(route.getTitle())
@@ -155,7 +158,21 @@ public class RouteService {
         .build();
   }
 
-  private LocationSearchRequest buildLocationSearchRequest(List<RouteLocation> locations) {
+  @Transactional(readOnly = true)
+  public RouteLineResponse routeSearchDetails(
+      Long id, Long originSequence, Long destinationSequence) {
+    Route route =
+        routeRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new CustomException("ROUTE#1_004", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+    List<RouteLocation> locations = route.getLocations();
+    return kakaoMapApiService.searchRouteLinesDetails(
+        buildLocationSearchDetailsRequest(locations, originSequence, destinationSequence));
+  }
+
+  private LocationSearchRequest buildLocationSearchAllRequest(List<RouteLocation> locations) {
     return LocationSearchRequest.builder()
         .origin(
             new LocationSearchRequest.Origin(
@@ -175,5 +192,49 @@ public class RouteService {
                             location.getLatitude().doubleValue()))
                 .toList())
         .build();
+  }
+
+  private LocationDetailsRequest buildLocationSearchDetailsRequest(
+      List<RouteLocation> locations, Long originSequence, Long destinationSequence) {
+    if (originSequence >= locations.size() || destinationSequence > locations.size()) {
+      throw new CustomException("ROUTE#2_002", "해당 장소가 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+    }
+    RouteLocation originLocation = locations.get((int) (originSequence - 1));
+    RouteLocation destinationLocation = locations.get((int) (destinationSequence - 1));
+
+    String origin = originLocation.getLongitude() + "," + originLocation.getLatitude();
+    String destination =
+        destinationLocation.getLongitude() + "," + destinationLocation.getLatitude();
+    return LocationDetailsRequest.builder().origin(origin).destination(destination).build();
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RouteRankingResponse> getMonthlyRankings(int year, int month, int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
+    return routeRepository.findMonthlyRankings(year, month, pageRequest);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RouteRankingResponse> getRealtimeRankings(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
+    return routeRepository.findRealtimeRankings(pageRequest);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<RouteRankingResponse> getAlltimeRankings(int page, int size) {
+    PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
+    return routeRepository.findAlltimeRankings(pageRequest);
+  }
+
+  private void validateYearAndMonth(int year, int month) {
+    if (month < 1 || month > 12) {
+      throw new CustomException("BOOKMARK#4_001", "월은 1~12 사이여야 합니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    YearMonth inputDate = YearMonth.of(year, month);
+    if (inputDate.isAfter(YearMonth.now())) {
+      throw new CustomException("BOOKMARK#4_002", "요청하신 날짜는 현재 날짜보다 미래일 수 없습니다.",
+          HttpStatus.BAD_REQUEST);
+    }
   }
 }

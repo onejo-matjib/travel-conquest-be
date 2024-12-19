@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,6 +20,7 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,16 +64,37 @@ class BookmarkServiceTest {
     when(userRepository.getReferenceById(user.getId())).thenReturn(mockUser);
     when(bookmarkRepository.validateBookmarkCreation(user.getId(), routeId)).thenReturn("VALID");
     when(routeRepository.findById(routeId)).thenReturn(Optional.of(route));
-    when(bookmarkRepository.save(any(Bookmark.class))).thenAnswer(inv -> {
-      Bookmark b = inv.getArgument(0);
-      return Bookmark.builder().id(3L).route(b.getRoute()).user(b.getUser()).build();
-    });
+    when(bookmarkRepository.save(any(Bookmark.class))).thenReturn(
+        Bookmark.builder().id(3L).user(mockUser).route(route).build()
+    );
 
     BookmarkCreateResponse response = bookmarkService.createBookmark(routeId, user);
 
     assertNotNull(response);
     assertEquals(routeId, response.getRouteId());
     verify(bookmarkRepository).validateBookmarkCreation(user.getId(), routeId);
+  }
+
+  @Test
+  @DisplayName("즐겨찾기 목록 조회 성공 - 페이징 검증")
+  void searchBookmarks_Success() {
+    AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
+    int page = 1, size = 10;
+    PageRequest pageRequest = PageRequest.of(page - 1, size);
+
+    Page<BookmarkListResponse> mockPage = new PageImpl<>(Collections.singletonList(
+        new BookmarkListResponse(1L, 2L, "Test Route", LocalDateTime.now())
+    ));
+
+    when(userRepository.getReferenceById(user.getId())).thenReturn(
+        User.builder().id(user.getId()).build());
+    when(bookmarkRepository.getUserBookmarks(user.getId(), pageRequest)).thenReturn(mockPage);
+
+    Page<BookmarkListResponse> result = bookmarkService.searchBookmarks(user, page, size);
+
+    assertNotNull(result);
+    assertEquals(1, result.getContent().size());
+    verify(bookmarkRepository).getUserBookmarks(user.getId(), pageRequest);
   }
 
   @Test
@@ -111,23 +132,6 @@ class BookmarkServiceTest {
 
     assertEquals("BOOKMARK#2_001", exception.getErrorCode());
     assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
-  }
-
-  @Test
-  @DisplayName("즐겨찾기 목록 조회 성공")
-  void getBookmarks_Success() {
-    AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
-    Page<BookmarkListResponse> page = new PageImpl<>(Collections.singletonList(
-        new BookmarkListResponse(1L, 2L, "Test Route", null)
-    ));
-    when(userRepository.getReferenceById(user.getId())).thenReturn(
-        User.builder().id(user.getId()).build());
-    when(bookmarkRepository.getUserBookmarks(eq(user.getId()), any(PageRequest.class))).thenReturn(
-        page);
-
-    Page<BookmarkListResponse> result = bookmarkService.getBookmarks(user, PageRequest.of(0, 10));
-    assertNotNull(result);
-    assertEquals(1, result.getContent().size());
   }
 
   @Test
