@@ -12,7 +12,7 @@ public class UserTitleScheduler {
 
   private final UserService userService;
 
-  @Scheduled(cron = "*/10 * * * * *") // 매 정각 실행
+  @Scheduled(cron = "0 0 * * * *") // 매 정각 실행
   public void updateTitlesForEligibleUsers() {
     userService.updateTitlesForEligibleUsers();
   }
