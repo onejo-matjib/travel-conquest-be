@@ -43,6 +43,4 @@ public class CouponRepositoryQueryDslImpl implements CouponRepositoryQueryDsl {
 
     return new PageImpl<>(content, pageable, totalCount);
   }
-
-
 }
