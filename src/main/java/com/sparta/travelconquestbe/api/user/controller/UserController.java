@@ -1,9 +1,11 @@
 package com.sparta.travelconquestbe.api.user.controller;
 
+import com.sparta.travelconquestbe.api.user.dto.respones.UserRankingResponse;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.api.user.service.UserService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,5 +32,16 @@ public class UserController {
   public ResponseEntity<Void> deleteUser(@AuthUser AuthUserInfo userInfo) {
     userService.deleteUser(userInfo);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/rankings")
+  public ResponseEntity<List<UserRankingResponse>> getTop100Rankings() {
+    return ResponseEntity.ok(userService.getTop100UsersBySubscriptions());
+  }
+
+  @PutMapping("/rankings/titles")
+  public ResponseEntity<String> updateUserTitles() {
+    userService.updateTitlesForEligibleUsers();
+    return ResponseEntity.ok("Titles updated for eligible users");
   }
 }
