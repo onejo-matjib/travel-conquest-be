@@ -97,7 +97,6 @@ public class MyCouponService {
     }
   }
 
-
   // Redis에서 발급된 쿠폰 수량을 DB로 동기화
   public void syncCouponCountToDatabase(Coupon coupon, int newRedisCount) {
     coupon.setCount(newRedisCount); // DB의 쿠폰 수량 업데이트
