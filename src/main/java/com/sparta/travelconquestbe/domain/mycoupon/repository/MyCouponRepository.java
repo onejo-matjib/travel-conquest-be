@@ -21,5 +21,5 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon, Long>,
   @Query("DELETE FROM MyCoupon mc WHERE mc.coupon.id IN :couponIds")
   void deleteByCouponIds(List<Long> couponIds);
 
-  Page<MyCouponListResponse> searchAllMyCoupon(Long userId, Pageable pageable);
+  Page<MyCouponListResponse> searchAllMyCoupons(Long userId, Pageable pageable);
 }

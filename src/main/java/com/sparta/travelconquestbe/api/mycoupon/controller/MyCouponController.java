@@ -37,7 +37,7 @@ public class MyCouponController {
 
 
   @GetMapping("/users/mycoupons")
-  public ResponseEntity<Page<MyCouponListResponse>> searchAllMyCoupon(
+  public ResponseEntity<Page<MyCouponListResponse>> searchAllMyCoupons(
       @AuthUser AuthUserInfo userInfo,
       @Positive @RequestParam(defaultValue = "1", value = "page") int page,
       @Positive @RequestParam(defaultValue = "10", value = "limit") int limit,
@@ -46,7 +46,7 @@ public class MyCouponController {
       @RequestParam(defaultValue = "DESC") String direction) {
 
     Page<MyCouponListResponse> response =
-        myCouponService.searchAllMyCoupon(userInfo, page, limit, sort, direction);
+        myCouponService.searchAllMyCoupons(userInfo, page, limit, sort, direction);
 
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

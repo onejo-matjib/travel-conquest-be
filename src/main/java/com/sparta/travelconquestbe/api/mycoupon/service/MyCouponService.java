@@ -39,13 +39,13 @@ public class MyCouponService {
   private static final long RETRY_DELAY = 100L; // 재시도 간격
   private static final String COUPON_COUNT_KEY_PREFIX = "coupon_count:";
 
-  public Page<MyCouponListResponse> searchAllMyCoupon(AuthUserInfo userInfo, int page, int limit,
+  public Page<MyCouponListResponse> searchAllMyCoupons(AuthUserInfo userInfo, int page, int limit,
       String sort, String direction) {
     Pageable pageable = PageRequest.of(page - 1, limit,
         direction.equalsIgnoreCase("DESC") ? Sort.by(sort).descending()
             : Sort.by(sort).ascending());
 
-    return myCouponRepository.searchAllMyCoupon(userInfo.getId(), pageable);
+    return myCouponRepository.searchAllMyCoupons(userInfo.getId(), pageable);
   }
 
   @Transactional

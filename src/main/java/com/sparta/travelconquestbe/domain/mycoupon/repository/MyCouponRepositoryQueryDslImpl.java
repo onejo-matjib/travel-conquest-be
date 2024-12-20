@@ -26,7 +26,7 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
   private final JPAQueryFactory jpaQueryFactory;
 
   @Override
-  public Page<MyCouponListResponse> searchAllMyCoupon(Long userId, Pageable pageable) {
+  public Page<MyCouponListResponse> searchAllMyCoupons(Long userId, Pageable pageable) {
     QueryResults<MyCouponListResponse> results = jpaQueryFactory
         .select(Projections.constructor(MyCouponListResponse.class,
             myCoupon.id,
