@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.admin.dto.request.AdminSignUpRequest;
 import com.sparta.travelconquestbe.api.admin.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.api.admin.dto.respones.CouponCreateResponse;
+import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
@@ -12,14 +13,19 @@ import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
+import com.sparta.travelconquestbe.domain.report.entity.Report;
+import com.sparta.travelconquestbe.domain.report.enums.Villain;
+import com.sparta.travelconquestbe.domain.report.repository.ReportRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.Title;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,6 +40,7 @@ public class AdminService {
   private final JwtHelper jwtHelper;
   private final PasswordEncoder passwordEncoder;
   private final CouponRepository couponRepository;
+  private final ReportRepository reportRepository;
   private static final int MAX_PAGE_SIZE = 100;
 
   public void signUp(AdminSignUpRequest request) {
@@ -189,6 +196,57 @@ public class AdminService {
     couponRepository.delete(coupon);
   }
 
+  @Transactional
+  public void processReport(Long Id, Villain status, AuthUserInfo userInfo) {
+    Report report = reportRepository.findById(Id)
+        .orElseThrow(() -> new CustomException("ADMIN#3_005", "해당 신고를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+
+    // 이미 처리된 신고인지 확인
+    if (report.getCheckedAt() != null) {
+      throw new CustomException("ADMIN#6_001", "이미 처리된 신고입니다.", HttpStatus.BAD_REQUEST);
+    }
+
+    // 관리자 ID와 처리 시간 기록
+    report.markProcessed(userInfo.getId());
+
+    User targetUser = report.getTargetId();
+
+    // 무죄 처리
+    if (status == Villain.SAINT) {
+      report.updateStatus(status);
+      reportRepository.save(report);
+      return;
+    }
+
+    // 유죄 처리
+    report.updateStatus(status);
+
+    // 유저의 상태를 업데이트
+    if (targetUser.getUserType() == UserType.USER && status == Villain.OUTLAW) {
+      // OUTLAW 상태로 변경 및 경고 메시지 설정
+      targetUser.setUserType(UserType.OUTLAW);
+      targetUser.setWarningMessage("당신은 OUTLAW 상태입니다. 추가 위반 시 DEVIL 상태가 됩니다.");
+    } else if (targetUser.getUserType() == UserType.OUTLAW && status == Villain.OUTLAW) {
+      // OUTLAW 상태에서 OUTLAW 신고를 또 받은 경우, DEVIL 상태로 변경 및 1주일 정지
+      targetUser.setUserType(UserType.DEVIL);
+      targetUser.changeNickname("tempblock_" + targetUser.getNickname());
+      targetUser.deleteWeeks(LocalDateTime.now().plusWeeks(1)); // 1주일 후 시간 설정
+    } else if (targetUser.getUserType() == UserType.DEVIL && status == Villain.DEVIL) {
+      // DEVIL 상태에서 DEVIL 신고를 받은 경우, 강퇴
+      String deletedNickname = "resign_" + targetUser.getNickname();
+      targetUser.changeNickname(deletedNickname);
+      targetUser.delete();
+    } else if (targetUser.getUserType() == UserType.USER && status == Villain.DEVIL){
+      // DEVIL 상태로 변경 및 1주일 정지
+      targetUser.setUserType(UserType.DEVIL);
+      targetUser.changeNickname("tempblock_" + targetUser.getNickname());
+      targetUser.deleteWeeks(LocalDateTime.now().plusWeeks(1)); // 1주일 후 시간 설정
+    }
+
+    // 상태 및 로그 업데이트
+    userRepository.save(targetUser);
+    reportRepository.save(report);
+  }
   private AdminUpdateUserResponse mapToResponse(User user) {
     return AdminUpdateUserResponse.builder()
         .userId(user.getId())
@@ -212,5 +270,10 @@ public class AdminService {
       return nickname.substring("resign_".length());
     }
     return nickname;
+  }
+
+  public Page<ReportSearchResponse> searchAllReports(int page, int limit) {
+    PageRequest pageRequest = PageRequest.of(page - 1, limit);
+    return reportRepository.findAllReports(pageRequest);
   }
 }

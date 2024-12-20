@@ -68,4 +68,8 @@ public class Report extends TimeStampCreated {
     this.checkedAt = LocalDateTime.now();
     this.adminId = adminId;
   }
+
+  public void updateStatus(Villain status) {
+    this.status = status;
+  }
 }

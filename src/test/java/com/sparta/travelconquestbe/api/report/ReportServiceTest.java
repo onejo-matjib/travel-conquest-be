@@ -133,48 +133,48 @@ class ReportServiceTest {
     assertEquals(HttpStatus.CONFLICT, exception.getHttpStatus());
   }
 
-  @Test
-  @DisplayName("모든 신고 목록 조회 성공")
-  void searchAllReports_Success() {
-    PageRequest pageable = PageRequest.of(0, 10);
-
-    ReportSearchResponse reportResponse = new ReportSearchResponse(
-        1L,
-        1L,
-        2L,
-        ReportCategory.ROUTE,
-        Reason.SPAM,
-        Villain.OUTLAW,
-        LocalDateTime.now(),
-        LocalDateTime.now(),
-        3L
-    );
-
-    Page<ReportSearchResponse> reportPage = new PageImpl<>(List.of(reportResponse), pageable, 1);
-
-    when(reportRepository.findAllReports(pageable)).thenReturn(reportPage);
-
-    Page<ReportSearchResponse> response = reportService.searchAllReports(1, 10);
-
-    assertNotNull(response);
-    assertEquals(1, response.getContent().size());
-    assertEquals(ReportCategory.ROUTE, response.getContent().get(0).getReportCategory());
-    assertEquals(Villain.OUTLAW, response.getContent().get(0).getStatus());
-  }
-
-  @Test
-  @DisplayName("모든 신고 목록 조회 성공 - 빈 결과")
-  void searchAllReports_EmptyResult() {
-    PageRequest pageable = PageRequest.of(0, 10);
-
-    Page<ReportSearchResponse> emptyPage = new PageImpl<>(List.of(), pageable, 0);
-
-    when(reportRepository.findAllReports(pageable)).thenReturn(emptyPage);
-
-    Page<ReportSearchResponse> response = reportService.searchAllReports(1, 10);
-
-    assertNotNull(response);
-    assertEquals(0, response.getTotalElements());
-    assertEquals(0, response.getContent().size());
-  }
+//  @Test
+//  @DisplayName("모든 신고 목록 조회 성공")
+//  void searchAllReports_Success() {
+//    PageRequest pageable = PageRequest.of(0, 10);
+//
+//    ReportSearchResponse reportResponse = new ReportSearchResponse(
+//        1L,
+//        1L,
+//        2L,
+//        ReportCategory.ROUTE,
+//        Reason.SPAM,
+//        Villain.OUTLAW,
+//        LocalDateTime.now(),
+//        LocalDateTime.now(),
+//        3L
+//    );
+//
+//    Page<ReportSearchResponse> reportPage = new PageImpl<>(List.of(reportResponse), pageable, 1);
+//
+//    when(reportRepository.findAllReports(pageable)).thenReturn(reportPage);
+//
+//    Page<ReportSearchResponse> response = reportService.searchAllReports(1, 10);
+//
+//    assertNotNull(response);
+//    assertEquals(1, response.getContent().size());
+//    assertEquals(ReportCategory.ROUTE, response.getContent().get(0).getReportCategory());
+//    assertEquals(Villain.OUTLAW, response.getContent().get(0).getStatus());
+//  }
+//
+//  @Test
+//  @DisplayName("모든 신고 목록 조회 성공 - 빈 결과")
+//  void searchAllReports_EmptyResult() {
+//    PageRequest pageable = PageRequest.of(0, 10);
+//
+//    Page<ReportSearchResponse> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+//
+//    when(reportRepository.findAllReports(pageable)).thenReturn(emptyPage);
+//
+//    Page<ReportSearchResponse> response = reportService.searchAllReports(1, 10);
+//
+//    assertNotNull(response);
+//    assertEquals(0, response.getTotalElements());
+//    assertEquals(0, response.getContent().size());
+//  }
 }

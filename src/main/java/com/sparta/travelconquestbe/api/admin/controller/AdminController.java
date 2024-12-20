@@ -7,13 +7,17 @@ import com.sparta.travelconquestbe.api.admin.dto.request.CouponCreateRequest;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.api.admin.dto.respones.CouponCreateResponse;
 import com.sparta.travelconquestbe.api.admin.service.AdminService;
+import com.sparta.travelconquestbe.api.report.dto.request.ReportProcessRequest;
+import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
 import com.sparta.travelconquestbe.api.user.dto.respones.UserResponse;
 import com.sparta.travelconquestbe.common.annotation.AdminUser;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.admin.enums.AdminAction;
+import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -95,5 +100,25 @@ public class AdminController {
   ) {
     adminService.deleteCoupon(couponId, user);
     return ResponseEntity.noContent().build();
+  }
+
+  @AdminUser
+  @GetMapping("/reports")
+  public ResponseEntity<Page<ReportSearchResponse>> searchAllReports(
+      @Positive @RequestParam(defaultValue = "1", value = "page") int page,
+      @Positive @RequestParam(defaultValue = "10", value = "limit") int limit
+  ) {
+    Page<ReportSearchResponse> response = adminService.searchAllReports(page, limit);
+    return ResponseEntity.ok(response);
+  }
+
+  @AdminUser
+  @PutMapping("/reports/{Id}")
+  public ResponseEntity<Void> processReport(
+      @PathVariable Long Id,
+      @RequestBody ReportProcessRequest request,
+      @AuthUser AuthUserInfo user) {
+    adminService.processReport(Id, request.getStatus(), user);
+    return ResponseEntity.ok().build();
   }
 }

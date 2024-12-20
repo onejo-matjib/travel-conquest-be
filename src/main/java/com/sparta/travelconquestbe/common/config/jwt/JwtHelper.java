@@ -25,6 +25,10 @@ public class JwtHelper {
   @Value("${jwt.expiration}")
   private Long expiration;
 
+  public JwtHelper(String jwtSecretKey) {
+    this.secretKey = jwtSecretKey;
+  }
+
   @PostConstruct
   protected void init() {
     try {

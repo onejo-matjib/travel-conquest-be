@@ -81,6 +81,10 @@ public class User extends TimeStampAll {
     this.markDelete(LocalDateTime.now());
   }
 
+  public void deleteWeeks(LocalDateTime localDateTime) {
+    this.markDelete(localDateTime);
+  }
+
   public void restore() {
     this.markRestore();
   }

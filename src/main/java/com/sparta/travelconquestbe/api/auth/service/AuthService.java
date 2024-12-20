@@ -12,6 +12,7 @@ import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,9 +74,12 @@ public class AuthService {
         .orElseThrow(() -> new CustomException("AUTH#3_002", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
 
     if (user.getDeletedAt() != null) {
+      if (user.getNickname().startsWith("tempblock_") && LocalDateTime.now().isBefore(user.getDeletedAt())) {
+        String formattedDate = user.getDeletedAt().toLocalDate().toString();
+        throw new CustomException("AUTH#4_005", "[카테고리, 사유] + " + formattedDate + " 까지 로그인 하실 수 없습니다.", HttpStatus.FORBIDDEN);
+      }
       throw new CustomException("AUTH#4_002", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
     }
-
     if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
       throw new CustomException("AUTH#1_002", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED);
     }
@@ -97,6 +101,10 @@ public class AuthService {
     if (existingUser.isPresent()) {
       User user = existingUser.get();
       if (user.getDeletedAt() != null) {
+        if (user.getNickname().startsWith("tempblock_") && LocalDateTime.now().isBefore(user.getDeletedAt())) {
+          String formattedDate = user.getDeletedAt().toLocalDate().toString();
+          throw new CustomException("AUTH#4_005", "[카테고리, 사유] + " + formattedDate + " 까지 로그인 하실 수 없습니다.", HttpStatus.FORBIDDEN);
+        }
         throw new CustomException("AUTH#4_003", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
       }
       String jwtToken = jwtHelper.createToken(user);

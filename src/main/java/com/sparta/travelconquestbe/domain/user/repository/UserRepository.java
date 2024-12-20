@@ -12,6 +12,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
   
     Optional<User> findByProviderId(String providerId);
     Optional<User> findByEmail(String email);
+    Optional<User> findById(Long id);
 
     @Query("SELECT new com.sparta.travelconquestbe.api.user.dto.respones.UserRankingResponse(" +
         "u.id, u.nickname, u.subscriptionCount, u.title) " +

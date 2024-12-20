@@ -1,16 +1,14 @@
 package com.sparta.travelconquestbe.domain.report.repository;
 
-import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
 import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-public interface ReportRepository extends JpaRepository<Report, Long> {
+public interface ReportRepository extends JpaRepository<Report, Long>, ReportRepositoryQueryDsl {
 
+  // 중복 신고 확인
   @Query(value =
       "SELECT EXISTS(" +
           "SELECT 1 FROM reports " +
@@ -20,6 +18,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
       nativeQuery = true)
   boolean isDuplicateReport(Long reporterId, Long targetId, String reportCategory);
 
+  // 특정 사용자에 대한 가장 최신 신고의 상태를 조회
   @Query(value =
       "SELECT r.status " +
           "FROM reports r " +
@@ -29,9 +28,4 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
       nativeQuery = true)
   Optional<Villain> findLatestStatus(Long targetId);
 
-  @Query("SELECT new com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse(" +
-      "r.id, r.reporterId.id, r.targetId.id, r.reportCategory, r.reason, " +
-      "r.status, r.createdAt, r.checkedAt, r.adminId) " +
-      "FROM Report r ORDER BY r.id DESC")
-  Page<ReportSearchResponse> findAllReports(Pageable pageable);
 }

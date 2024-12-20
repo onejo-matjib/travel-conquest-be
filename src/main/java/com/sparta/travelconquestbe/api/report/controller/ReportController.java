@@ -35,14 +35,4 @@ public class ReportController {
     ReportCreateResponse response = reportService.createReport(user, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
-
-  @GetMapping("/api/admins/reports")
-  @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Page<ReportSearchResponse>> searchAllReports(
-      @Positive @RequestParam(defaultValue = "1", value = "page") int page,
-      @Positive @RequestParam(defaultValue = "10", value = "limit") int limit
-  ) {
-    Page<ReportSearchResponse> response = reportService.searchAllReports(page, limit);
-    return ResponseEntity.ok(response);
-  }
 }

@@ -10,6 +10,7 @@ import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -41,34 +42,50 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
 
     if (optionalUser.isPresent()) {
       User user = optionalUser.get();
+
       if (user.getDeletedAt() != null) {
-        response.setStatus(HttpStatus.CONFLICT.value());
+        if (user.getNickname().startsWith("tempblock_") && LocalDateTime.now()
+            .isBefore(user.getDeletedAt())) {
+          String formattedDate = user.getDeletedAt().toLocalDate().toString();
+          response.setStatus(HttpStatus.FORBIDDEN.value());
+          response.setContentType("text/plain; charset=UTF-8");
+          ErrorResponse errorResponse = ErrorResponse.builder()
+              .errorCode("AUTH#4_006")
+              .errorMessage("[카테고리, 사유] + " + formattedDate + " 까지 로그인 하실 수 없습니다.")
+              .httpStatus(HttpStatus.FORBIDDEN.value())
+              .timestamp(System.currentTimeMillis())
+              .build();
+          response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+          return;
+        }
+        if (user.getNickname().startsWith("resign_")) {
+          response.setStatus(HttpStatus.CONFLICT.value());
+          response.setContentType("text/plain; charset=UTF-8");
+          ErrorResponse errorResponse = ErrorResponse.builder()
+              .errorCode("AUTH#4_004")
+              .errorMessage("탈퇴한 유저입니다.")
+              .httpStatus(HttpStatus.CONFLICT.value())
+              .timestamp(System.currentTimeMillis())
+              .build();
+          response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+          return;
+        }
+        String token = jwtHelper.createToken(user);
+
+        response.setHeader("Authorization", "Bearer " + token);
         response.setContentType("text/plain; charset=UTF-8");
-        ErrorResponse errorResponse = ErrorResponse.builder()
-            .errorCode("AUTH#4_004")
-            .errorMessage("탈퇴한 유저입니다.")
-            .httpStatus(HttpStatus.CONFLICT.value())
-            .timestamp(System.currentTimeMillis())
-            .build();
-        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("로그인 성공!!! 토큰 발급 : " + token);
         return;
+      } else {
+        request.getSession().setAttribute("tempUserInfo", UserInfo.builder()
+            .id(providerId)
+            .email(email)
+            .nickname(oAuth2User.getAttribute("name"))
+            .providerType(providerType)
+            .build());
       }
-      String token = jwtHelper.createToken(user);
-
-      response.setHeader("Authorization", "Bearer " + token);
-      response.setContentType("text/plain; charset=UTF-8");
-      response.setCharacterEncoding("UTF-8");
-      response.getWriter().write("로그인 성공!!! 토큰 발급 : " + token);
-      return;
-    } else {
-      request.getSession().setAttribute("tempUserInfo", UserInfo.builder()
-          .id(providerId)
-          .email(email)
-          .nickname(oAuth2User.getAttribute("name"))
-          .providerType(providerType)
-          .build());
+      response.sendRedirect("/api/users/additional-info");
     }
-    response.sendRedirect("/api/users/additional-info");
   }
-
 }
