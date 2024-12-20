@@ -63,7 +63,7 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
       String property = order.getProperty();
       Order direction = order.isAscending() ? Order.ASC : Order.DESC;
 
-      // 특정 필드에 대한 매핑을 정의합니다.
+      // 특정 필드에 대한 매핑
       switch (property) {
         case "NAME" -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.name));
         case "TYPE" -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.type));
@@ -74,6 +74,8 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
             orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.validUntil));
         case "CREATED_AT" ->
             orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.createdAt));
+
+        // default = "CREATED_AT"
         default -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.createdAt));
       }
     }
