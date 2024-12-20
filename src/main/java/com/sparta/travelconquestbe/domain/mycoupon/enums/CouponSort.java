@@ -5,6 +5,7 @@ public enum CouponSort {
   TYPE,
   STATUS,
   DISCOUNT_AMOUNT,
+  COUNT,
   VALID_UNTIL,
   CREATED_AT
 }
