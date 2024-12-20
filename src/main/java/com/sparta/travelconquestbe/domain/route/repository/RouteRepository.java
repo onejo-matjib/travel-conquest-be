@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface RouteRepository extends JpaRepository<Route, Long>, RouteRepositoryQueryDsl {
   @Modifying
   @Transactional
@@ -24,7 +26,9 @@ public interface RouteRepository extends JpaRepository<Route, Long>, RouteReposi
   void deleteRouteLocationsReviewsAndRoute(@Param("routeId") Long routeId);
 
   // 월별 TOP 100
-  @Query(value = """
+  @Query(
+      value =
+          """
           SELECT r.user_nickname AS creatorName, r.title AS title, r.description AS description,
                  COALESCE(r.updated_at, r.created_at) AS updatedAt, r.created_at AS createdAt
           FROM bookmarks b
@@ -33,12 +37,15 @@ public interface RouteRepository extends JpaRepository<Route, Long>, RouteReposi
           GROUP BY r.id
           ORDER BY COUNT(b.id) DESC, r.created_at ASC
           LIMIT 100
-      """, nativeQuery = true)
-  Page<RouteRankingResponse> findMonthlyRankings(@Param("year") int year, @Param("month") int month,
-      Pageable pageable);
+      """,
+      nativeQuery = true)
+  Page<RouteRankingResponse> findMonthlyRankings(
+      @Param("year") int year, @Param("month") int month, Pageable pageable);
 
   // 이번달 실시간 TOP 100
-  @Query(value = """
+  @Query(
+      value =
+          """
           SELECT r.user_nickname AS creatorName, r.title AS title, r.description AS description,
                  COALESCE(r.updated_at, r.created_at) AS updatedAt, r.created_at AS createdAt
           FROM bookmarks b
@@ -47,11 +54,14 @@ public interface RouteRepository extends JpaRepository<Route, Long>, RouteReposi
           GROUP BY r.id
           ORDER BY COUNT(b.id) DESC, r.created_at ASC
           LIMIT 100
-      """, nativeQuery = true)
+      """,
+      nativeQuery = true)
   Page<RouteRankingResponse> findRealtimeRankings(Pageable pageable);
 
   // 역대 TOP 100
-  @Query(value = """
+  @Query(
+      value =
+          """
           SELECT r.user_nickname AS creatorName, r.title AS title, r.description AS description,
                  COALESCE(r.updated_at, r.created_at) AS updatedAt, r.created_at AS createdAt
           FROM bookmarks b
@@ -59,6 +69,19 @@ public interface RouteRepository extends JpaRepository<Route, Long>, RouteReposi
           GROUP BY r.id
           ORDER BY COUNT(b.id) DESC, r.created_at ASC
           LIMIT 100
-      """, nativeQuery = true)
+      """,
+      nativeQuery = true)
   Page<RouteRankingResponse> findAlltimeRankings(Pageable pageable);
+
+  @Query(
+      value =
+          """
+        SELECT CASE WHEN EXISTS (SELECT 1 FROM routes WHERE user_id = :userId AND status = 'UNAUTHORIZED')
+                    THEN TRUE ELSE FALSE END
+    """,
+      nativeQuery = true)
+  Integer existsUnauthorizedRouteByUser(@Param("userId") Long userId);
+
+  @Query(value = "SELECT * FROM routes WHERE status = 'UNAUTHORIZED'", nativeQuery = true)
+  Optional<Route> findByUnauthorizedRoute(Long routeId);
 }

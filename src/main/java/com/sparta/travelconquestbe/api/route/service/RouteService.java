@@ -17,10 +17,12 @@ import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.enums.RouteSort;
+import com.sparta.travelconquestbe.domain.route.enums.RouteStatus;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.routelocation.entity.RouteLocation;
 import com.sparta.travelconquestbe.domain.routelocation.repository.RouteLocationRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.validation.constraints.Positive;
 import java.time.YearMonth;
@@ -51,6 +53,12 @@ public class RouteService {
 
     User user = userRepository.getReferenceById(userInfo.getId());
 
+    Integer result = routeRepository.existsUnauthorizedRouteByUser(user.getId());
+    boolean isPendingUser = result == 1;
+    if (isPendingUser) {
+      throw new CustomException("ROUTE#5_001", "심사 대기중인 루트가 존재합니다", HttpStatus.CONFLICT);
+    }
+
     Route route =
         Route.builder()
             .title(routeCreateRequest.getTitle())
@@ -73,6 +81,13 @@ public class RouteService {
                         .mediaUrl(location.getMediaUrl())
                         .build())
             .toList();
+
+    if (user.getType() == UserType.USER) {
+      route.setStatus(RouteStatus.UNAUTHORIZED);
+    } else {
+      route.setStatus(RouteStatus.AUTHORIZED);
+    }
+
     Route savedRoute = routeRepository.save(route);
     routeLocationRepository.bulkSave(locations);
     return RouteCreateResponse.builder()
@@ -104,9 +119,14 @@ public class RouteService {
     Route route =
         routeRepository
             .findById(id)
-            .orElseThrow(
+            .orElseGet(
                 () ->
-                    new CustomException("ROUTE#1_003", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                    routeRepository
+                        .findByUnauthorizedRoute(id)
+                        .orElseThrow(
+                            () ->
+                                new CustomException(
+                                    "ROUTE#1_003", "해당 루트를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)));
     route.validCreatorOrAdmin(user.getId(), user.getType());
     List<String> locationsMediaUrls =
         route.getLocations().stream().map(RouteLocation::getMediaUrl).toList();
@@ -161,6 +181,7 @@ public class RouteService {
   @Transactional(readOnly = true)
   public RouteLineResponse routeSearchDetails(
       Long id, Long originSequence, Long destinationSequence) {
+
     Route route =
         routeRepository
             .findById(id)
@@ -233,8 +254,8 @@ public class RouteService {
 
     YearMonth inputDate = YearMonth.of(year, month);
     if (inputDate.isAfter(YearMonth.now())) {
-      throw new CustomException("BOOKMARK#4_002", "요청하신 날짜는 현재 날짜보다 미래일 수 없습니다.",
-          HttpStatus.BAD_REQUEST);
+      throw new CustomException(
+          "BOOKMARK#4_002", "요청하신 날짜는 현재 날짜보다 미래일 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
   }
 }
