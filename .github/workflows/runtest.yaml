@@ -35,6 +35,10 @@ jobs:
         run: chmod +x ./gradlew
 
       # run은 사용자 지정 스크립트 실행
-      - name: run unittest
-        run: |
-          ./gradlew clean test
+      - name: Run unit tests with code coverage
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Upload code coverage to GitHub
+        uses: codecov/codecov-action@v3
+        with:
+          file: build/reports/jacoco/test/jacocoTestReport.xml
