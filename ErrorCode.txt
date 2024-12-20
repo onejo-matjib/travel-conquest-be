@@ -24,6 +24,11 @@ ADMIN#4_002 / 에러 메시지 / CONFLICT
 ADMIN#5_004 / 에러 메시지 / BAD_REQUEST
 ADMIN#6_000 / 에러 메시지 / INTERNAL_SERVER_ERROR
 
+등급업
+UPGRADE#1_001 / 에러 메시지 / BAD_REQUEST
+UPGRADE#2_003 / 에러 메시지 / CONFLICT
+UPGRADE#3_005 / 에러 메시지 / NOT_FOUND
+
 쿠폰
 COUPON#1_NNN / 유효하지 않은 쿠폰 타입입니다. / BAD_REQUEST
 COUPON#2_002 / 해당 쿠폰이 존재하지 않습니다. / NOT_FOUND
