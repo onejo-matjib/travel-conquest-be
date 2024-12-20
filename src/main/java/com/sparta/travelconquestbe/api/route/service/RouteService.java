@@ -130,6 +130,7 @@ public class RouteService {
     route.validCreatorOrAdmin(user.getId(), user.getType());
     List<String> locationsMediaUrls =
         route.getLocations().stream().map(RouteLocation::getMediaUrl).toList();
+    routeRepository.deleteUserUpgradeRequests(route.getId());
     routeLocationService.deleteFilesForLocations(locationsMediaUrls);
     routeRepository.deleteRouteLocationsReviewsAndRoute(route.getId());
   }
@@ -231,6 +232,7 @@ public class RouteService {
 
   @Transactional(readOnly = true)
   public Page<RouteRankingResponse> getMonthlyRankings(int year, int month, int page, int size) {
+    this.validateYearAndMonth(year, month);
     PageRequest pageRequest = PageRequest.of(page - 1, Math.min(size, 10));
     return routeRepository.findMonthlyRankings(year, month, pageRequest);
   }
@@ -248,10 +250,6 @@ public class RouteService {
   }
 
   private void validateYearAndMonth(int year, int month) {
-    if (month < 1 || month > 12) {
-      throw new CustomException("BOOKMARK#4_001", "월은 1~12 사이여야 합니다.", HttpStatus.BAD_REQUEST);
-    }
-
     YearMonth inputDate = YearMonth.of(year, month);
     if (inputDate.isAfter(YearMonth.now())) {
       throw new CustomException(

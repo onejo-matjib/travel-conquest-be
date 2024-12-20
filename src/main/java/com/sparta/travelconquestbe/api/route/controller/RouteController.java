@@ -19,6 +19,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,11 +111,10 @@ public class RouteController {
   @GetMapping("/rankings/monthly")
   public ResponseEntity<Page<RouteRankingResponse>> getMonthlyRankings(
       @Positive(message = "양수만 입력 가능합니다.") @RequestParam int year,
-      @Positive(message = "양수만 입력 가능합니다.") @RequestParam int month,
+      @Range(min = 1, max = 12, message = "1월 ~ 12월 사이로 입력해주세요.") @RequestParam int month,
       @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "1") int page,
       @Positive(message = "양수만 입력 가능합니다.") @RequestParam(defaultValue = "10") int size) {
-    Page<RouteRankingResponse> rankings = routeService.getMonthlyRankings(year, month, page,
-        size);
+    Page<RouteRankingResponse> rankings = routeService.getMonthlyRankings(year, month, page, size);
     return ResponseEntity.ok(rankings);
   }
 

@@ -79,7 +79,7 @@ public class Route extends TimeStampCreateUpdate {
 
   public void validCreatorOrAdmin(Long userId, UserType type) {
     if (!Objects.equals(userId, this.getUser().getId()) && type != UserType.ADMIN) {
-      throw new CustomException("ROUTE#4_001", "본인의 루트 혹은 관리자만 삭제할 수 있습니다.", HttpStatus.FORBIDDEN);
+      throw new CustomException("ROUTE#4_001", "본인의 루트 혹은 관리자만 사용할 수 있습니다.", HttpStatus.FORBIDDEN);
     }
   }
 }
