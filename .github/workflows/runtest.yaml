@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Docker 서비스 활성화
+    # Docker 서비스 활성화 (기본적으로 제공됨)
     services:
       docker:
         image: docker:19.03.12
@@ -35,10 +35,6 @@ jobs:
       # Gradle 실행 권한 부여
       - name: Make gradlew Executable
         run: chmod +x ./gradlew
-
-      # Docker 환경 준비
-      - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v2
 
       # Docker Compose 설치 (Testcontainers 의존성을 해결하는 데 필요)
       - name: Install Docker Compose

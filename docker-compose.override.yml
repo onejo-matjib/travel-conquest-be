@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpassword
+    ports:
+      - "3307:3306"  # 기존 MySQL 포트(3306)와 충돌하지 않도록 포트 변경
+    networks:
+      - dev_network
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always  # MySQL 서버가 종료되면 자동으로 재시작
+
+  redis:
+    image: redis:7.0
+    ports:
+      - "6380:6379"  # 기존 Redis 포트(6379)와 충돌하지 않도록 포트 변경
+    networks:
+      - dev_network
+    restart: always
+
+networks:
+  dev_network:
+    driver: bridge  # 별도의 네트워크로 분리하여 Testcontainers와 겹치지 않도록 설정
+
+volumes:
+  mysql_data:  # MySQL 데이터 볼륨
