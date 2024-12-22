@@ -72,6 +72,7 @@ dependencies {
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testImplementation 'org.testcontainers:redis:1.17.3'
 
     // OpenFeign
     implementation platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
