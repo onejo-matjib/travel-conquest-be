@@ -10,6 +10,7 @@ import com.sparta.travelconquestbe.domain.route.entity.Route;
 import com.sparta.travelconquestbe.domain.route.repository.RouteRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -70,5 +71,12 @@ public class BookmarkService {
     }
 
     bookmarkRepository.delete(bookmark);
+  }
+
+   // 로컬 스토리지 저장을 위해 전체 즐겨찾기
+  @Transactional(readOnly = true)
+  public List<BookmarkListResponse> searchAllBookmarksForLocalStorage(AuthUserInfo user) {
+    User referenceUser = userRepository.getReferenceById(user.getId());
+    return bookmarkRepository.findAllByUserIdForLocalStorage(referenceUser.getId());
   }
 }

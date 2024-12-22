@@ -116,7 +116,7 @@ class BookmarkServiceTest {
   }
 
   @Test
-  @DisplayName("즐겨찾기 등록 실패 - 중복 북마크")
+  @DisplayName("즐겨찾기 등록 실패 - 중복 즐겨찾기")
   void createBookmark_DuplicateBookmark() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long routeId = 2L;
@@ -152,7 +152,7 @@ class BookmarkServiceTest {
   }
 
   @Test
-  @DisplayName("즐겨찾기 삭제 실패 - 북마크 없음")
+  @DisplayName("즐겨찾기 삭제 실패 - 즐겨찾기 없음")
   void deleteBookmark_NotFound() {
     AuthUserInfo user = new AuthUserInfo(1L, "", "", "", "", "", UserType.USER, Title.TRAVELER);
     Long bookmarkId = 3L;

@@ -8,6 +8,7 @@ import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -56,5 +57,13 @@ public class BookmarkController {
   ) {
     bookmarkService.deleteBookmark(id, user);
     return ResponseEntity.noContent().build();
+  }
+
+  @GetMapping("/all")
+  public ResponseEntity<List<BookmarkListResponse>> searchAllBookmarksForLocalStorage(
+      @AuthUser AuthUserInfo user
+  ) {
+    List<BookmarkListResponse> allBookmarks = bookmarkService.searchAllBookmarksForLocalStorage(user);
+    return ResponseEntity.ok(allBookmarks);
   }
 }
