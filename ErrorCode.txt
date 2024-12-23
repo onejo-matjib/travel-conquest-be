@@ -10,7 +10,7 @@ USER#5_000 / 에러 메시지 / BAD_REQUEST
 
 인증
 AUTH#1_008 / 에러 메시지 / UNAUTHORIZED
-AUTH#2_000 / 에러 메시지 / FORBIDDEN
+AUTH#2_003 / 에러 메시지 / FORBIDDEN
 AUTH#3_003 / 에러 메시지 / NOT_FOUND
 AUTH#4_004 / 에러 메시지 / CONFLICT
 AUTH#5_004 / 에러 메시지 / BAD_REQUEST
@@ -73,4 +73,5 @@ CHAT#4_001 / 입장 가능 인원이 초과되었습니다. / FORBIDDEN
 
 신고
 REPORT#1_001 / "본인을 신고할 수 없습니다." / BAD_REQUEST
-REPORT#2_001 / "이미 신고가 처리 중입니다." / CONFLICT
+REPORT#2_002 / "이미 신고가 처리 중입니다." / CONFLICT
+REPORT#3_002 / "에러 메시지" / NOT_FOUND

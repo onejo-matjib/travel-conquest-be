@@ -14,5 +14,4 @@ public class ReportCreateResponse {
   private ReportCategory reportCategory;
   private Reason reason;
   private Long targetId;
-  private LocalDateTime createdAt;
 }

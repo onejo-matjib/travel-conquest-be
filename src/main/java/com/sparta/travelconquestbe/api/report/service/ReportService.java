@@ -33,38 +33,28 @@ public class ReportService {
       throw new CustomException("REPORT#1_001", "본인을 신고할 수 없습니다.", HttpStatus.BAD_REQUEST);
     }
 
-    boolean isDuplicate = reportRepository.isDuplicateReport(
-        reporter.getId(), target.getId(), request.getReportCategory().name());
+    boolean isDuplicate = reportRepository.existsByReporterIdAndTargetIdAndReportCategory(
+        reporter.getId(), target, request.getReportCategory());
     if (isDuplicate) {
       throw new CustomException("REPORT#2_001", "이미 신고가 처리 중입니다.", HttpStatus.CONFLICT);
     }
-
-    Villain currentStatus = getCurrentVillainStatus(target.getId());
-    Report report = saveReport(reporter, target, request, currentStatus);
+    Report report = saveReport(reporter.getId(), target, request);
 
     return ReportCreateResponse.builder()
         .reportId(report.getId())
         .reportCategory(report.getReportCategory())
         .reason(report.getReason())
         .targetId(report.getTargetId().getId())
-        .createdAt(report.getCreatedAt())
         .build();
   }
 
-  @Transactional(readOnly = true)
-  public Villain getCurrentVillainStatus(Long targetId) {
-    return reportRepository.findLatestStatus(targetId).orElse(Villain.SAINT);
-  }
-
   @Transactional
-  public Report saveReport(User reporter, User target, ReportCreateRequest request,
-      Villain currentStatus) {
+  public Report saveReport(Long reporter, User target, ReportCreateRequest request) {
     Report report = Report.builder()
         .reporterId(reporter)
         .targetId(target)
         .reportCategory(request.getReportCategory())
         .reason(request.getReason())
-        .status(currentStatus)
         .build();
 
     return reportRepository.save(report);

@@ -72,6 +72,10 @@ public class AuthService {
     User user = userRepository.findByEmail(request.getEmail())
         .orElseThrow(() -> new CustomException("AUTH#3_002", "존재하지 않는 유저입니다.", HttpStatus.NOT_FOUND));
 
+    if (user.isSuspended()) {
+      throw new CustomException("AUTH#2_001", "정지된 사용자입니다. 정지 기간: " + user.getSuspendedUntil(), HttpStatus.FORBIDDEN);
+    }
+
     if (user.getDeletedAt() != null) {
       throw new CustomException("AUTH#4_002", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
     }
@@ -98,6 +102,9 @@ public class AuthService {
       User user = existingUser.get();
       if (user.getDeletedAt() != null) {
         throw new CustomException("AUTH#4_003", "탈퇴한 유저입니다.", HttpStatus.CONFLICT);
+      }
+      if (user.isSuspended()) {
+        throw new CustomException("AUTH#2_002", "정지된 사용자입니다. 정지 기간: " + user.getSuspendedUntil(), HttpStatus.FORBIDDEN);
       }
       String jwtToken = jwtHelper.createToken(user);
       return KakaoLoginResult.existingUser(jwtToken);

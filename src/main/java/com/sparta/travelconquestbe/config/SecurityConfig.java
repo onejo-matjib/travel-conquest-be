@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.config;
 
 import com.sparta.travelconquestbe.common.config.filter.JwtAuthenticationFilter;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,7 @@ public class SecurityConfig {
   private final JwtHelper jwtHelper;
   private final CustomOAuth2UserService customOAuth2UserService;
   private final CustomOAuth2AuthenticationSuccessHandler customOAuth2AuthenticationSuccessHandler;
+  private final UserRepository userRepository;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -41,7 +43,7 @@ public class SecurityConfig {
                 .userService(customOAuth2UserService)
             )
         )
-        .addFilterBefore(new JwtAuthenticationFilter(jwtHelper),
+        .addFilterBefore(new JwtAuthenticationFilter(jwtHelper, userRepository),
             UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }

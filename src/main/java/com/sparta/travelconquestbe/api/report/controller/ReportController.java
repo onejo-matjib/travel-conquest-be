@@ -4,6 +4,7 @@ import com.sparta.travelconquestbe.api.report.dto.request.ReportCreateRequest;
 import com.sparta.travelconquestbe.api.report.dto.response.ReportCreateResponse;
 import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
 import com.sparta.travelconquestbe.api.report.service.ReportService;
+import com.sparta.travelconquestbe.common.annotation.AdminUser;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import jakarta.validation.Valid;
@@ -36,8 +37,8 @@ public class ReportController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
+  @AdminUser
   @GetMapping("/api/admins/reports")
-  @PreAuthorize("hasRole('ADMIN')")
   public ResponseEntity<Page<ReportSearchResponse>> searchAllReports(
       @Positive @RequestParam(defaultValue = "1", value = "page") int page,
       @Positive @RequestParam(defaultValue = "10", value = "limit") int limit

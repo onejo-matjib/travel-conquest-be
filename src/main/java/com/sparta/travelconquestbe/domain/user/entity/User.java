@@ -55,6 +55,9 @@ public class User extends TimeStampAll {
   @ColumnDefault("0")
   private int subscriptionCount;
 
+  @Column(name = "suspended_until")
+  private LocalDateTime suspendedUntil;
+
   // Custom Methods
   public void changeNickname(String newNickname) {
     this.nickname = newNickname;
@@ -89,4 +92,18 @@ public class User extends TimeStampAll {
     int newCount = this.subscriptionCount + change;
     this.subscriptionCount = Math.max(newCount, 0);
   }
+
+  // 밑에 3개 > 정치 처리 메서드
+  public void suspendUser(int days) {
+    this.suspendedUntil = LocalDateTime.now().plusDays(days);
+  }
+
+  public void liftSuspension() {
+    this.suspendedUntil = null;
+  }
+
+  public boolean isSuspended() {
+    return suspendedUntil != null && suspendedUntil.isAfter(LocalDateTime.now());
+  }
+
 }
