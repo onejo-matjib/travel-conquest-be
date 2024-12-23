@@ -85,6 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (success) {
       alert('즐겨찾기가 추가되었습니다.');
       routeIdInput.value = '';
+      const updatedBookmarks = await api.getBookmarks(); // 서버에서 최신 목록 가져오기
+      localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks.content || [])); // 로컬 스토리지 갱신
     } else {
       alert('즐겨찾기 추가에 실패했습니다.');
     }
@@ -102,24 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (success) {
       alert('즐겨찾기가 삭제되었습니다.');
       bookmarkIdInput.value = '';
+
+      // 서버에서 최신 즐겨찾기 데이터 가져오기
+      const response = await api.getBookmarks();
+      const bookmarks = response.content || [];
+
+      if (bookmarks.length > 0) {
+        // 로컬 스토리지 갱신
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+      } else {
+        // 즐겨 찾기 없을 시 로컬 스토리지 비우기
+        localStorage.removeItem('bookmarks');
+      }
     } else {
       alert('즐겨찾기 삭제에 실패했습니다.');
-    }
-  });
-
-  // 모든 즐겨찾기 조회 및 동기화 버튼
-  loadAllBtn.addEventListener('click', async () => {
-    const response = await api.getBookmarks(); // 서버에서 응답 가져오기
-    const bookmarks = response.content || []; // content 필드에서 즐겨찾기 데이터 추출
-
-    if (bookmarks.length > 0) {
-      // 서버에서 즐겨찾기 데이터가 있을 경우 로컬 스토리지에 저장
-      localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-      bookmarkList.textContent = '즐겨찾기가 로컬 스토리지에 동기화되었습니다.';
-    } else {
-      // 서버에서 즐겨찾기 데이터가 없을 경우 로컬 스토리지 초기화
-      localStorage.removeItem('bookmarks'); // 로컬 스토리지 초기화
-      bookmarkList.textContent = '현재 즐겨찾기가 없습니다. 즐겨찾기를 추가해주세요.';
     }
   });
 
