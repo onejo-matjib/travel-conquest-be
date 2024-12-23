@@ -16,6 +16,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 class CouponServiceTest {
 
@@ -32,7 +33,6 @@ class CouponServiceTest {
 
   @Test
   void searchAllCoupons() {
-
     // Given: Mock 데이터를 준비
     Coupon coupon1 = Coupon.builder()
         .id(1L)
@@ -46,8 +46,8 @@ class CouponServiceTest {
         .id(2L)
         .name("테스트2")
         .description("테스트 설명2")
-        .discountAmount(10000)
-        .validUntil(LocalDate.of(2024, 12, 24))
+        .discountAmount(20000)
+        .validUntil(LocalDate.of(2024, 12, 25))
         .build();
 
     List<CouponSearchResponse> responses = List.of(
@@ -60,35 +60,40 @@ class CouponServiceTest {
             coupon1.getCount(),
             coupon1.getCreatedAt(),
             coupon1.getUpdatedAt()
-        )
-        ,
+        ),
         new CouponSearchResponse(
             coupon2.getId(),
             coupon2.getName(),
             coupon2.getDescription(),
             coupon2.getDiscountAmount(),
             coupon2.getValidUntil(),
-            coupon1.getCount(),
-            coupon1.getCreatedAt(),
-            coupon1.getUpdatedAt()
+            coupon2.getCount(),
+            coupon2.getCreatedAt(),
+            coupon2.getUpdatedAt()
         )
     );
 
     Page<CouponSearchResponse> mockPage = new PageImpl<>(
         responses,
-        PageRequest.of(0, 10), responses.size());
+        PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "VALID_UNTIL")),
+        responses.size()
+    );
 
     // When: Repository 동작을 Mocking
     when(couponRepository.searchAllCoupons(
-        PageRequest.of(0, 10))).thenReturn(mockPage);
+        PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "VALID_UNTIL"))))
+        .thenReturn(mockPage);
 
     // When: 서비스 메서드 호출
-    Page<CouponSearchResponse> result = couponService.searchAllCoupons(1, 10);
+    Page<CouponSearchResponse> result = couponService.searchAllCoupons(
+        1, 10, "VALID_UNTIL", "DESC");
 
     // Then: 결과 검증
     assertThat(result).isNotNull();
     assertThat(result.getTotalElements()).isEqualTo(2);
     assertThat(result.getContent().get(0).getName()).isEqualTo("테스트1");
     assertThat(result.getContent().get(1).getName()).isEqualTo("테스트2");
+    assertThat(result.getContent().get(0).getDiscountAmount()).isEqualTo(10000);
+    assertThat(result.getContent().get(1).getDiscountAmount()).isEqualTo(20000);
   }
 }
