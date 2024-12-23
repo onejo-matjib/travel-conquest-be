@@ -20,22 +20,11 @@ import java.util.Date;
 @Component
 public class JwtHelper {
 
+  @Value("${JWT_SECRET_KEY}")
   private String secretKey;
 
   @Value("${jwt.expiration}")
   private Long expiration;
-
-  @PostConstruct
-  protected void init() {
-    try {
-      KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-      keyGenerator.init(256);
-      Key key = keyGenerator.generateKey();
-      secretKey = Base64.getEncoder().encodeToString(key.getEncoded());
-    } catch (Exception e) {
-      throw new CustomException("AUTH#6_001", "시크릿 키 생성 실패", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
 
   // JWT 토큰 생성 (일반 로그인 및 소셜 로그인 공통 사용)
   public String createToken(User user) {
