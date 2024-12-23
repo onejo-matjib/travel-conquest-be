@@ -28,7 +28,7 @@ public abstract class TestContainerSupport {
             .withReuse(true);
     REDIS.start();
     MYSQL =
-        new MySQLContainer<>(MYSQL_IMAGE)
+        new MySQLContainer<>(DockerImageName.parse(MYSQL_IMAGE))
             .withExposedPorts(MYSQL_PORT)
             .withNetworkMode("dev_network")
             .withReuse(true);
