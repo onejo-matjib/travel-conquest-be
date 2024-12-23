@@ -70,20 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('즐겨찾기 삭제 실패:', error);
         return false;
       }
-    },
-    syncBookmarks: async () => {
-      try {
-        const response = await fetch('/api/bookmarks/sync', {
-          method: 'POST',
-          headers: {
-            'Authorization': token,
-          }
-        });
-        return response.ok;
-      } catch (error) {
-        console.error('즐겨찾기 동기화 실패:', error);
-        return false;
-      }
     }
   };
 
