@@ -1,25 +1,21 @@
-package com.sparta.travelconquestbe.api.report.service;
+package com.sparta.travelconquestbe.api.user.service;
 
-import com.sparta.travelconquestbe.api.report.dto.request.ReportCreateRequest;
-import com.sparta.travelconquestbe.api.report.dto.response.ReportCreateResponse;
-import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
+import com.sparta.travelconquestbe.api.user.dto.request.ReportCreateRequest;
+import com.sparta.travelconquestbe.api.user.dto.respones.ReportCreateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
-import com.sparta.travelconquestbe.domain.report.enums.Villain;
 import com.sparta.travelconquestbe.domain.report.repository.ReportRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class ReportService {
+public class UserReportService {
 
   private final ReportRepository reportRepository;
   private final UserRepository userRepository;
@@ -60,9 +56,4 @@ public class ReportService {
     return reportRepository.save(report);
   }
 
-  @Transactional(readOnly = true)
-  public Page<ReportSearchResponse> searchAllReports(int page, int limit) {
-    PageRequest pageRequest = PageRequest.of(page - 1, limit);
-    return reportRepository.findAllReports(pageRequest);
-  }
 }

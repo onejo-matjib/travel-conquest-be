@@ -1,8 +1,7 @@
-package com.sparta.travelconquestbe.api.report.dto.response;
+package com.sparta.travelconquestbe.api.user.dto.respones;
 
 import com.sparta.travelconquestbe.domain.report.enums.Reason;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 

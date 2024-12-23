@@ -1,6 +1,6 @@
 package com.sparta.travelconquestbe.domain.report.repository;
 
-import com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse;
+import com.sparta.travelconquestbe.api.admin.dto.respones.ReportSearchResponse;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;
 import com.sparta.travelconquestbe.domain.user.entity.User;
@@ -16,7 +16,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
   List<Report> findAllByTargetIdAndCheckedAtIsNull(User targetId);
 
-  @Query("SELECT new com.sparta.travelconquestbe.api.report.dto.response.ReportSearchResponse(" +
+  @Query("SELECT new com.sparta.travelconquestbe.api.admin.dto.respones.ReportSearchResponse(" +
       "r.id, r.reporterId, r.targetId.id, r.reportCategory, r.reason, " +
       "r.checkedAt, r.adminId) " +
       "FROM Report r ORDER BY r.id DESC")

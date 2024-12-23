@@ -1,5 +1,6 @@
 package com.sparta.travelconquestbe.api.admin.service;
 
+import com.sparta.travelconquestbe.api.admin.dto.respones.ReportSearchResponse;
 import com.sparta.travelconquestbe.api.notification.service.NotificationService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.report.entity.Report;
@@ -8,6 +9,8 @@ import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,5 +58,11 @@ public class AdminReportService {
       report.markProcessed(adminId);
     }
     reportRepository.saveAll(relatedReports);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<ReportSearchResponse> searchAllReports(int page, int limit) {
+    PageRequest pageRequest = PageRequest.of(page - 1, limit);
+    return reportRepository.findAllReports(pageRequest);
   }
 }
