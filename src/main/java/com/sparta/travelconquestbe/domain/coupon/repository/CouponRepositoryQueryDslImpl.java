@@ -66,8 +66,8 @@ public class CouponRepositoryQueryDslImpl implements CouponRepositoryQueryDsl {
             orderSpecifiers.add(new OrderSpecifier<>(direction, coupon.validUntil));
         case "CREATED_AT" -> orderSpecifiers.add(new OrderSpecifier<>(direction, coupon.createdAt));
 
-        // default = "CREATED_AT"
-        default -> orderSpecifiers.add(new OrderSpecifier<>(direction, coupon.createdAt));
+        // default = "VALID_UNTIL"
+        default -> orderSpecifiers.add(new OrderSpecifier<>(direction, coupon.validUntil));
       }
     }
     return orderSpecifiers;

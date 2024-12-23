@@ -75,8 +75,8 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
         case "CREATED_AT" ->
             orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.createdAt));
 
-        // default = "CREATED_AT"
-        default -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.createdAt));
+        // default = "VALID_UNTIL"
+        default -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.validUntil));
       }
     }
     return orderSpecifiers;

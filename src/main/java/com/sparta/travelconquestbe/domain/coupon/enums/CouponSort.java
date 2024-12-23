@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.domain.mycoupon.enums;
+package com.sparta.travelconquestbe.domain.coupon.enums;
 
 public enum CouponSort {
   NAME,

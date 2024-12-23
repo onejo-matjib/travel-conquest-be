@@ -3,7 +3,7 @@ package com.sparta.travelconquestbe.api.coupon.controller;
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.api.coupon.service.CouponService;
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
-import com.sparta.travelconquestbe.domain.mycoupon.enums.CouponSort;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponSort;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,7 +29,7 @@ public class CouponController {
       @Positive @RequestParam(defaultValue = "10", value = "limit") int limit,
       @ValidEnum(enumClass = CouponSort.class, message = "정렬할 컬럼값을 정확하게 입력해주세요.")
       @RequestParam(defaultValue = "VALID_UNTIL") String sort,
-      @RequestParam(defaultValue = "DESC") String direction) {
+      @RequestParam(defaultValue = "ASC") String direction) {
     Page<CouponSearchResponse> response = couponService.searchAllCoupons(page, limit, sort,
         direction);
     return ResponseEntity.status(HttpStatus.OK).body(response);

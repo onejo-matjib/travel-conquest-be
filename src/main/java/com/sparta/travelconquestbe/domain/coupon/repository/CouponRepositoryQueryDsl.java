@@ -5,5 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface CouponRepositoryQueryDsl {
-    Page<CouponSearchResponse> searchAllCoupons(Pageable pageable);
+
+  Page<CouponSearchResponse> searchAllCoupons(Pageable pageable);
 }
