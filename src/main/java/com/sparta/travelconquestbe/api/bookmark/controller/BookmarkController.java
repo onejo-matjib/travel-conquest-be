@@ -63,7 +63,8 @@ public class BookmarkController {
   public ResponseEntity<List<BookmarkListResponse>> searchAllBookmarksForLocalStorage(
       @AuthUser AuthUserInfo user
   ) {
-    List<BookmarkListResponse> allBookmarks = bookmarkService.searchAllBookmarksForLocalStorage(user);
+    List<BookmarkListResponse> allBookmarks = bookmarkService.searchAllBookmarksForLocalStorage(
+        user);
     return ResponseEntity.ok(allBookmarks);
   }
 }

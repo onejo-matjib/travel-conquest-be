@@ -52,7 +52,7 @@ public class BookmarkService {
   @Transactional(readOnly = true)
   public Page<BookmarkListResponse> searchBookmarks(AuthUserInfo user, int page, int size) {
     User referenceUser = userRepository.getReferenceById(user.getId());
-    
+
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     return bookmarkRepository.getUserBookmarks(referenceUser.getId(), pageRequest);
   }
@@ -73,7 +73,7 @@ public class BookmarkService {
     bookmarkRepository.delete(bookmark);
   }
 
-   // 로컬 스토리지 저장을 위해 전체 즐겨찾기
+  // 로컬 스토리지 저장을 위해 전체 즐겨찾기
   @Transactional(readOnly = true)
   public List<BookmarkListResponse> searchAllBookmarksForLocalStorage(AuthUserInfo user) {
     User referenceUser = userRepository.getReferenceById(user.getId());
