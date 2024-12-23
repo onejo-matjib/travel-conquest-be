@@ -1,9 +1,7 @@
-name: Run Test
+name: Run Test with Testcontainers
 
-# Event Trigger 특정 액션 (Push, Pull_Request)등이 명시한 Branch에서 일어나면 동작을 수행한다.
 on:
   push:
-    # 배열로 여러 브랜치를 넣을 수 있다.
     branches:
       - dev
       - issue#*
@@ -11,30 +9,45 @@ on:
     branches:
       - dev
       - main
-  # 실제 어떤 작업을 실행할지에 대한 명시
+
 jobs:
   build:
-    # 스크립트 실행 환경 (OS)
-    # 배열로 선언시 개수 만큼 반복해서 실행한다. ( 예제 : 1번 실행)
     runs-on: ubuntu-latest
 
-    # 실제 실행 스크립트
+    services:
+      docker:
+        image: docker:19.03.12
+        options: --privileged
+
     steps:
-      # uses는 github actions에서 제공하는 플러그인을 실행.(git checkout 실행)
-      - name: checkout
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      # with은 plugin 파라미터 입니다. (java 17버전 셋업)
-      - name: java setup
+      - name: Create Docker Network
+        run: docker network create dev_network
+
+      - name: Pull Docker Images
+        run: |
+          docker pull redis:7.0
+          docker pull mysql:8.0
+
+      - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt' # See 'Supported distributions' for available options
+          distribution: 'adopt'
           java-version: '17'
 
-      - name: make executable gradlew
+      - name: Make gradlew Executable
         run: chmod +x ./gradlew
 
-      # run은 사용자 지정 스크립트 실행
-      - name: run unittest
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+
+      - name: Run Unit Tests with Testcontainers
         run: |
           ./gradlew clean test

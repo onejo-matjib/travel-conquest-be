@@ -59,7 +59,7 @@ public class UserUpgradeRequestService {
             .orElseThrow(
                 () ->
                     new CustomException("UPGRADE#3_001", "해당 루트를 찾을수 없습니다.", HttpStatus.NOT_FOUND));
-
+    route.validCreatorOrAdmin(user.getId(), user.getType());
     UserUpgradeRequest upgradeRequest =
         UserUpgradeRequest.builder().user(user).route(route).status(UpgradeStatus.PENDING).build();
 

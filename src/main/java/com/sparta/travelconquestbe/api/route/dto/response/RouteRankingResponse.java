@@ -12,8 +12,8 @@ public class RouteRankingResponse {
   private LocalDateTime updatedAt;
 
   public RouteRankingResponse(String creatorName, String title, String description,
-      LocalDateTime updatedAt, LocalDateTime createdAt) {
-    this.updatedAt = updatedAt != null ? updatedAt : createdAt; //updatedAt이 NULL이면 createdAt 사용
+      LocalDateTime updatedAt) {
+    this.updatedAt = updatedAt;
     this.creatorName = creatorName;
     this.title = title;
     this.description = description;
