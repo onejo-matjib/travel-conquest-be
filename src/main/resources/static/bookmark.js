@@ -127,7 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
   checkLocalStorageBtn.addEventListener('click', () => {
     const storedBookmarks = localStorage.getItem('bookmarks');
     if (storedBookmarks) {
-      bookmarkList.textContent = JSON.stringify(JSON.parse(storedBookmarks), null, 2);
+      const bookmarks = JSON.parse(storedBookmarks);
+
+      // createdAt 기준으로 최신순 정렬
+      bookmarks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      bookmarkList.textContent = JSON.stringify(bookmarks, null, 2);
     } else {
       bookmarkList.textContent = '로컬 스토리지에 저장된 즐겨찾기가 없습니다.';
     }
