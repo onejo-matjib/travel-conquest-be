@@ -34,8 +34,13 @@ public class PartyCreateRequest {
   @Size(max = 100, message = "태그는 100자를 초과할 수 없습니다.")
   private String tags; // 띄어쓰기로 구분된 태그 문자열
 
-  public PartyCreateRequest(String name, String description, int countMax, boolean passwordStatus,
-      String password, String tags) {
+  public PartyCreateRequest(String name,
+      String description,
+      int countMax,
+      boolean passwordStatus,
+      String password,
+      String tags
+  ) {
     this.name = name;
     this.description = description;
     this.countMax = countMax;
