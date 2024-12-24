@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <title>즐겨찾기 관리</title>
+</head>
+<body>
+<h1>즐겨찾기 관리</h1>
+
+<!-- (A) 즐겨찾기 추가 -->
+<div>
+  <label>Route ID: </label>
+  <input type="number" id="routeIdInput"/>
+  <button id="addBookmarkBtn">즐겨찾기 추가</button>
+</div>
+
+<!-- (B) 즐겨찾기 삭제 -->
+<div style="margin-top: 1rem;">
+  <label>Bookmark ID (삭제용): </label>
+  <input type="number" id="bookmarkIdInput"/>
+  <button id="deleteBookmarkBtn">즐겨찾기 삭제</button>
+</div>
+
+<hr/>
+
+<!-- (C) 로컬 스토리지 확인 -->
+<div>
+  <button id="checkLocalStorageBtn">로컬 스토리지 즐겨찾기 확인</button>
+</div>
+
+<!-- 결과 로그 표시 -->
+<pre id="logArea" style="border:1px solid #ccc; padding:1rem; height:200px; overflow:auto;">
+</pre>
+
+<script src="bookmark.js"></script>
+</body>
+</html>

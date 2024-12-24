@@ -51,7 +51,7 @@ public class BookmarkService {
   @Transactional(readOnly = true)
   public Page<BookmarkListResponse> searchBookmarks(AuthUserInfo user, int page, int size) {
     User referenceUser = userRepository.getReferenceById(user.getId());
-    
+
     PageRequest pageRequest = PageRequest.of(page - 1, size);
     return bookmarkRepository.getUserBookmarks(referenceUser.getId(), pageRequest);
   }
