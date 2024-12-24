@@ -189,3 +189,4 @@ class BookmarkServiceTest {
     assertEquals(HttpStatus.FORBIDDEN, exception.getHttpStatus());
   }
 }
+
