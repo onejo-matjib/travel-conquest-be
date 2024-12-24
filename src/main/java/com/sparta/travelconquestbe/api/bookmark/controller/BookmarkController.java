@@ -58,13 +58,4 @@ public class BookmarkController {
     bookmarkService.deleteBookmark(id, user);
     return ResponseEntity.noContent().build();
   }
-
-  @GetMapping("/all")
-  public ResponseEntity<List<BookmarkListResponse>> searchAllBookmarksForLocalStorage(
-      @AuthUser AuthUserInfo user
-  ) {
-    List<BookmarkListResponse> allBookmarks = bookmarkService.searchAllBookmarksForLocalStorage(
-        user);
-    return ResponseEntity.ok(allBookmarks);
-  }
 }

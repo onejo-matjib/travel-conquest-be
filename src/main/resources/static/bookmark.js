@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const bookmarkList = document.getElementById('logArea');
   const addBookmarkBtn = document.getElementById('addBookmarkBtn');
   const deleteBookmarkBtn = document.getElementById('deleteBookmarkBtn');
-  const loadAllBtn = document.getElementById('loadAllBtn');
   const checkLocalStorageBtn = document.getElementById('checkLocalStorageBtn');
   const routeIdInput = document.getElementById('routeIdInput');
   const bookmarkIdInput = document.getElementById('bookmarkIdInput');

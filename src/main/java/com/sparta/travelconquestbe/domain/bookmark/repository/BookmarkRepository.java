@@ -25,15 +25,4 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
       "b.id, b.route.id, b.route.title, b.createdAt) " +
       "FROM Bookmark b WHERE b.user.id = :userId ORDER BY b.createdAt DESC")
   Page<BookmarkListResponse> getUserBookmarks(@Param("userId") Long userId, Pageable pageable);
-
-  /**
-   * 페이지네이션 없이 모든 즐겨찾기 목록을 조회하는 쿼리
-   * - 로컬 스토리지 전체 저장용
-   */
-  @Query("SELECT new com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse(" +
-      "b.id, b.route.id, b.route.title, b.createdAt) " +
-      "FROM Bookmark b " +
-      "WHERE b.user.id = :userId " +
-      "ORDER BY b.createdAt DESC")
-  List<BookmarkListResponse> findAllByUserIdForLocalStorage(@Param("userId") Long userId);
 }

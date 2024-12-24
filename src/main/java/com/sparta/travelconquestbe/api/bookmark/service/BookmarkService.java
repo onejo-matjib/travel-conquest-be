@@ -72,11 +72,4 @@ public class BookmarkService {
 
     bookmarkRepository.delete(bookmark);
   }
-
-  // 로컬 스토리지 저장을 위해 전체 즐겨찾기
-  @Transactional(readOnly = true)
-  public List<BookmarkListResponse> searchAllBookmarksForLocalStorage(AuthUserInfo user) {
-    User referenceUser = userRepository.getReferenceById(user.getId());
-    return bookmarkRepository.findAllByUserIdForLocalStorage(referenceUser.getId());
-  }
 }
