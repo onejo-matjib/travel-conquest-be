@@ -55,8 +55,10 @@ public class Party extends TimeStampCreateUpdate {
   private String password;
 
   @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @Builder.Default // 기본값 설정
   private List<PartyMember> partyMember = new ArrayList<>();
 
   @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @Builder.Default // 기본값 설정
   private List<PartyTag> partyTags = new ArrayList<>();
 }

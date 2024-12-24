@@ -12,6 +12,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidEnum {
+
   Class<? extends Enum<?>> enumClass();
 
   String message() default "";

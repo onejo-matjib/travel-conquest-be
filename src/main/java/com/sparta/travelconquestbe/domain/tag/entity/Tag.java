@@ -32,5 +32,6 @@ public class Tag extends TimeStampCreated {
   private String keyword;
 
   @OneToMany(mappedBy = "tag")
+  @Builder.Default // 기본값 설정
   private List<PartyTag> partyTags = new ArrayList<>();
 }
