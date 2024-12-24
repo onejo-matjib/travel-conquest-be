@@ -4,6 +4,7 @@ import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.auth.JwtAuthentication;
 import com.sparta.travelconquestbe.common.config.jwt.JwtHelper;
 import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +22,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtHelper jwtHelper;
+  private final UserRepository userRepository;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
@@ -31,6 +33,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       String token = authHeader.substring(7);
       try {
         AuthUserInfo authUserInfo= jwtHelper.getAuthUserInfoFromToken(token);
+
+        var userOptional = userRepository.findById(authUserInfo.getId());
+        if (userOptional.isPresent()) {
+          var user = userOptional.get();
+          if (user.isSuspended()) {
+            response.sendError(HttpStatus.FORBIDDEN.value(), "정지된 사용자입니다. 정지 기간 : " + user.getSuspendedUntil());
+            return;
+          }
+        } else {
+          response.sendError(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다.");
+        }
         JwtAuthentication authentication = new JwtAuthentication(authUserInfo);
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);

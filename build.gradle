@@ -82,6 +82,9 @@ dependencies {
     // STOMP
     implementation group: 'org.webjars', name: 'stomp-websocket', version: '2.3.3-1'
 
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+
+
 }
 
 tasks.named('test') {

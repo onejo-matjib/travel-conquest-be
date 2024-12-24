@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.api.report.dto.request;
+package com.sparta.travelconquestbe.api.user.dto.request;
 
 import com.sparta.travelconquestbe.domain.report.enums.Reason;
 import com.sparta.travelconquestbe.domain.report.enums.ReportCategory;

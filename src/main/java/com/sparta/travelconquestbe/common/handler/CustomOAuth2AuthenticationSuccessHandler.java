@@ -53,6 +53,18 @@ public class CustomOAuth2AuthenticationSuccessHandler implements AuthenticationS
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
         return;
       }
+      if (user.isSuspended()) {
+        response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType("text/plain; charset=UTF-8");
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .errorCode("AUTH#2_003")
+            .errorMessage("정지된 사용자입니다. 정지 기간: " + user.getSuspendedUntil())
+            .httpStatus(HttpStatus.FORBIDDEN.value())
+            .timestamp(System.currentTimeMillis())
+            .build();
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        return;
+      }
       String token = jwtHelper.createToken(user);
 
       response.setHeader("Authorization", "Bearer " + token);

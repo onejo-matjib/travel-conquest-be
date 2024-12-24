@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.domain.user.repository;
 
 import com.sparta.travelconquestbe.api.user.dto.respones.UserRankingResponse;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -20,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.subscriptionCount >= 100000 AND u.title <> 'CONQUEROR'")
     List<User> findUsersToUpdateTitle();
+
+    @Query("SELECT u FROM User u WHERE u.suspendedUntil <= :now AND u.suspendedUntil IS NOT NULL")
+    List<User> findAllBySuspendedUntilBefore(LocalDateTime now);
 }
