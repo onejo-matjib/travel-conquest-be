@@ -1,13 +1,14 @@
 package com.sparta.travelconquestbe.domain.party.entity;
 
 import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
+import com.sparta.travelconquestbe.domain.PartyTag.entity.PartyTag;
 import com.sparta.travelconquestbe.domain.party.enums.PartyStatus;
-import com.sparta.travelconquestbe.domain.partyMember.entity.PartyMembers;
-import com.sparta.travelconquestbe.domain.tag.entity.Tag;
+import com.sparta.travelconquestbe.domain.partyMember.entity.PartyMember;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,7 +33,7 @@ public class Party extends TimeStampCreateUpdate {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(nullable = false, unique = true)
+  @Column(nullable = false)
   private String name;
 
   @Column(nullable = false)
@@ -45,6 +46,7 @@ public class Party extends TimeStampCreateUpdate {
   private int countMax;
 
   @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
   private PartyStatus status;
 
   @Column(nullable = false)
@@ -52,9 +54,9 @@ public class Party extends TimeStampCreateUpdate {
 
   private String password;
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-  private List<PartyMembers> partyMembers = new ArrayList<>();
+  @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  private List<PartyMember> partyMember = new ArrayList<>();
 
-  @OneToMany(fetch = FetchType.LAZY, mappedBy = "party", cascade = CascadeType.REMOVE)
-  private List<Tag> tags = new ArrayList<>();
+  @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  private List<PartyTag> partyTags = new ArrayList<>();
 }

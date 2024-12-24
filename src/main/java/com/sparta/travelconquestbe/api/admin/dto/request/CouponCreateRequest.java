@@ -29,6 +29,7 @@ public class CouponCreateRequest {
   @FutureOrPresent(message = "유효 기간은 현재 날짜 이상이어야 합니다.")
   private LocalDate validUntil;
 
+  @NotNull(message = "쿠폰 수량은 필수입니다.")
   @Min(value = 1, message = "쿠폰 수량은 최소 1장 이상이어야 합니다.")
   private int count;
 }
