@@ -2,7 +2,6 @@ package com.sparta.travelconquestbe.domain.bookmark.repository;
 
 import com.sparta.travelconquestbe.api.bookmark.dto.response.BookmarkListResponse;
 import com.sparta.travelconquestbe.domain.bookmark.entity.Bookmark;
-import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

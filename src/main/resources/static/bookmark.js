@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'Authorization': token,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ routeId }),
+          body: JSON.stringify({routeId}),
         });
         return response.ok;
       } catch (error) {
@@ -85,7 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('즐겨찾기가 추가되었습니다.');
       routeIdInput.value = '';
       const updatedBookmarks = await api.getBookmarks(); // 서버에서 최신 목록 가져오기
-      localStorage.setItem('bookmarks', JSON.stringify(updatedBookmarks.content || [])); // 로컬 스토리지 갱신
+      localStorage.setItem('bookmarks',
+          JSON.stringify(updatedBookmarks.content || [])); // 로컬 스토리지 갱신
     } else {
       alert('즐겨찾기 추가에 실패했습니다.');
     }
