@@ -34,6 +34,9 @@ public class Party extends TimeStampCreateUpdate {
   private Long id;
 
   @Column(nullable = false)
+  private String leaderNickname;
+
+  @Column(nullable = false)
   private String name;
 
   @Column(nullable = false)

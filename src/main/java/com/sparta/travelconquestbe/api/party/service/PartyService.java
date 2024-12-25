@@ -34,6 +34,7 @@ public class PartyService {
   public PartyCreateResponse createParty(AuthUserInfo userInfo, PartyCreateRequest request) {
     // Party 생성 및 저장
     Party party = Party.builder()
+        .leaderNickname(userInfo.getNickname())
         .name(request.getName())
         .description(request.getDescription())
         .count(1)
