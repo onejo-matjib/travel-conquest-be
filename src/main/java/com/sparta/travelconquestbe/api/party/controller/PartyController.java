@@ -2,16 +2,26 @@ package com.sparta.travelconquestbe.api.party.controller;
 
 import com.sparta.travelconquestbe.api.party.dto.request.PartyCreateRequest;
 import com.sparta.travelconquestbe.api.party.dto.response.PartyCreateResponse;
+import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
 import com.sparta.travelconquestbe.api.party.service.PartyService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
+import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,5 +38,18 @@ public class PartyController {
   ) {
     PartyCreateResponse reseponse = partyService.createParty(userInfo, request);
     return ResponseEntity.status(HttpStatus.CREATED).body(reseponse);
+  }
+
+  @GetMapping // 최신순 정렬
+  public ResponseEntity<Page<PartySearchResponse>> searchAllPartise(
+      @Positive @RequestParam(defaultValue = "1", value = "page") int page,
+      @Positive @RequestParam(defaultValue = "10", value = "limit") int limit,
+      @ValidEnum(enumClass = PartySort.class, message = "정렬할 컬럼값을 정확하게 입력해주세요.")
+      @RequestParam(defaultValue = "CREATED_AT") String sort,
+      @RequestParam(defaultValue = "DESC") String direction) {
+    Pageable pageable = PageRequest.of(page - 1, limit,
+        direction.equalsIgnoreCase("DESC") ? Sort.by(sort).descending()
+            : Sort.by(sort).ascending());
+    return ResponseEntity.status(HttpStatus.OK).body(partyService.searchAllPartise(pageable));
   }
 }

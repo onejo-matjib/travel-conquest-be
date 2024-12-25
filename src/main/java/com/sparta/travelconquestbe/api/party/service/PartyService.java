@@ -2,6 +2,7 @@ package com.sparta.travelconquestbe.api.party.service;
 
 import com.sparta.travelconquestbe.api.party.dto.request.PartyCreateRequest;
 import com.sparta.travelconquestbe.api.party.dto.response.PartyCreateResponse;
+import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.domain.PartyTag.entity.PartyTag;
 import com.sparta.travelconquestbe.domain.PartyTag.repository.PartyTagRepository;
@@ -19,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -78,6 +81,10 @@ public class PartyService {
         .build();
   }
 
+  public Page<PartySearchResponse> searchAllPartise(Pageable pageable) {
+    return partyRepository.searchAllPartise(pageable);
+  }
+
   public void processTags(List<String> hashtags, Party party) {
 
     // 태그를 처리 및 저장
@@ -112,4 +119,6 @@ public class PartyService {
         .filter(tag -> !tag.isEmpty()) // 최종적으로 빈 값 필터링
         .toList();
   }
+
+
 }
