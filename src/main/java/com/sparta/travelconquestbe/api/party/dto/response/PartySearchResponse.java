@@ -17,7 +17,6 @@ public class PartySearchResponse {
   private int count;
   private int countMax;
   private boolean passwordStatus;
-  private String password;
   private List<String> tags;
   private PartyStatus status;
   private LocalDateTime createdAt;
