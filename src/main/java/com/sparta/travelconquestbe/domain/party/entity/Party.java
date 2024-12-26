@@ -65,4 +65,17 @@ public class Party extends TimeStampCreateUpdate {
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
   @Builder.Default
   private List<PartyTag> partyTags = new ArrayList<>();
+
+  public void update(String name, String description, int countMax,
+      boolean passwordStatus, String password) {
+    this.name = name;
+    this.description = description;
+    this.countMax = countMax;
+    this.passwordStatus = passwordStatus;
+    this.password = password;
+  }
+
+  public void updateStatus(PartyStatus status) {
+    this.status = status;
+  }
 }

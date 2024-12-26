@@ -1,8 +1,10 @@
 package com.sparta.travelconquestbe.api.party.controller;
 
 import com.sparta.travelconquestbe.api.party.dto.request.PartyCreateRequest;
+import com.sparta.travelconquestbe.api.party.dto.request.PartyUpdateRequest;
 import com.sparta.travelconquestbe.api.party.dto.response.PartyCreateResponse;
 import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
+import com.sparta.travelconquestbe.api.party.dto.response.PartyUpdateResponse;
 import com.sparta.travelconquestbe.api.party.service.PartyService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
@@ -19,7 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -63,5 +67,15 @@ public class PartyController {
 
     return ResponseEntity.status(HttpStatus.OK)
         .body(partyService.searchAllPartise(pageable, partySort, direction));
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<PartyUpdateResponse> updateParty(
+      @AuthUser AuthUserInfo userInfo,
+      @PathVariable Long id,
+      @Valid @RequestBody PartyUpdateRequest request
+  ) {
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(partyService.updateParty(userInfo, id, request));
   }
 }
