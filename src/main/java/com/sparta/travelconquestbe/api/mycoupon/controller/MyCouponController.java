@@ -6,10 +6,13 @@ import com.sparta.travelconquestbe.api.mycoupon.service.MyCouponService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponSort;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -46,9 +49,21 @@ public class MyCouponController {
       @RequestParam(defaultValue = "VALID_UNTIL") String sort,
       @RequestParam(defaultValue = "ASC") String direction) {
 
-    Page<MyCouponListResponse> response =
-        myCouponService.searchAllMyCoupons(userInfo, page, limit, sort, direction);
+    if (!"ASC".equalsIgnoreCase(direction) && !"DESC".equalsIgnoreCase(direction)) {
+      throw new CustomException("PARTY#1_002",
+          "정렬 방향은 ASC 또는 DESC만 가능합니다.",
+          HttpStatus.BAD_REQUEST);
+    }
 
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+    Pageable pageable = PageRequest.of(
+        page - 1,
+        limit);
+
+    CouponSort couponSort = CouponSort.valueOf(sort.toUpperCase());
+
+    return ResponseEntity.status(HttpStatus.OK).body(myCouponService.searchAllMyCoupons(userInfo,
+        pageable,
+        couponSort,
+        direction));
   }
 }

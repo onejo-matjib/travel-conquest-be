@@ -10,13 +10,15 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.travelconquestbe.api.mycoupon.dto.response.MyCouponListResponse;
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponSort;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,7 +28,12 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
   private final JPAQueryFactory jpaQueryFactory;
 
   @Override
-  public Page<MyCouponListResponse> searchAllMyCoupons(Long userId, Pageable pageable) {
+  public Page<MyCouponListResponse> searchAllMyCoupons(
+      Long userId,
+      Pageable pageable,
+      CouponSort couponSort,
+      String direction
+  ) {
     QueryResults<MyCouponListResponse> results = jpaQueryFactory
         .select(Projections.constructor(MyCouponListResponse.class,
             myCoupon.id,
@@ -46,7 +53,7 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
             myCoupon.user.id.eq(userId)
         )
         .groupBy(myCoupon.id)
-        .orderBy(getOrderSpecifiers(pageable.getSort()).toArray(new OrderSpecifier[0]))
+        .orderBy(getOrderSpecifiers(couponSort, direction).toArray(new OrderSpecifier[0]))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetchResults();
@@ -57,27 +64,24 @@ public class MyCouponRepositoryQueryDslImpl implements MyCouponRepositoryQueryDs
     return new PageImpl<>(content, pageable, totalCount);
   }
 
-  private List<OrderSpecifier<?>> getOrderSpecifiers(Sort sort) {
+  private List<OrderSpecifier<?>> getOrderSpecifiers(CouponSort couponSort, String direction) {
     List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
-    for (Sort.Order order : sort) {
-      String property = order.getProperty();
-      Order direction = order.isAscending() ? Order.ASC : Order.DESC;
 
-      // 특정 필드에 대한 매핑
-      switch (property) {
-        case "NAME" -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.name));
-        case "TYPE" -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.type));
-        case "STATUS" -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.status));
-        case "DISCOUNT_AMOUNT" ->
-            orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.discountAmount));
-        case "VALID_UNTIL" ->
-            orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.validUntil));
-        case "CREATED_AT" ->
-            orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.createdAt));
+    // 정렬 방향 설정 (기본값: DESC)
+    Order sortOrder = "ASC".equalsIgnoreCase(direction) ? Order.ASC : Order.DESC;
 
-        // default = "VALID_UNTIL"
-        default -> orderSpecifiers.add(new OrderSpecifier<>(direction, myCoupon.coupon.validUntil));
-      }
+    // 특정 필드에 대한 매핑
+    switch (couponSort) {
+      case NAME -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, myCoupon.coupon.name));
+      case TYPE -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, myCoupon.coupon.type));
+      case STATUS -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, myCoupon.status));
+      case DISCOUNT_AMOUNT ->
+          orderSpecifiers.add(new OrderSpecifier<>(sortOrder, myCoupon.coupon.discountAmount));
+      case VALID_UNTIL ->
+          orderSpecifiers.add(new OrderSpecifier<>(sortOrder, myCoupon.coupon.validUntil));
+      case CREATED_AT -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, myCoupon.createdAt));
+      default ->
+          throw new CustomException("PARTY#1_001", "정렬 기준이 잘못되었습니다.", HttpStatus.BAD_REQUEST);
     }
     return orderSpecifiers;
   }

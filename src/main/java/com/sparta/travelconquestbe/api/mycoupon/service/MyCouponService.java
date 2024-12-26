@@ -5,6 +5,7 @@ import com.sparta.travelconquestbe.api.mycoupon.dto.response.MyCouponSaveRespons
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponSort;
 import com.sparta.travelconquestbe.domain.coupon.enums.CouponType;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
@@ -18,9 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -39,13 +38,13 @@ public class MyCouponService {
   private static final long RETRY_DELAY = 100L; // 재시도 간격
   private static final String COUPON_COUNT_KEY_PREFIX = "coupon_count:";
 
-  public Page<MyCouponListResponse> searchAllMyCoupons(AuthUserInfo userInfo, int page, int limit,
-      String sort, String direction) {
-    Pageable pageable = PageRequest.of(page - 1, limit,
-        direction.equalsIgnoreCase("DESC") ? Sort.by(sort).descending()
-            : Sort.by(sort).ascending());
-
-    return myCouponRepository.searchAllMyCoupons(userInfo.getId(), pageable);
+  public Page<MyCouponListResponse> searchAllMyCoupons(
+      AuthUserInfo userInfo,
+      Pageable pageable,
+      CouponSort couponSort,
+      String direction
+  ) {
+    return myCouponRepository.searchAllMyCoupons(userInfo.getId(), pageable, couponSort, direction);
   }
 
   @Transactional
