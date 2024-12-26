@@ -2,10 +2,13 @@ package com.sparta.travelconquestbe.api.party.service;
 
 import com.sparta.travelconquestbe.api.party.dto.request.PartyCreateRequest;
 import com.sparta.travelconquestbe.api.party.dto.response.PartyCreateResponse;
+import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.PartyTag.entity.PartyTag;
 import com.sparta.travelconquestbe.domain.PartyTag.repository.PartyTagRepository;
 import com.sparta.travelconquestbe.domain.party.entity.Party;
+import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import com.sparta.travelconquestbe.domain.party.enums.PartyStatus;
 import com.sparta.travelconquestbe.domain.party.repository.PartyRepository;
 import com.sparta.travelconquestbe.domain.partyMember.entity.PartyMember;
@@ -14,11 +17,15 @@ import com.sparta.travelconquestbe.domain.partyMember.repository.PartyMemberRepo
 import com.sparta.travelconquestbe.domain.tag.entity.Tag;
 import com.sparta.travelconquestbe.domain.tag.repository.TagRepository;
 import com.sparta.travelconquestbe.domain.user.entity.User;
+import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,6 +39,9 @@ public class PartyService {
   private final PartyTagRepository partyTagRepository;
 
   public PartyCreateResponse createParty(AuthUserInfo userInfo, PartyCreateRequest request) {
+    // 사용자 검증
+    validateUser(userInfo);
+
     // Party 생성 및 저장
     Party party = Party.builder()
         .leaderNickname(userInfo.getNickname())
@@ -78,6 +88,11 @@ public class PartyService {
         .build();
   }
 
+  public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
+      String direction) {
+    return partyRepository.searchAllPartise(pageable, partySort, direction);
+  }
+
   public void processTags(List<String> hashtags, Party party) {
 
     // 태그를 처리 및 저장
@@ -111,5 +126,11 @@ public class PartyService {
         .map(tag -> tag.replaceAll("[^a-zA-Z0-9가-힣]", "")) // 알파벳, 숫자, 한글만 남기기
         .filter(tag -> !tag.isEmpty()) // 최종적으로 빈 값 필터링
         .toList();
+  }
+
+  public void validateUser(AuthUserInfo userInfo) {
+    if (userInfo.getType().equals(UserType.USER)) {
+      throw new CustomException("PARTY#3_001", "인증된 사용자가 아닙니다.", HttpStatus.FORBIDDEN);
+    }
   }
 }

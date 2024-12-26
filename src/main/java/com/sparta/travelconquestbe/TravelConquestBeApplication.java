@@ -15,5 +15,4 @@ public class TravelConquestBeApplication {
   public static void main(String[] args) {
     SpringApplication.run(TravelConquestBeApplication.class, args);
   }
-
 }
