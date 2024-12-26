@@ -7,6 +7,7 @@ import com.sparta.travelconquestbe.api.party.service.PartyService;
 import com.sparta.travelconquestbe.common.annotation.AuthUser;
 import com.sparta.travelconquestbe.common.annotation.ValidEnum;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
+import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,13 +47,19 @@ public class PartyController {
       @ValidEnum(enumClass = PartySort.class, message = "정렬할 컬럼값을 정확하게 입력해주세요.")
       @RequestParam(defaultValue = "CREATED_AT") String sort,
       @RequestParam(defaultValue = "DESC") String direction) {
+
+    if (!"ASC".equalsIgnoreCase(direction) && !"DESC".equalsIgnoreCase(direction)) {
+      throw new CustomException("PARTY#1_002",
+          "정렬 방향은 ASC 또는 DESC만 가능합니다.",
+          HttpStatus.BAD_REQUEST);
+    }
     Pageable pageable = PageRequest.of(
         page - 1,
-        limit,
-        Sort.by(Sort.Order.by(sort).with(
-            direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC
-        ))
-    );
-    return ResponseEntity.status(HttpStatus.OK).body(partyService.searchAllPartise(pageable));
+        limit);
+
+    PartySort partySort = PartySort.valueOf(sort.toUpperCase());
+
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(partyService.searchAllPartise(pageable, partySort, direction));
   }
 }

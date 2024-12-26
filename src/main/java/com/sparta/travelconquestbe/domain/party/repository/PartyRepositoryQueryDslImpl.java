@@ -10,13 +10,15 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
+import com.sparta.travelconquestbe.common.exception.CustomException;
+import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,8 +28,9 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
   private final JPAQueryFactory jpaQueryFactory;
 
   @Override
-  public Page<PartySearchResponse> searchAllPartise(Pageable pageable) {
-    // Party 데이터 쿼리
+  public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
+      String direction) {
+
     QueryResults<Tuple> results = jpaQueryFactory
         .select(
             party.id,
@@ -42,7 +45,7 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
             party.updatedAt
         )
         .from(party)
-        .orderBy(getOrderSpecifiers(pageable.getSort()).toArray(new OrderSpecifier[0]))
+        .orderBy(getOrderSpecifiers(partySort, direction).toArray(new OrderSpecifier[0]))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetchResults();
@@ -58,7 +61,6 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
           .where(partyTag.party.id.eq(partyId))
           .fetch();
 
-      // DTO 생성
       return PartySearchResponse.builder()
           .id(partyId)
           .leaderNickname(tuple.get(party.leaderNickname))
@@ -78,25 +80,24 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
     return new PageImpl<>(content, pageable, totalCount);
   }
 
-
-  private List<OrderSpecifier<?>> getOrderSpecifiers(Sort sort) {
+  // 다중 정렬 조건
+  private List<OrderSpecifier<?>> getOrderSpecifiers(PartySort partySort, String direction) {
     List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
-    for (Sort.Order order : sort) {
-      String property = order.getProperty();
-      Order direction = order.isAscending() ? Order.ASC : Order.DESC;
 
-      // 특정 필드에 대한 매핑
-      switch (property.toUpperCase()) {
-        case "LEADER_NICKNAME" ->
-            orderSpecifiers.add(new OrderSpecifier<>(direction, party.leaderNickname));
-        case "NAME" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.name));
-        case "COUNT_MAX" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.countMax));
-        case "PASSWORD_STATUS" ->
-            orderSpecifiers.add(new OrderSpecifier<>(direction, party.passwordStatus));
-        case "STATUS" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.status));
-        case "CREATED_AT" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.createdAt));
-        default -> throw new IllegalArgumentException("Invalid sort property: " + property);
-      }
+    // 정렬 방향 설정 (기본값: DESC)
+    Order sortOrder = "ASC".equalsIgnoreCase(direction) ? Order.ASC : Order.DESC;
+
+    switch (partySort) {
+      case LEADER_NICKNAME ->
+          orderSpecifiers.add(new OrderSpecifier<>(sortOrder, party.leaderNickname));
+      case NAME -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, party.name));
+      case COUNT_MAX -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, party.countMax));
+      case PASSWORD_STATUS ->
+          orderSpecifiers.add(new OrderSpecifier<>(sortOrder, party.passwordStatus));
+      case STATUS -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, party.status));
+      case CREATED_AT -> orderSpecifiers.add(new OrderSpecifier<>(sortOrder, party.createdAt));
+      default ->
+          throw new CustomException("PARTY#1_001", "정렬 기준이 잘못되었습니다.", HttpStatus.BAD_REQUEST);
     }
     return orderSpecifiers;
   }

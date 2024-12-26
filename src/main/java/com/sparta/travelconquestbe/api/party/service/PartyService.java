@@ -8,6 +8,7 @@ import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.PartyTag.entity.PartyTag;
 import com.sparta.travelconquestbe.domain.PartyTag.repository.PartyTagRepository;
 import com.sparta.travelconquestbe.domain.party.entity.Party;
+import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import com.sparta.travelconquestbe.domain.party.enums.PartyStatus;
 import com.sparta.travelconquestbe.domain.party.repository.PartyRepository;
 import com.sparta.travelconquestbe.domain.partyMember.entity.PartyMember;
@@ -87,8 +88,9 @@ public class PartyService {
         .build();
   }
 
-  public Page<PartySearchResponse> searchAllPartise(Pageable pageable) {
-    return partyRepository.searchAllPartise(pageable);
+  public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
+      String direction) {
+    return partyRepository.searchAllPartise(pageable, partySort, direction);
   }
 
   public void processTags(List<String> hashtags, Party party) {
