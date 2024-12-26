@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PasswordRequired {
 
-  String message() default "비밀번호 활성화 시 비밀번호는 필수입니다.";
+  String message() default "";
 
   Class<?>[] groups() default {};
 

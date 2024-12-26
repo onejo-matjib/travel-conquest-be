@@ -10,10 +10,34 @@ public class PasswordRequiredValidator implements
 
   @Override
   public boolean isValid(PartyCreateRequest request, ConstraintValidatorContext context) {
-    if (request.isPasswordStatus()) { // 비밀번호 활성화 여부 확인
-      // 비밀번호가 null이거나 공백이면 유효하지 않음
-      return request.getPassword() != null && !request.getPassword().isBlank();
+    String password = request.getPassword();
+
+    // 공백 문자열 처리
+    if (password != null && password.isBlank()) {
+      context.disableDefaultConstraintViolation();
+      context.buildConstraintViolationWithTemplate("비밀번호는 공백일 수 없습니다.")
+          .addConstraintViolation();
+      return false;
     }
-    return true; // 비밀번호 비활성화일 경우 유효
+
+    if (request.isPasswordStatus()) {
+      // 비밀번호 활성화 상태에서 비밀번호가 없을 경우
+      if (password == null) {
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate("비밀번호가 활성화된 상태에서는 비밀번호를 입력해야 합니다.")
+            .addConstraintViolation();
+        return false;
+      }
+    } else {
+      // 비밀번호 비활성화 상태에서 비밀번호가 존재할 경우
+      if (password != null) {
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate("비밀번호 비활성화 상태에서는 비밀번호를 입력할 수 없습니다.")
+            .addConstraintViolation();
+        return false;
+      }
+    }
+
+    return true; // 조건을 모두 통과하면 유효
   }
 }

@@ -110,6 +110,6 @@ public class PartyService {
         .map(tag -> tag.substring(1)) // '#' 제외하고 태그 키워드만 추출
         .map(tag -> tag.replaceAll("[^a-zA-Z0-9가-힣]", "")) // 알파벳, 숫자, 한글만 남기기
         .filter(tag -> !tag.isEmpty()) // 최종적으로 빈 값 필터링
-        .collect(Collectors.toList());
+        .toList();
   }
 }

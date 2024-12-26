@@ -1,6 +1,6 @@
 package com.sparta.travelconquestbe.domain.partyMember.entity;
 
-import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
+import com.sparta.travelconquestbe.common.entity.TimeStampCreateUpdate;
 import com.sparta.travelconquestbe.domain.party.entity.Party;
 import com.sparta.travelconquestbe.domain.partyMember.enums.MemberType;
 import com.sparta.travelconquestbe.domain.user.entity.User;
@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PartyMember extends TimeStampCreated {
+public class PartyMember extends TimeStampCreateUpdate {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

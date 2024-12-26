@@ -9,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -57,11 +58,11 @@ public class Party extends TimeStampCreateUpdate {
 
   private String password;
 
-  @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-  @Builder.Default // 기본값 설정
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @Builder.Default
   private List<PartyMember> partyMember = new ArrayList<>();
 
-  @OneToMany(mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
-  @Builder.Default // 기본값 설정
+  @OneToMany(fetch = FetchType.LAZY, mappedBy = "party", cascade = CascadeType.REMOVE, orphanRemoval = true)
+  @Builder.Default
   private List<PartyTag> partyTags = new ArrayList<>();
 }

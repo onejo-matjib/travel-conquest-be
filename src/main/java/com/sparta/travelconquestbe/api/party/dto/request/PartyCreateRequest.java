@@ -1,12 +1,11 @@
 package com.sparta.travelconquestbe.api.party.dto.request;
 
 import com.sparta.travelconquestbe.common.annotation.PasswordRequired;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import org.hibernate.validator.constraints.Range;
 
 @PasswordRequired
 @Getter
@@ -21,8 +20,7 @@ public class PartyCreateRequest {
   private String description;
 
   @NotNull(message = "최대 인원 수는 필수입니다")
-  @Min(value = 1, message = "최대 인원은 1명 이상이어야 합니다.")
-  @Max(value = 30, message = "최대 인원은 30명을 초과할 수 없습니다.")
+  @Range(min = 1, max = 30, message = "최소 인원은 1명, 최대 인원은 30명입니다.")
   private int countMax;
 
   @NotNull(message = "비밀번호 활성화 선택은 필수입니다.")
