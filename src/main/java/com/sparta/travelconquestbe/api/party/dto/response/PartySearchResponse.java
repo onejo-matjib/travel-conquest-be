@@ -3,9 +3,11 @@ package com.sparta.travelconquestbe.api.party.dto.response;
 import com.sparta.travelconquestbe.domain.party.enums.PartyStatus;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class PartySearchResponse {
 
   private Long id;

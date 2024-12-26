@@ -1,13 +1,13 @@
 package com.sparta.travelconquestbe.domain.party.repository;
 
 import static com.sparta.travelconquestbe.domain.PartyTag.entity.QPartyTag.partyTag;
-import static com.sparta.travelconquestbe.domain.coupon.entity.QCoupon.coupon;
 import static com.sparta.travelconquestbe.domain.party.entity.QParty.party;
+import static com.sparta.travelconquestbe.domain.tag.entity.QTag.tag;
 
 import com.querydsl.core.QueryResults;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
 import java.util.ArrayList;
@@ -27,8 +27,9 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
 
   @Override
   public Page<PartySearchResponse> searchAllPartise(Pageable pageable) {
-    QueryResults<PartySearchResponse> results = jpaQueryFactory
-        .select(Projections.constructor(PartySearchResponse.class,
+    // Party 데이터 쿼리
+    QueryResults<Tuple> results = jpaQueryFactory
+        .select(
             party.id,
             party.leaderNickname,
             party.name,
@@ -37,21 +38,43 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
             party.countMax,
             party.status,
             party.passwordStatus,
-            party.password,
-            partyTag.tag.keyword,
             party.createdAt,
             party.updatedAt
-        ))
-        .from(party, partyTag)
-        .leftJoin(party)
-        .groupBy(party.id)
+        )
+        .from(party)
         .orderBy(getOrderSpecifiers(pageable.getSort()).toArray(new OrderSpecifier[0]))
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetchResults();
-    List<PartySearchResponse> content = results.getResults();
-    long totalCount = results.getTotal();
 
+    // tags를 별도로 처리하고 DTO 빌더로 매핑
+    List<PartySearchResponse> content = results.getResults().stream().map(tuple -> {
+      Long partyId = tuple.get(party.id);
+
+      // 태그 리스트 조회
+      List<String> tags = jpaQueryFactory.select(tag.keyword)
+          .from(partyTag)
+          .join(partyTag.tag, tag)
+          .where(partyTag.party.id.eq(partyId))
+          .fetch();
+
+      // DTO 생성
+      return PartySearchResponse.builder()
+          .id(partyId)
+          .leaderNickname(tuple.get(party.leaderNickname))
+          .name(tuple.get(party.name))
+          .description(tuple.get(party.description))
+          .count(tuple.get(party.count))
+          .countMax(tuple.get(party.countMax))
+          .status(tuple.get(party.status))
+          .passwordStatus(tuple.get(party.passwordStatus))
+          .tags(tags) // 태그 리스트 추가
+          .createdAt(tuple.get(party.createdAt))
+          .updatedAt(tuple.get(party.updatedAt))
+          .build();
+    }).toList();
+
+    long totalCount = results.getTotal();
     return new PageImpl<>(content, pageable, totalCount);
   }
 
@@ -63,7 +86,7 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
       Order direction = order.isAscending() ? Order.ASC : Order.DESC;
 
       // 특정 필드에 대한 매핑
-      switch (property) {
+      switch (property.toUpperCase()) {
         case "LEADER_NICKNAME" ->
             orderSpecifiers.add(new OrderSpecifier<>(direction, party.leaderNickname));
         case "NAME" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.name));
@@ -72,9 +95,7 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
             orderSpecifiers.add(new OrderSpecifier<>(direction, party.passwordStatus));
         case "STATUS" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.status));
         case "CREATED_AT" -> orderSpecifiers.add(new OrderSpecifier<>(direction, party.createdAt));
-
-        // default = "CREATED_AT"
-        default -> orderSpecifiers.add(new OrderSpecifier<>(direction, coupon.validUntil));
+        default -> throw new IllegalArgumentException("Invalid sort property: " + property);
       }
     }
     return orderSpecifiers;

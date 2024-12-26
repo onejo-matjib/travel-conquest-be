@@ -47,9 +47,13 @@ public class PartyController {
       @ValidEnum(enumClass = PartySort.class, message = "정렬할 컬럼값을 정확하게 입력해주세요.")
       @RequestParam(defaultValue = "CREATED_AT") String sort,
       @RequestParam(defaultValue = "DESC") String direction) {
-    Pageable pageable = PageRequest.of(page - 1, limit,
-        direction.equalsIgnoreCase("DESC") ? Sort.by(sort).descending()
-            : Sort.by(sort).ascending());
+    Pageable pageable = PageRequest.of(
+        page - 1,
+        limit,
+        Sort.by(Sort.Order.by(sort).with(
+            direction.equalsIgnoreCase("DESC") ? Sort.Direction.DESC : Sort.Direction.ASC
+        ))
+    );
     return ResponseEntity.status(HttpStatus.OK).body(partyService.searchAllPartise(pageable));
   }
 }
