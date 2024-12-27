@@ -201,19 +201,15 @@ public class PartyService {
 
   // 파티 리더 검증
   public Party validatePartyLeader(AuthUserInfo userInfo, Long id) {
-    Party party = partyRepository.findById(id)
+    PartyMember partyMember = partyMemberRepository.findByUserIdAndPartyIdAndMemberType(
+            userInfo.getId(),
+            id,
+            MemberType.LEADER)
         .orElseThrow(
-            () -> new CustomException("PARTY#2_001", "해당 파티를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+            () -> new CustomException("PARTY#3_001", "해당 파티를 수정할 권한이 없습니다.",
+                HttpStatus.CONFLICT));
 
-    PartyMember partyMember = partyMemberRepository.findByUserIdAndPartyId(userInfo.getId(), id)
-        .orElseThrow(
-            () -> new CustomException("PARTY#4_001", "해당 파티 멤버가 아닙니다.", HttpStatus.CONFLICT));
-
-    if (!partyMember.getMemberType().equals(MemberType.LEADER)) {
-      throw new CustomException("PARTY#3_001", "해당 권한이 없습니다.", HttpStatus.FORBIDDEN);
-    }
-
-    return party;
+    return partyMember.getParty();
   }
 
   /**
