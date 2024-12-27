@@ -36,6 +36,7 @@ public class CouponRepositoryQueryDslImpl implements CouponRepositoryQueryDsl {
             coupon.id,
             coupon.name,
             coupon.description,
+            coupon.type,
             coupon.discountAmount,
             coupon.validUntil,
             coupon.count,
