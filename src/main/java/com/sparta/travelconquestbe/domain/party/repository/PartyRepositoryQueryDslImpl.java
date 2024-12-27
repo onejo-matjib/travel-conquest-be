@@ -28,9 +28,11 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
   private final JPAQueryFactory jpaQueryFactory;
 
   @Override
-  public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
-      String direction) {
-
+  public Page<PartySearchResponse> searchAllPartise(
+      Pageable pageable,
+      PartySort partySort,
+      String direction
+  ) {
     QueryResults<Tuple> results = jpaQueryFactory
         .select(
             party.id,

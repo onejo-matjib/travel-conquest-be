@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import com.sparta.travelconquestbe.api.coupon.dto.respones.CouponSearchResponse;
 import com.sparta.travelconquestbe.domain.coupon.entity.Coupon;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponSort;
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 class CouponServiceTest {
@@ -55,6 +57,7 @@ class CouponServiceTest {
             coupon1.getId(),
             coupon1.getName(),
             coupon1.getDescription(),
+            coupon1.getType(),
             coupon1.getDiscountAmount(),
             coupon1.getValidUntil(),
             coupon1.getCount(),
@@ -65,6 +68,7 @@ class CouponServiceTest {
             coupon2.getId(),
             coupon2.getName(),
             coupon2.getDescription(),
+            coupon2.getType(),
             coupon2.getDiscountAmount(),
             coupon2.getValidUntil(),
             coupon2.getCount(),
@@ -80,14 +84,13 @@ class CouponServiceTest {
     );
 
     // When: Repository 동작을 Mocking
-    when(couponRepository.searchAllCoupons(
-        PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "VALID_UNTIL"))))
+    Pageable pageable = PageRequest.of(0, 10);
+    when(couponRepository.searchAllCoupons(pageable, CouponSort.VALID_UNTIL, "DESC"))
         .thenReturn(mockPage);
 
     // When: 서비스 메서드 호출
     Page<CouponSearchResponse> result = couponService.searchAllCoupons(
-        1, 10, "VALID_UNTIL", "DESC");
-
+        pageable, CouponSort.VALID_UNTIL, "DESC");
     // Then: 결과 검증
     assertThat(result).isNotNull();
     assertThat(result.getTotalElements()).isEqualTo(2);

@@ -1,6 +1,7 @@
 package com.sparta.travelconquestbe.domain.mycoupon.repository;
 
 import com.sparta.travelconquestbe.api.mycoupon.dto.response.MyCouponListResponse;
+import com.sparta.travelconquestbe.domain.coupon.enums.CouponSort;
 import com.sparta.travelconquestbe.domain.mycoupon.entity.MyCoupon;
 import com.sparta.travelconquestbe.domain.mycoupon.enums.UseStatus;
 import jakarta.transaction.Transactional;
@@ -21,5 +22,6 @@ public interface MyCouponRepository extends JpaRepository<MyCoupon, Long>,
   @Query("DELETE FROM MyCoupon mc WHERE mc.coupon.id IN :couponIds")
   void deleteByCouponIds(List<Long> couponIds);
 
-  Page<MyCouponListResponse> searchAllMyCoupons(Long userId, Pageable pageable);
+  Page<MyCouponListResponse> searchAllMyCoupons(Long userId, Pageable pageable,
+      CouponSort couponSort, String direction);
 }
