@@ -79,6 +79,12 @@ public class PartyService {
     return buildUpdateResponse(userInfo, party, allTags);
   }
 
+  // 파티 삭제
+  public void deleteParty(AuthUserInfo userInfo, Long id) {
+    Party party = validatePartyLeader(userInfo, id);
+    partyRepository.delete(party);
+  }
+
   public PartyCreateResponse buildCreateResponse(AuthUserInfo userInfo, Party party,
       List<String> hashtags) {
     return PartyCreateResponse.builder()
