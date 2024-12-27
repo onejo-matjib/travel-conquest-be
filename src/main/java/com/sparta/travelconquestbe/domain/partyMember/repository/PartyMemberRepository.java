@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> {
 
-  Optional<PartyMember> findByUserIdAndPartyIdAndMemberType(Long id, Long id1,
+  Optional<PartyMember> findByUserIdAndPartyIdAndMemberType(Long userId, Long partyId,
       MemberType memberType);
 
   @Modifying

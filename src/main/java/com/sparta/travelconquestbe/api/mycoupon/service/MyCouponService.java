@@ -85,7 +85,8 @@ public class MyCouponService {
     } catch (CustomException e) {
       throw e;  // 이미 처리된 커스텀 예외는 다시 던지기
     } catch (NumberFormatException e) {
-      throw new CustomException("COUPON#5_002", "쿠폰 수량 변환 중 오류 발생.", HttpStatus.BAD_REQUEST);
+      throw new CustomException("COUPON#5_002", "쿠폰 수량 변환 중 오류 발생.",
+          HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (Exception e) {
       throw new CustomException("COUPON#5_001", "쿠폰 발급 중 내부적인 문제가 발생했습니다.",
           HttpStatus.INTERNAL_SERVER_ERROR);

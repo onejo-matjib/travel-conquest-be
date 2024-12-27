@@ -3,6 +3,7 @@ package com.sparta.travelconquestbe.api.party.service;
 import com.sparta.travelconquestbe.api.party.dto.request.PartyCreateRequest;
 import com.sparta.travelconquestbe.api.party.dto.request.PartyUpdateRequest;
 import com.sparta.travelconquestbe.api.party.dto.response.PartyCreateResponse;
+import com.sparta.travelconquestbe.api.party.dto.response.PartyJoinResponse;
 import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
 import com.sparta.travelconquestbe.api.party.dto.response.PartyUpdateResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
@@ -23,11 +24,13 @@ import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,12 @@ public class PartyService {
   private final PartyMemberRepository partyMemberRepository;
   private final UserRepository userRepository;
   private final PartyTagRepository partyTagRepository;
+  private final RedisTemplate<String, String> redisTemplate;
+
+  private static final long LOCK_TIMEOUT = 1000L; // 타임아웃 (1초)
+  private static final long RETRY_DELAY = 100L; // 재시도 간격 (0.1초)
+  private static final long MAX_WAIT_TIME = 3000L; // 최대 대기 시간 (3초)
+  private static final String PARTY_COUNT_KEY_PREFIX = "party_count:";
 
   // 파티 생성
   public PartyCreateResponse createParty(AuthUserInfo userInfo, PartyCreateRequest request) {
@@ -52,6 +61,58 @@ public class PartyService {
     processTags(hashtags, party);
 
     return buildCreateResponse(userInfo, party, hashtags);
+  }
+
+  // 파티 참가
+  @Transactional
+  public PartyJoinResponse joinParty(AuthUserInfo userInfo, Long id) {
+    String lockKey = "partyId:" + id;
+    String lockValue = String.valueOf(id);
+
+    try {
+      acquireLock(lockKey, lockValue); // 락 획득
+      validateUser(userInfo); // 사용자 검증
+
+      // 파티 검증
+      Party party = partyRepository.findById(id).orElseThrow(() ->
+          new CustomException("해당 파티가 존재하지 않습니다.", "PARTY#2_001", HttpStatus.NOT_FOUND));
+
+      String redisKey = PARTY_COUNT_KEY_PREFIX + id;
+      String cachedCount = redisTemplate.opsForValue().get(redisKey);
+
+      if (cachedCount == null) {
+        redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCountMax()));
+        cachedCount = String.valueOf(party.getCountMax());
+      }
+
+      int redisCount = Integer.parseInt(cachedCount);
+      if (redisCount <= 0) {
+        throw new CustomException("PARTY#4_001",
+            "해당 파티의 인원수가 가득 찼습니다.",
+            HttpStatus.CONFLICT);
+      }
+
+      redisTemplate.opsForValue().set(redisKey, String.valueOf(redisCount + 1));
+      User referenceUser = userRepository.getReferenceById(userInfo.getId());
+      Party referenceParty = partyRepository.getReferenceById(id);
+
+      PartyMember newMember = PartyMember.builder()
+          .memberType(MemberType.MEMBER)
+          .user(referenceUser)
+          .party(referenceParty)
+          .build();
+      partyMemberRepository.save(newMember);
+
+      if (party.getCount() + 1 == party.getCountMax()) {
+        party.updateStatus(PartyStatus.FULL);
+        syncStatusToDatabase(party, PartyStatus.FULL);
+      }
+
+      return buildJoinResponse(party, newMember);
+
+    } finally {
+      releaseLock(lockKey, lockValue); // 락 해제
+    }
   }
 
   // 파티 전체 조회
@@ -103,6 +164,20 @@ public class PartyService {
         .tags(hashtags)
         .createdAt(party.getCreatedAt())
         .updatedAt(party.getUpdatedAt())
+        .build();
+  }
+
+  public PartyJoinResponse buildJoinResponse(Party party, PartyMember newMember) {
+    return PartyJoinResponse.builder()
+        .id(party.getId())
+        .leaderNickname(party.getLeaderNickname())
+        .name(party.getName())
+        .description(party.getDescription())
+        .count(party.getCount())
+        .countMax(party.getCountMax())
+        .passwordStatus(party.isPasswordStatus())
+        .status(party.getStatus())
+        .createdAt(newMember.getCreatedAt())
         .build();
   }
 
@@ -239,5 +314,44 @@ public class PartyService {
     } else {
       party.updateStatus(PartyStatus.OPEN);
     }
+  }
+
+  /**
+   * Lock 관련 로직
+   */
+  public void acquireLock(String lockKey, String lockValue) {
+    long startTime = System.currentTimeMillis();
+    try {
+      while (!redisTemplate.opsForValue()
+          .setIfAbsent(lockKey, lockValue, LOCK_TIMEOUT, TimeUnit.MILLISECONDS)) {
+        if (System.currentTimeMillis() - startTime > MAX_WAIT_TIME) {
+          throw new CustomException("PARTY#5_003", "락 획득 실패: 대기 시간이 초과되었습니다.",
+              HttpStatus.REQUEST_TIMEOUT);
+        }
+        Thread.sleep(RETRY_DELAY);
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new CustomException("PARTY#5_004", "락 대기 중 인터럽트 발생",
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public void releaseLock(String lockKey, String lockValue) {
+    try {
+      String currentValue = redisTemplate.opsForValue().get(lockKey);
+      if (lockValue.equals(currentValue)) {
+        redisTemplate.delete(lockKey);
+      }
+    } catch (Exception e) {
+      throw new CustomException("PARTY#5_005", "락 해제 중 오류 발생",
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  // Redis에서 방 상태 DB로 동기화
+  public void syncStatusToDatabase(Party party, PartyStatus status) {
+    party.updateStatus(status); // DB의 쿠폰 수량 업데이트
+    partyRepository.save(party); // DB에 저장
   }
 }
