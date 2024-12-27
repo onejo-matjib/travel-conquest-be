@@ -80,6 +80,7 @@ public class PartyService {
   }
 
   // 파티 삭제
+  @Transactional
   public void deleteParty(AuthUserInfo userInfo, Long id) {
     Party party = validatePartyLeader(userInfo, id);
     partyRepository.delete(party);
