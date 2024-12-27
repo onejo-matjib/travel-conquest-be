@@ -17,7 +17,7 @@ public class PartyUpdateRequest {
   private String description;
 
   @NotNull(message = "최대 인원 수는 필수입니다")
-  @Range(min = 1, max = 30, message = "최소 인원은 1명, 최대 인원은 30명입니다.")
+  @Range(min = 2, max = 30, message = "최소 인원은 2명, 최대 인원은 30명입니다.")
   private int countMax;
 
   @NotNull(message = "비밀번호 활성화 선택은 필수입니다.")
