@@ -1,5 +1,6 @@
 package com.sparta.travelconquestbe.domain.subscription.entity;
 
+import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Subscription {
+public class Subscription extends TimeStampCreated {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
