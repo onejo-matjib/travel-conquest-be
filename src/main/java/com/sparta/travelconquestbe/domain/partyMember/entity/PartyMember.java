@@ -43,4 +43,8 @@ public class PartyMember extends TimeStampCreateUpdate {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "party_id")
   private Party party;
+
+  public void chageMemberLeader(MemberType memberType) {
+    this.memberType = memberType;
+  }
 }
