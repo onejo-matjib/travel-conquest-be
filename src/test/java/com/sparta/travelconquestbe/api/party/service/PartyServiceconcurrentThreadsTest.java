@@ -28,7 +28,7 @@
 //
 //@Testcontainers
 //@SpringBootTest
-//public class PartyServiceTest {
+//public class PartyServiceconcurrentThreadsTest {
 //
 //  @Autowired
 //  private PartyService partyService;
