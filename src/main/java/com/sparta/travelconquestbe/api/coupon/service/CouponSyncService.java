@@ -1,4 +1,4 @@
-package com.sparta.travelconquestbe.config;
+package com.sparta.travelconquestbe.api.coupon.service;
 
 import com.sparta.travelconquestbe.domain.coupon.repository.CouponRepository;
 import com.sparta.travelconquestbe.domain.mycoupon.repository.MyCouponRepository;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class CouponScheduler {
+public class CouponSyncService {
 
   private final CouponRepository couponRepository;
   private final MyCouponRepository myCouponRepository;
@@ -48,7 +48,7 @@ public class CouponScheduler {
   // 쿠폰 DB 동기화
   @Scheduled(cron = "0 00 00 * * *")
   @Transactional
-  public void syncRedisToDatabase() {
+  public void syncRedisToCouponDatabase() {
     log.info("Redis 데이터를 DB와 동기화 시작...");
 
     // DB의 모든 쿠폰 조회
