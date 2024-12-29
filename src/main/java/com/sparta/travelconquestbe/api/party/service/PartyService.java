@@ -83,6 +83,7 @@ public class PartyService {
   @Transactional
   public void deleteParty(AuthUserInfo userInfo, Long id) {
     Party party = validatePartyLeader(userInfo, id);
+    partyMemberRepository.deletePartyMembersByPartyId(party.getId());
     partyRepository.delete(party);
   }
 
