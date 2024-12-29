@@ -60,6 +60,10 @@ public class PartyService {
     List<String> hashtags = extractHashtags(request.getTags());
     processTags(hashtags, party);
 
+    // Redis에 초기 파티 참가 인원 설정
+    String redisKey = PARTY_COUNT_KEY_PREFIX + party.getId();
+    redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCount()), 1, TimeUnit.HOURS);
+
     return buildCreateResponse(userInfo, party, hashtags);
   }
 
@@ -71,31 +75,19 @@ public class PartyService {
 
     try {
       acquireLock(lockKey, lockValue); // 락 획득
-      validateUser(userInfo); // 사용자 검증
+      validateUser(userInfo);
 
       // 파티 검증
       Party party = partyRepository.findById(id).orElseThrow(() ->
           new CustomException("해당 파티가 존재하지 않습니다.", "PARTY#2_001", HttpStatus.NOT_FOUND));
 
+      // Redis 값 검증 및 증가
       String redisKey = PARTY_COUNT_KEY_PREFIX + id;
-      String cachedCount = redisTemplate.opsForValue().get(redisKey);
+      Long redisCount = incrementRedisPartyCount(redisKey, party.getCountMax());
 
-      if (cachedCount == null) {
-        redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCountMax()));
-        cachedCount = String.valueOf(party.getCountMax());
-      }
-
-      int redisCount = Integer.parseInt(cachedCount);
-      if (redisCount <= 0) {
-        throw new CustomException("PARTY#4_001",
-            "해당 파티의 인원수가 가득 찼습니다.",
-            HttpStatus.CONFLICT);
-      }
-
-      redisTemplate.opsForValue().set(redisKey, String.valueOf(redisCount + 1));
+      // 파티 멤버 추가
       User referenceUser = userRepository.getReferenceById(userInfo.getId());
       Party referenceParty = partyRepository.getReferenceById(id);
-
       PartyMember newMember = PartyMember.builder()
           .memberType(MemberType.MEMBER)
           .user(referenceUser)
@@ -103,15 +95,14 @@ public class PartyService {
           .build();
       partyMemberRepository.save(newMember);
 
-      if (party.getCount() + 1 == party.getCountMax()) {
-        party.updateStatus(PartyStatus.FULL);
+      // 파티 상태 동기화
+      if (redisCount == party.getCountMax()) {
         syncStatusToDatabase(party, PartyStatus.FULL);
       }
 
       return buildJoinResponse(party, newMember);
-
     } finally {
-      releaseLock(lockKey, lockValue); // 락 해제
+      releaseLock(lockKey, lockValue);
     }
   }
 
@@ -317,8 +308,9 @@ public class PartyService {
   }
 
   /**
-   * Lock 관련 로직
+   * 파티 참가 관련 로직
    */
+
   public void acquireLock(String lockKey, String lockValue) {
     long startTime = System.currentTimeMillis();
     try {
@@ -351,7 +343,26 @@ public class PartyService {
 
   // Redis에서 방 상태 DB로 동기화
   public void syncStatusToDatabase(Party party, PartyStatus status) {
-    party.updateStatus(status); // DB의 쿠폰 수량 업데이트
-    partyRepository.save(party); // DB에 저장
+    String redisKey = PARTY_COUNT_KEY_PREFIX + party.getId();
+    String redisCount = redisTemplate.opsForValue().get(redisKey);
+
+    if (redisCount != null) {
+      party.updateCount(Integer.parseInt(redisCount)); // Redis 값으로 count 동기화
+    }
+    party.updateStatus(status);
+    partyRepository.save(party);
+  }
+
+  public Long incrementRedisPartyCount(String redisKey, int maxCount) {
+    String cachedCount = redisTemplate.opsForValue().get(redisKey);
+    if (cachedCount == null) {
+      redisTemplate.opsForValue().set(redisKey, "0");
+    }
+    Long redisCount = redisTemplate.opsForValue().increment(redisKey, 1);
+    if (redisCount > maxCount) {
+      redisTemplate.opsForValue().decrement(redisKey, 1);
+      throw new CustomException("PARTY#4_001", "해당 파티의 인원수가 가득 찼습니다.", HttpStatus.CONFLICT);
+    }
+    return redisCount;
   }
 }

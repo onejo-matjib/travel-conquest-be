@@ -78,4 +78,8 @@ public class Party extends TimeStampCreateUpdate {
   public void updateStatus(PartyStatus status) {
     this.status = status;
   }
+
+  public void updateCount(int count) {
+    this.count = count;
+  }
 }
