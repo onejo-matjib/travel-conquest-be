@@ -29,7 +29,13 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
   Optional<Subscription> findSubscription(@Param("userId") Long userId,
       @Param("subUserId") Long subUserId);
 
+  @Query(value = """
+      SELECT * FROM subscriptions WHERE user_id = :UserId
+      """, nativeQuery = true)
   Page<Subscription> findAllByUserId(Long userId, Pageable pageable);
 
+  @Query(value = """
+      SELECT * FROM subscriptions WHERE sub_user_id = :subUserId
+      """, nativeQuery = true)
   Page<Subscription> findAllBySubUserId(Long subUserId, Pageable pageable);
 }
