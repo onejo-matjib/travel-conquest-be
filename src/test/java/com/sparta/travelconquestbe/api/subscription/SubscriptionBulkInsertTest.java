@@ -1,3 +1,5 @@
+/* 성능 테스트를 위한 DB bulkInsert용 테스트 코드
+
 package com.sparta.travelconquestbe.api.subscription;
 
 import com.sparta.travelconquestbe.TestContainerSupport;
@@ -41,3 +43,4 @@ class SubscriptionBulkInsertTest extends TestContainerSupport {
     System.out.println("총 소요 시간(ms): " + (end - start));
   }
 }
+*/
