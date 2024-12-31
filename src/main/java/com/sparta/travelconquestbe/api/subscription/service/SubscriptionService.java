@@ -61,7 +61,10 @@ public class SubscriptionService {
   }
 
   @Transactional
-  @CacheEvict(value = "followersCache", allEntries = true)
+  @CacheEvict(value = {
+      "followingsCache",
+      "followersCache"
+  }, allEntries = true)
   public void deleteSubscription(AuthUserInfo user, Long subUserId) {
     User referenceUser = userRepository.getReferenceById(user.getId());
 
