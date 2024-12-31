@@ -7,7 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
 
   @Query(value = """
@@ -30,12 +32,12 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
       @Param("subUserId") Long subUserId);
 
   @Query(value = """
-      SELECT * FROM subscriptions WHERE user_id = :UserId
+      SELECT * FROM subscriptions WHERE user_id = :userId
       """, nativeQuery = true)
-  Page<Subscription> findAllByUserId(Long userId, Pageable pageable);
+  Page<Subscription> findAllByUserId(@Param("userId") Long userId, Pageable pageable);
 
   @Query(value = """
       SELECT * FROM subscriptions WHERE sub_user_id = :subUserId
       """, nativeQuery = true)
-  Page<Subscription> findAllBySubUserId(Long subUserId, Pageable pageable);
+  Page<Subscription> findAllBySubUserId(@Param("subUserId") Long subUserId, Pageable pageable);
 }
