@@ -17,7 +17,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -34,8 +41,24 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
-@Rollback(false) // 실제 DB 변경 확인
+@Rollback(false)
+@Testcontainers
 class SubscriptionIntegrationTest {
+
+  // MySQL 컨테이너 정의
+  @Container
+  private static final MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+      .withDatabaseName("testdb")
+      .withUsername("testuser")
+      .withPassword("testpass");
+
+  // 스프링부트 프로퍼티를 Testcontainers 컨테이너 값으로 동적 주입
+  @DynamicPropertySource
+  static void overrideProps(DynamicPropertyRegistry registry) {
+    registry.add("spring.datasource.url", mysql::getJdbcUrl);
+    registry.add("spring.datasource.username", mysql::getUsername);
+    registry.add("spring.datasource.password", mysql::getPassword);
+  }
 
   @Autowired
   private MockMvc mockMvc;
@@ -60,6 +83,7 @@ class SubscriptionIntegrationTest {
 
   @BeforeEach
   void setUp() throws Exception {
+    // 기존에 해당 이메일이 있으면 삭제 (매번 테스트를 깨끗하게 시작)
     userRepository.findByEmail("subTestA@example.com").ifPresent(userRepository::delete);
     userRepository.findByEmail("subTestB@example.com").ifPresent(userRepository::delete);
 
@@ -144,7 +168,7 @@ class SubscriptionIntegrationTest {
             .content(objectMapper.writeValueAsString(req)))
         .andExpect(status().isCreated());
 
-    // (D) A가 구독중인 목록(= Followings) 조회
+    // (D) A의 구독 목록 조회
     var followingListJson = mockMvc.perform(get("/api/subscriptions/followings?page=1&limit=10")
             .header(HttpHeaders.AUTHORIZATION, tokenA))
         .andExpect(status().isOk())
@@ -155,7 +179,6 @@ class SubscriptionIntegrationTest {
     SubscriptionListResponse followingsRes =
         objectMapper.readValue(followingListJson, SubscriptionListResponse.class);
 
-    // 구독목록: 1명이어야 함
     assertThat(followingsRes.getFollowings()).hasSize(1);
     assertThat(followingsRes.getFollowings().get(0).getSubUserId()).isEqualTo(subUserId);
 
@@ -164,11 +187,10 @@ class SubscriptionIntegrationTest {
             .header(HttpHeaders.AUTHORIZATION, tokenA))
         .andExpect(status().isNoContent());
 
-    // (F) DB 강제 동기화 & 1차 캐시 초기화
+    // (F) DB 동기화 + 1차 캐시 초기화
     entityManager.flush();
     entityManager.clear();
 
-    // 실제 DB에서 확인
     assertThat(subscriptionRepository.findAll()).isEmpty();
 
     // (G) 다시 조회해서 확인
@@ -181,6 +203,7 @@ class SubscriptionIntegrationTest {
 
     SubscriptionListResponse afterDelRes =
         objectMapper.readValue(afterDelJson, SubscriptionListResponse.class);
-    assertThat(afterDelRes.getFollowings()).isEmpty(); // 실제로 0이어야 성공
+
+    assertThat(afterDelRes.getFollowings()).isEmpty();
   }
 }
