@@ -112,27 +112,4 @@ public class BatchConfig {
     reader.setResources(s3Service.getS3ResourcesAsTempFiles("CSV/Tour2"));
     return reader;
   }
-
-
-//  // Tour2 Step 설정
-//  @Bean
-//  @JobScope
-//  public Step tour2Step(
-//      JobRepository jobRepository,
-//      @Qualifier("tour2MultiResourceItemReader") ItemReader<FieldSet> reader,
-//      @Qualifier("tour2DataProcessor") ItemProcessor<FieldSet, LocationData> processor,
-//      ItemWriter<LocationData> writer,
-//      PlatformTransactionManager platformTransactionManager,
-//      @Qualifier("taskExecutor") TaskExecutor taskExecutor) {
-//    return new StepBuilder("tour2Step", jobRepository)
-//        .<FieldSet, LocationData>chunk(1000, platformTransactionManager)
-//        .reader(reader)
-//        .processor(processor)
-//        .writer(writer)
-//        .faultTolerant()
-//        .skipPolicy(multiSkipPolicy())
-//        .transactionManager(platformTransactionManager)
-//        .taskExecutor(taskExecutor)
-//        .build();
-//  }
 }

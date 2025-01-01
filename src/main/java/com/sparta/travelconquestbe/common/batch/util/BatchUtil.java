@@ -53,18 +53,6 @@ public class BatchUtil {
     }
   }
 
-  //  public double[] convertUTMToLatLon(double utmX, double utmY) {
-  //    CRSFactory factory = new CRSFactory();
-  //    CoordinateReferenceSystem srcCrs = factory.createFromName("EPSG:5174");
-  //    CoordinateReferenceSystem dstCrs = factory.createFromName("EPSG:4326");
-  //
-  //    BasicCoordinateTransform transform = new BasicCoordinateTransform(srcCrs, dstCrs);
-  //    ProjCoordinate utmCoord = new ProjCoordinate(utmX, utmY);
-  //    ProjCoordinate latLonCoord = new ProjCoordinate();
-  //
-  //    transform.transform(utmCoord, latLonCoord);
-  //    return new double[] {latLonCoord.y, latLonCoord.x};
-  //  }
   public double[] convertUTMToLatLon(double utmX, double utmY) {
     CRSFactory factory = new CRSFactory();
     CoordinateReferenceSystem srcCrs = factory.createFromName("EPSG:5174");
