@@ -1,9 +1,7 @@
-
-
-
 package com.sparta.travelconquestbe.api.admin.service;
 
 import com.sparta.travelconquestbe.TestContainerSupport;
+import com.sparta.travelconquestbe.TravelConquestBeApplication;
 import com.sparta.travelconquestbe.api.admin.dto.respones.AdminUpdateUserResponse;
 import com.sparta.travelconquestbe.common.auth.AuthUserInfo;
 import com.sparta.travelconquestbe.domain.user.entity.User;
@@ -18,35 +16,40 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
+@SpringBootTest(classes = TravelConquestBeApplication.class)
 @Transactional
 @ExtendWith(SpringExtension.class)
 class AdminServiceTest extends TestContainerSupport {
 
-  @Autowired
-  private AdminService adminService;
+  @Autowired private AdminService adminService;
 
-  @Autowired
-  private UserRepository userRepository;
+  @Autowired private UserRepository userRepository;
 
   @Test
   public void testBanUser() {
-    User user = User.builder()
-        .email("test@example.com")
-        .password("password")
-        .name("Test User")
-        .nickname("testuser")
-        .type(UserType.USER)
-        .title(Title.TRAVELER)
-        .providerType("LOCAL")
-        .birth("19900101")
-        .build();
+    User user =
+        User.builder()
+            .email("test@example.com")
+            .password("password")
+            .name("Test User")
+            .nickname("testuser")
+            .type(UserType.USER)
+            .title(Title.TRAVELER)
+            .providerType("LOCAL")
+            .birth("19900101")
+            .build();
     userRepository.save(user);
 
-    AuthUserInfo admin = new AuthUserInfo(
-        1L, "Admin", "admin", "admin@example.com", "LOCAL",
-        "19900101", UserType.ADMIN, Title.CONQUEROR
-    );
+    AuthUserInfo admin =
+        new AuthUserInfo(
+            1L,
+            "Admin",
+            "admin",
+            "admin@example.com",
+            "LOCAL",
+            "19900101",
+            UserType.ADMIN,
+            Title.CONQUEROR);
 
     AdminUpdateUserResponse response = adminService.banUser(user.getId());
 
@@ -57,7 +60,8 @@ class AdminServiceTest extends TestContainerSupport {
     Assertions.assertEquals(UserType.USER, response.getUserType());
     Assertions.assertEquals("resign_testuser", response.getNickname());
   }
-//
+}
+
 //  @Test
 //  public void testUpdateUserLevel() {
 //    User user = User.builder()
@@ -110,4 +114,4 @@ class AdminServiceTest extends TestContainerSupport {
 //
 //    Assertions.assertEquals("ADMIN#5_002", exception.getErrorCode());
 //  }
-}
+// }

@@ -24,7 +24,6 @@ import com.sparta.travelconquestbe.domain.routelocation.repository.RouteLocation
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.enums.UserType;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
-import jakarta.validation.constraints.Positive;
 import java.time.YearMonth;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -109,7 +108,7 @@ public class RouteService {
 
   @Transactional(readOnly = true)
   public Page<RouteSearchAllResponse> routeSearchByKeyword(
-      @Positive int page, @Positive int limit, RouteSort sort, String keyword) {
+      int page, int limit, RouteSort sort, String keyword) {
     Pageable pageable = PageRequest.of(page - 1, limit);
     return routeRepository.routeSearchByKeyword(pageable, sort, keyword);
   }
