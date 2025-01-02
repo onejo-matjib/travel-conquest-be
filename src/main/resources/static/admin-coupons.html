@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 쿠폰 관리</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #4CAF50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-delete {
+      background-color: #e57373;
+      color: white;
+    }
+
+    .btn-add {
+      background-color: #4CAF50;
+      color: white;
+      float: right;
+      margin-bottom: 20px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .form-container {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .form-container input {
+      padding: 10px;
+      margin: 5px 0;
+      width: calc(33% - 10px);
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .form-container button {
+      margin-top: 10px;
+      background-color: #4CAF50;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>관리자 쿠폰 관리</h1>
+  <button class="btn btn-add" onclick="toggleForm()">+ 새 쿠폰 추가</button>
+
+  <table>
+    <thead>
+    <tr>
+      <th>쿠폰 ID</th>
+      <th>이름</th>
+      <th>설명</th>
+      <th>할인율</th>
+      <th>유효기간</th>
+      <th>남은 수량</th>
+      <th>작업</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="coupon : ${coupons}">
+      <td th:text="${coupon.id}"></td>
+      <td th:text="${coupon.name}"></td>
+      <td th:text="${coupon.description}"></td>
+      <td th:text="${coupon.discountAmount} + '%'"></td>
+      <td th:text="${coupon.validUntil}"></td>
+      <td th:text="${coupon.count}"></td>
+      <td>
+        <button class="btn btn-delete" th:data-id="${coupon.id}" onclick="deleteCoupon(this)">삭제
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- 새 쿠폰 추가 폼 -->
+  <div class="form-container" id="add-coupon-form">
+    <h2>새 쿠폰 추가</h2>
+    <form id="create-coupon-form">
+      <input type="text" id="coupon-name" placeholder="쿠폰 이름" required>
+      <input type="text" id="coupon-description" placeholder="쿠폰 설명" required>
+      <input type="number" id="coupon-discount" placeholder="할인율 (%)" required>
+      <input type="date" id="coupon-valid-until" required>
+      <input type="number" id="coupon-count" placeholder="수량" required>
+      <button type="submit" class="btn">추가</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // 폼 토글
+  function toggleForm() {
+    const form = document.getElementById('add-coupon-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // 쿠폰 삭제
+  function deleteCoupon(button) {
+    const couponId = $(button).data('id');
+    if (confirm('이 쿠폰을 삭제하시겠습니까?')) {
+      $.ajax({
+        url: `/api/admins/coupons/${couponId}`,
+        type: 'DELETE',
+        success: function () {
+          alert('쿠폰이 삭제되었습니다.');
+          location.reload();
+        },
+        error: function () {
+          alert('삭제 실패');
+        }
+      });
+    }
+  }
+
+  // 쿠폰 추가
+  $('#create-coupon-form').submit(function (e) {
+    e.preventDefault();
+    const couponData = {
+      name: $('#coupon-name').val(),
+      description: $('#coupon-description').val(),
+      discountAmount: $('#coupon-discount').val(),
+      validUntil: $('#coupon-valid-until').val(),
+      count: $('#coupon-count').val()
+    };
+    $.ajax({
+      url: '/api/admins/coupons',
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(couponData),
+      success: function () {
+        alert('쿠폰이 추가되었습니다.');
+        location.reload();
+      },
+      error: function () {
+        alert('추가 실패');
+      }
+    });
+  });
+</script>
+</body>
+</html>

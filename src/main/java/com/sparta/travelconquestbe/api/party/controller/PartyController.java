@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,5 +78,14 @@ public class PartyController {
   ) {
     return ResponseEntity.status(HttpStatus.OK)
         .body(partyService.updateParty(userInfo, id, request));
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteParty(
+      @AuthUser AuthUserInfo userInfo,
+      @PathVariable Long id
+  ) {
+    partyService.deleteParty(userInfo, id);
+    return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
 }
