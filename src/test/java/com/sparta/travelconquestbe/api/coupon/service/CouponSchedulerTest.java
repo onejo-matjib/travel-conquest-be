@@ -1,4 +1,4 @@
-//package com.sparta.travelconquestbe.config;
+//package com.sparta.travelconquestbe.api.coupon.service;
 //
 //import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 //
@@ -15,10 +15,10 @@
 //import org.springframework.data.redis.core.RedisTemplate;
 //
 //@SpringBootTest
-//class CouponSchedulerTest {
+//class CouponSynTest {
 //
 //  @Autowired
-//  private CouponScheduler couponScheduler;
+//  private CouponSyncService couponSyncService;
 //
 //  @Autowired
 //  private CouponRepository couponRepository;
@@ -67,7 +67,7 @@
 //  @Test
 //  void 만료_쿠폰_삭제_테스트() {
 //    // 스케줄러 실행
-//    couponScheduler.deleteExpiredCoupons();
+//    couponSyncService.deleteExpiredCoupons();
 //
 //    // 만료된 쿠폰이 삭제되었는지 확인
 //    List<Long> expiredCouponIds = couponRepository.findExpiredCouponIds(LocalDate.now());
