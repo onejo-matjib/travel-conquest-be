@@ -125,19 +125,6 @@ public class PartyService {
     }
   }
 
-  public void releaseLock(String lockKey, String lockValue) {
-    try {
-      String currentValue = redisTemplate.opsForValue().get(lockKey);
-      if (lockValue.equals(currentValue)) {
-        redisTemplate.delete(lockKey);
-      }
-    } catch (Exception e) {
-      throw new CustomException("PARTY#5_005", "락 해제 중 오류 발생",
-          HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
-
   // 파티 전체 조회
   public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
       String direction) {
@@ -180,7 +167,6 @@ public class PartyService {
     partyMemberRepository.deletePartyMembersByPartyId(party.getId());
     partyRepository.delete(party);
   }
-
 
   // 파티 탈퇴
   @Transactional
