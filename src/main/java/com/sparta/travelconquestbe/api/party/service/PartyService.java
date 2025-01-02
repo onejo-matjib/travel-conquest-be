@@ -81,19 +81,16 @@ public class PartyService {
       Party party = partyRepository.findById(id).orElseThrow(() ->
           new CustomException("해당 파티가 존재하지 않습니다.", "PARTY#2_001", HttpStatus.NOT_FOUND));
 
+      // Redis와 DB 동기화 확인
+      syncRedisWithDatabase(id, party);
+
       // Redis 값 검증 및 증가
       String redisKey = PARTY_COUNT_KEY_PREFIX + id;
       Long redisCount = incrementRedisPartyCount(redisKey, party.getCountMax());
 
       // 파티 멤버 추가
       User referenceUser = userRepository.getReferenceById(userInfo.getId());
-      Party referenceParty = partyRepository.getReferenceById(id);
-      PartyMember newMember = PartyMember.builder()
-          .memberType(MemberType.MEMBER)
-          .user(referenceUser)
-          .party(referenceParty)
-          .build();
-      partyMemberRepository.save(newMember);
+      PartyMember newMember = addPartyMember(referenceUser, party);
 
       // 파티 상태 동기화
       if (redisCount == party.getCountMax()) {
@@ -105,6 +102,38 @@ public class PartyService {
       releaseLock(lockKey, lockValue);
     }
   }
+
+  private PartyMember addPartyMember(User user, Party party) {
+    PartyMember newMember = PartyMember.builder()
+        .memberType(MemberType.MEMBER)
+        .user(user)
+        .party(party)
+        .build();
+    return partyMemberRepository.save(newMember);
+  }
+
+  public void syncRedisWithDatabase(Long id, Party party) {
+    String redisKey = PARTY_COUNT_KEY_PREFIX + id;
+    String redisValue = redisTemplate.opsForValue().get(redisKey);
+
+    // Redis에 값이 없으면 DB 값을 기준으로 동기화
+    if (redisValue == null) {
+      redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCount()));
+    }
+  }
+
+  public void releaseLock(String lockKey, String lockValue) {
+    try {
+      String currentValue = redisTemplate.opsForValue().get(lockKey);
+      if (lockValue.equals(currentValue)) {
+        redisTemplate.delete(lockKey);
+      }
+    } catch (Exception e) {
+      throw new CustomException("PARTY#5_005", "락 해제 중 오류 발생",
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 
   // 파티 전체 조회
   public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
@@ -329,18 +358,6 @@ public class PartyService {
     }
   }
 
-  public void releaseLock(String lockKey, String lockValue) {
-    try {
-      String currentValue = redisTemplate.opsForValue().get(lockKey);
-      if (lockValue.equals(currentValue)) {
-        redisTemplate.delete(lockKey);
-      }
-    } catch (Exception e) {
-      throw new CustomException("PARTY#5_005", "락 해제 중 오류 발생",
-          HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
-
   // Redis에서 방 상태 DB로 동기화
   public void syncStatusToDatabase(Party party, PartyStatus status) {
     String redisKey = PARTY_COUNT_KEY_PREFIX + party.getId();
@@ -354,15 +371,20 @@ public class PartyService {
   }
 
   public Long incrementRedisPartyCount(String redisKey, int maxCount) {
-    String cachedCount = redisTemplate.opsForValue().get(redisKey);
-    if (cachedCount == null) {
-      redisTemplate.opsForValue().set(redisKey, "0");
+    try {
+      String cachedCount = redisTemplate.opsForValue().get(redisKey);
+      if (cachedCount == null) {
+        redisTemplate.opsForValue().set(redisKey, "0");
+      }
+      Long redisCount = redisTemplate.opsForValue().increment(redisKey, 1);
+      if (redisCount > maxCount) {
+        redisTemplate.opsForValue().decrement(redisKey, 1);
+        throw new CustomException("PARTY#4_001", "해당 파티의 인원수가 가득 찼습니다.", HttpStatus.CONFLICT);
+      }
+      return redisCount;
+    } catch (Exception e) {
+      throw new CustomException("PARTY#4_002", "Redis 값 증가 중 오류 발생",
+          HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    Long redisCount = redisTemplate.opsForValue().increment(redisKey, 1);
-    if (redisCount > maxCount) {
-      redisTemplate.opsForValue().decrement(redisKey, 1);
-      throw new CustomException("PARTY#4_001", "해당 파티의 인원수가 가득 찼습니다.", HttpStatus.CONFLICT);
-    }
-    return redisCount;
   }
 }
