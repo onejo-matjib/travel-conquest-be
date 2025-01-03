@@ -44,8 +44,8 @@ public class PartyController {
       @AuthUser AuthUserInfo userInfo,
       @Valid @RequestBody PartyCreateRequest request
   ) {
-    PartyCreateResponse reseponse = partyService.createParty(userInfo, request);
-    return ResponseEntity.status(HttpStatus.CREATED).body(reseponse);
+    PartyCreateResponse response = partyService.createParty(userInfo, request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   // 파티 참가
