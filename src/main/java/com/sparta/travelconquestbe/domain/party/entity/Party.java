@@ -82,4 +82,12 @@ public class Party extends TimeStampCreateUpdate {
   public void updateCount(int count) {
     this.count = count;
   }
+
+  public void updateLeaderNickname(String nickname) {
+    this.leaderNickname = nickname;
+  }
+
+  public void setCount(int count) {
+    this.count = count;
+  }
 }

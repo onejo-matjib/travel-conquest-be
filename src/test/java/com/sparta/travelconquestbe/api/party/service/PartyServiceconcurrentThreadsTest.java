@@ -28,7 +28,7 @@
 //
 //@Testcontainers
 //@SpringBootTest
-//public class PartyServiceTest {
+//public class PartyServiceconcurrentThreadsTest {
 //
 //  @Autowired
 //  private PartyService partyService;
@@ -137,6 +137,8 @@
 //          // 예외 발생 시 출력
 //          System.out.println("참여 실패: " + e.getMessage());
 //        } finally {
+//          System.out.println("Success : " + success);
+//          System.out.println("fail : " + fail);
 //          latch.countDown();
 //        }
 //      });
