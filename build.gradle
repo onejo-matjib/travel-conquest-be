@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.6'
 }
@@ -17,6 +18,15 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+}
+
+application {
+    mainClassName = 'com.sparta.travelconquestbe.TravelConquestBeApplication'  // 기본 실행할 클래스
+}
+
+task runBatch(type: JavaExec) {
+    main = 'com.sparta.travelconquestbe.BatchApplication'  // 배치 클래스 실행
+    classpath = sourceSets.main.runtimeClasspath
 }
 
 repositories {
@@ -71,7 +81,7 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers:1.19.0'
     testImplementation 'org.testcontainers:mysql:1.19.0'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
     testImplementation "com.redis.testcontainers:testcontainers-redis-junit:1.6.4"
 
     // OpenFeign
@@ -84,6 +94,18 @@ dependencies {
 
     implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
 
+
+    // batch
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.batch:spring-batch-core'
+    implementation 'org.apache.commons:commons-io:1.3.2'
+
+    // selenium
+    implementation 'org.seleniumhq.selenium:selenium-java:4.27.0'
+
+    // 좌표변환
+    implementation 'org.locationtech.proj4j:proj4j:1.1.1'
 
 }
 
