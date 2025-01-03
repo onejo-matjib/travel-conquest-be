@@ -9,6 +9,8 @@ import com.sparta.travelconquestbe.domain.subscription.repository.SubscriptionRe
 import com.sparta.travelconquestbe.domain.user.entity.User;
 import com.sparta.travelconquestbe.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ public class SubscriptionService {
   private final UserRepository userRepository;
 
   @Transactional
+  @CacheEvict(value = "followingsCache", allEntries = true)
   public SubscriptionCreateResponse createSubscription(AuthUserInfo user, Long subUserId) {
     User referenceUser = userRepository.getReferenceById(user.getId());
 
@@ -58,6 +61,10 @@ public class SubscriptionService {
   }
 
   @Transactional
+  @CacheEvict(value = {
+      "followingsCache",
+      "followersCache"
+  }, allEntries = true)
   public void deleteSubscription(AuthUserInfo user, Long subUserId) {
     User referenceUser = userRepository.getReferenceById(user.getId());
 
@@ -78,6 +85,7 @@ public class SubscriptionService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "followingsCache", key = "#user.id + '_' + #page + '_' + #limit")
   public SubscriptionListResponse searchFollowings(AuthUserInfo user, int page, int limit) {
     User referenceUser = userRepository.getReferenceById(user.getId());
     PageRequest pageRequest = PageRequest.of(page - 1, limit);
@@ -89,6 +97,7 @@ public class SubscriptionService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "followersCache", key = "#user.id + '_' + #page + '_' + #limit")
   public SubscriptionListResponse searchFollowers(AuthUserInfo user, int page, int limit) {
     User referenceUser = userRepository.getReferenceById(user.getId());
     PageRequest pageRequest = PageRequest.of(page - 1, limit);
