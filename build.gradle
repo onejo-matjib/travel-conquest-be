@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.6'
 }
@@ -19,6 +20,15 @@ configurations {
     }
 }
 
+application {
+    mainClassName = 'com.sparta.travelconquestbe.TravelConquestBeApplication'  // 기본 실행할 클래스
+}
+
+task runBatch(type: JavaExec) {
+    main = 'com.sparta.travelconquestbe.BatchApplication'  // 배치 클래스 실행
+    classpath = sourceSets.main.runtimeClasspath
+}
+
 repositories {
     mavenCentral()
 }
@@ -26,29 +36,26 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-authorization-server'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    //security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-core'
 
     // QueryDSL
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
     annotationProcessor "jakarta.annotation:jakarta.annotation-api"
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-
-    // bcrypt
-    implementation 'at.favre.lib:bcrypt:0.10.2'
 
     // jwt
     compileOnly group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
@@ -63,6 +70,42 @@ dependencies {
 
     // caffeine
     implementation 'com.github.ben-manes.caffeine:caffeine:3.1.6'
+
+    // AWS S3
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation "com.amazonaws:aws-java-sdk-s3:1.12.281"
+
+    // mock
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0'
+    testImplementation 'org.testcontainers:testcontainers:1.19.0'
+    testImplementation 'org.testcontainers:mysql:1.19.0'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation "com.redis.testcontainers:testcontainers-redis-junit:1.6.4"
+
+    // OpenFeign
+    implementation platform("org.springframework.cloud:spring-cloud-dependencies:2024.0.0")
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    // websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // STOMP
+    implementation group: 'org.webjars', name: 'stomp-websocket', version: '2.3.3-1'
+
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
+
+
+    // batch
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    implementation 'org.springframework.batch:spring-batch-core'
+    implementation 'org.apache.commons:commons-io:1.3.2'
+
+    // selenium
+    implementation 'org.seleniumhq.selenium:selenium-java:4.27.0'
+
+    // 좌표변환
+    implementation 'org.locationtech.proj4j:proj4j:1.1.1'
 
 }
 

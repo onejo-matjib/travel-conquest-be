@@ -1,26 +1,33 @@
 package com.sparta.travelconquestbe.domain.subscription.entity;
 
-import com.sparta.travelconquestbe.common.entity.TimeStampCreated;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "subscriptions")
+@Table(name = "subscriptions", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id",
+    "sub_user_id"}))
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Subscription extends TimeStampCreated {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Subscription {
 
-    @Column(nullable = false)
-    private Long userId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(nullable = false)
-    private Long subUserId;
+  @Column(nullable = false)
+  private Long userId;
+
+  @Column(nullable = false)
+  private Long subUserId;
 }

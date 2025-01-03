@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(120deg, #89f7fe, #66a6ff);
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 400px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    input, select {
+      margin: 10px 0;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    button {
+      background: #66a6ff;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #5555ff;
+    }
+    .response {
+      margin-top: 20px;
+      word-wrap: break-word;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>회원가입</h1>
+  <form id="signupForm">
+    <input type="text" id="name" name="name" placeholder="이름" required>
+    <input type="text" id="nickname" name="nickname" placeholder="닉네임" required>
+    <input type="email" id="email" name="email" placeholder="이메일" required>
+    <input type="password" id="password" name="password" placeholder="비밀번호" required>
+    <input type="date" id="birth" name="birth" placeholder="생년월일" required>
+    <button type="submit">가입하기</button>
+  </form>
+  <div id="response" class="response"></div>
+</div>
+
+<script>
+  document.getElementById('signupForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+
+    try {
+      const response = await fetch('/api/users/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error(`회원가입 실패 : HTTP ${response.status}`);
+      }
+
+      const token = response.headers.get('Authorization')?.replace('Bearer ', '');
+      if (token) {
+        document.getElementById('response').innerHTML =
+            `<strong>회원가입 성공!</strong><br>JWT 토큰 : <code>${token}</code>`;
+        setTimeout(() => {
+        window.location.href = '/login.html'; // 회원가입 성공 후 이동할 페이지
+        }, 10000);
+      } else {
+        throw new Error('JWT 토큰이 반환되지 않았습니다.');
+      }
+    } catch (error) {
+      document.getElementById('response').innerText = `에러 발생 : ${error.message}`;
+    }
+  });
+</script>
+
+</body>
+</html>

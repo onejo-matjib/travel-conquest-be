@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>통합 로그인 페이지</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 80px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: #0077ff;
+      padding: 20px;
+      color: #fff;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .form-section {
+      padding: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: #0077ff;
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    input[type="submit"]:hover {
+      background: #005fd1;
+    }
+
+    .social-section {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .social-section h2 {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .social-btn {
+      display: inline-block;
+      margin: 0 5px;
+      text-decoration: none;
+      padding: 10px 15px;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .google {
+      background: #db4437;
+      color: #fff;
+    }
+
+    .kakao {
+      background: #FEE500;
+      color: #000;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #d00;
+    }
+
+    .success-msg {
+      color: #007700;
+    }
+
+    .signup-btn {
+      margin-top: 20px;
+      display: block;
+      width: auto;
+      padding: 12px;
+      background: #28a745;
+      border: none;
+      color: #fff;
+      font-size: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .signup-btn:hover {
+      background: #218838;
+    }
+
+    @media (max-width: 420px) {
+      .container {
+        margin: 40px auto;
+        width: 90%;
+      }
+      .header h1 {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>로그인</h1>
+  </div>
+  <div class="form-section">
+    <form id="localLoginForm">
+      <label for="email">이메일</label>
+      <input type="email" id="email" name="email" placeholder="이메일 입력" required>
+
+      <label for="password">비밀번호</label>
+      <input type="password" id="password" name="password" placeholder="비밀번호 입력" required>
+
+      <input type="submit" value="로그인">
+    </form>
+    <div id="message" class="message"></div>
+    <a href="signup.html" class="signup-btn">회원가입</a>
+  </div>
+
+  <div class="social-section">
+    <h2>소셜 로그인</h2>
+    <a class="social-btn google" href="/oauth2/authorization/google">Google로 로그인</a>
+    <a class="social-btn kakao" href="/api/users/login/kakao">Kakao로 로그인</a>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
