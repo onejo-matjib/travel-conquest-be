@@ -23,6 +23,7 @@ public class RouteLocationController {
       @RequestParam BigDecimal longitude,
       @RequestParam(defaultValue = "1000") long radius) // 기본값 1KM
       {
-    return ResponseEntity.ok().body(dataSetService.searchLocationsWithinRadius(latitude,longitude,radius));
+    return ResponseEntity.ok()
+        .body(dataSetService.searchLocationsWithinRadius(latitude, longitude, radius));
   }
 }
