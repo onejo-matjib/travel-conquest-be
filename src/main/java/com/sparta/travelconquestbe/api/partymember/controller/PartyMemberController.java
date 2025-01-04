@@ -28,5 +28,4 @@ public class PartyMemberController {
     partyMemberService.partyLeave(userInfo, partyId);
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
   }
-
 }

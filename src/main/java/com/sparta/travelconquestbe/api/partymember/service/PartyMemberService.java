@@ -30,9 +30,10 @@ public class PartyMemberService {
 
   // 파티 탈퇴
   @Transactional
-  public Void partyLeave(AuthUserInfo userInfo, Long id) {
-    Party party = validatePartyMember(userInfo, id);  // 해당 유저가 파티의 멤버인지 확인
-    PartyMember partyMember = partyMemberRepository.findByUserIdAndPartyId(userInfo.getId(), id)
+  public Void partyLeave(AuthUserInfo userInfo, Long partyId) {
+    Party party = validatePartyMember(userInfo, partyId);  // 해당 유저가 파티의 멤버인지 확인
+    PartyMember partyMember = partyMemberRepository.findByUserIdAndPartyId(userInfo.getId(),
+            partyId)
         .orElseThrow(
             () -> new CustomException("PARTY#3_002", "해당 파티의 맴버가 아닙니다.", HttpStatus.CONFLICT));
 
@@ -46,7 +47,7 @@ public class PartyMemberService {
       partyMemberRepository.delete(partyMember);
 
       // Redis에서 인원 수 감소
-      partyRedisService.decrementPartyCount(id);
+      partyRedisService.decrementPartyCount(partyId);
 
       // 파티 상태 동기화: 파티 상태 업데이트 (인원 수에 맞게 상태 변경)
       syncPartyStatusToRedis(party);
