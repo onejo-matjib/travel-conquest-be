@@ -12,7 +12,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
 import com.sparta.travelconquestbe.api.party.service.PartyRedisService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
-import com.sparta.travelconquestbe.domain.PartyTag.entity.QPartyTag;
 import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import com.sparta.travelconquestbe.domain.partyMember.entity.QPartyMember;
 import com.sparta.travelconquestbe.domain.tag.entity.QTag;
@@ -101,7 +100,6 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
       String direction
   ) {
     QPartyMember partyMemberAlias = QPartyMember.partyMember;
-    QPartyTag partyTagAlias = QPartyTag.partyTag;
     QTag tagAlias = QTag.tag;
 
     // 기본 파티 데이터 조회
