@@ -1,0 +1,90 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/travel-conquest?rewriteBatchedStatements=true&maxQuerySizeToLog=999999
+    username: admin
+    password: admin
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+        jdbc.batch_size: 100
+        order_inserts: true
+        order_updates: true
+
+  batch:
+    jdbc.initialize-schema: always
+    job:
+      enabled: false
+      repository.table-prefix: BATCH_
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+            scope: email,profile
+            authorization-grant-type: authorization_code
+            client-name: Google
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+
+  web:
+    resources:
+      cache:
+        period: 0
+
+logging:
+  level:
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+    org.springframework.jdbc.datasource.DataSourceTransactionManager: DEBUG
+    org.hibernate.SQL: DEBUG
+
+jwt:
+  expiration: 3600000
+  JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
+  client-secret: ${KAKAO_CLIENT_SECRET}
+
+cloud:
+  aws:
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+localdataset:
+  authkey: ${LOCAL_DATA_SET_AUTHKEY}
+
+gonggong:
+  dataset:
+    servicekey: ${GONGGONG_DATASET_SERVICEKEY}
