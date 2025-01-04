@@ -82,6 +82,11 @@ public class PartyService {
       Party party = partyRepository.findById(id).orElseThrow(() ->
           new CustomException("해당 파티가 존재하지 않습니다.", "PARTY#2_001", HttpStatus.NOT_FOUND));
 
+      // 이미 참여했는지 검증
+      if (isUserAlreadyInParty(userInfo.getId(), party)) {
+        throw new CustomException("이미 해당 파티에 참여하였습니다.", "PARTY#2_002", HttpStatus.CONFLICT);
+      }
+
       // Redis와 DB 동기화 확인
       syncRedisWithDatabase(id, party);
 
@@ -102,25 +107,6 @@ public class PartyService {
       return buildJoinResponse(party, newMember);
     } finally {
       releaseLock(lockKey, lockValue);
-    }
-  }
-
-  private PartyMember addPartyMember(User user, Party party) {
-    PartyMember newMember = PartyMember.builder()
-        .memberType(MemberType.MEMBER)
-        .user(user)
-        .party(party)
-        .build();
-    return partyMemberRepository.save(newMember);
-  }
-
-  public void syncRedisWithDatabase(Long id, Party party) {
-    String redisKey = PARTY_COUNT_KEY_PREFIX + id;
-    String redisValue = redisTemplate.opsForValue().get(redisKey);
-
-    // Redis에 값이 없으면 DB 값을 기준으로 동기화
-    if (redisValue == null) {
-      redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCount()));
     }
   }
 
@@ -177,7 +163,6 @@ public class PartyService {
       redisTemplate.opsForValue().set(redisKey, String.valueOf(currentCount - 1));
     }
   }
-
 
   public PartyCreateResponse buildCreateResponse(AuthUserInfo userInfo, Party party,
       List<String> hashtags) {
@@ -350,6 +335,29 @@ public class PartyService {
   /**
    * 파티 참가 관련 로직
    */
+
+  public boolean isUserAlreadyInParty(Long userId, Party party) {
+    return partyMemberRepository.existsByUserIdAndPartyId(userId, party.getId());
+  }
+
+  public PartyMember addPartyMember(User user, Party party) {
+    PartyMember newMember = PartyMember.builder()
+        .memberType(MemberType.MEMBER)
+        .user(user)
+        .party(party)
+        .build();
+    return partyMemberRepository.save(newMember);
+  }
+
+  public void syncRedisWithDatabase(Long id, Party party) {
+    String redisKey = PARTY_COUNT_KEY_PREFIX + id;
+    String redisValue = redisTemplate.opsForValue().get(redisKey);
+
+    // Redis에 값이 없으면 DB 값을 기준으로 동기화
+    if (redisValue == null) {
+      redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCount()));
+    }
+  }
 
   public void acquireLock(String lockKey, String lockValue) {
     long startTime = System.currentTimeMillis();

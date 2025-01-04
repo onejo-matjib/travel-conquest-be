@@ -19,6 +19,8 @@ public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> 
 
   List<PartyMember> findByPartyIdAndMemberTypeNot(Long id, MemberType memberType);
 
+  boolean existsByUserIdAndPartyId(Long userId, Long id);
+
   @Modifying
   @Transactional
   @Query("DELETE FROM PartyMember pm WHERE pm.party.id = :id")
