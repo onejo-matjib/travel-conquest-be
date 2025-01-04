@@ -1,21 +1,25 @@
+<div align="center">
 수정중
+    
 # 여행 정복 - 여정 
 ![메인 1차](https://github.com/user-attachments/assets/568362c4-7717-4d47-8f3c-89d8416612db)<br>
 
-### "여행 정복"은 회원들이 경로(Route)를 작성하고 공유하며, 다른 회원은 해당 경로를 즐겨찾기(Bookmark), 리뷰(Review), 채팅, 파티모집 기능을 통해 소통할 수 있는 서비스입니다.
+### "여행 정복"은<br> 회원들이 경로(Route)를 작성하고 공유하며,<br> 다른 회원은 해당 경로를 즐겨찾기(Bookmark), 리뷰(Review), 채팅, 파티모집 등의<br> 기능을 통해 소통할 수 있는 서비스입니다.<br>
 
 ----------------------------------------------------
-목차 (Table of Contents) - 하이퍼링크? 해당위치로
-1. 프로젝트 개요
-2. 주요 기능
-3. 사용 기술
-4. 프로젝트 구조
-5. 설치 및 실행 방법
-6. 와이어 프레임
-7. API 문서
-8. ERD
-9. 기타 참고 ? 시연영상 ?
-10. 추 후 개선 방
+목차 (Table of Contents) - 하이퍼링크? 해당위치로<br>
+
+ 1.프로젝트 개요<br>
+ 2.주요 기능<br>
+ 3.사용 기술<br>
+ 4.프로젝트 구조<br>
+ 5.설치 및 실행 방법<br>
+ 6.와이어 프레임<br>
+ 7.API 문서<br>
+ 8.ERD<br>
+ 9.기타 참고 ? 시연영상 ?<br>
+10.추 후 개선 방향<br>
+
 ---------------------------------------------------
 ## 1. 프로젝트 개요 <br>
 ### 프로젝트 기간
@@ -25,8 +29,14 @@
 유저들이 자신의 여행 경로를 직접 생성/공유하고, 다른 유저는 해당 경로를 즐겨찾기, 리뷰로 피드백하며,<br>
 앱 내부의 여러 기능(쿠폰, 채팅, 파티, 구독 등)을 통해 커뮤니티를 형성하게 하는 것이 목표입니다.<br>
 
-+++구성원 리더/부리더/팀원<br>
-이름에 깃헙 하이퍼링크
+### 팀 소개
+| 이름<br>(GitHub) | 역할 |담당 기능|
+|-----|-----|-----|
+|<div align="center">[조성준](https://github.com/matino0216](https://github.com/seongjun1130))|Leader| 담당 </div> |
+|<div align="center">[김명훈](https://github.com/LEEJI-HOON1](https://github.com/anewsdev))|SubLeader| 담당 </div> |
+|<div align="center">[신진오](https://github.com/lastdove](https://github.com/lastdove))|Member| 담당 </div> |
+|<div align="center">[윤영한](https://github.com/seongjun1130](https://github.com/0han7))|Member| 담당 </div> |
+|<div align="center">[홍주영](https://github.com/92jy38)|Member| 담당 </div> |
 
 --------------------------------------------------
 ## 2. 주요 기능
@@ -35,7 +45,7 @@
     - 다른 사용자가 생성한 루트를 조회하고, 키워드(제목, 내용, 작성자, 장소)로 검색할 수 있습니다.
     - 인기 루트 순위(월 별, 이번 달 실시간, 역대 TOP 100)를 제공합니다.
     - 각 여행 경로에 대한 상세 정보(경유지 목록, 리뷰, 동선)를 제공합니다.
-    - 관리자는 일반 사용자가 생성한 경로를 심사하고 승인/거절 할 수 있습니다. <br>
+    - 관리자는 일반 사용자가 생성한 경로를 심사하고 승인/거절 할 수 있습니다.
 #### - 사용자
     - 이메일/비밀번호를 사용한 자체 회원가입 및 로그인 기능을 제공합니다.
     - Kakao, Google 소셜 로그인을 지원합니다.
@@ -57,8 +67,45 @@
 #### - 알림
     - 사용자에게 실시간 알림을 제공합니다.
 #### - 파티
+
 -----------------------------------------------------
-3. 사용 기술 및 개발 환경 -> 기술스택
+## 3. 사용 기술 및 개발 환경 -> 기술스택
+
+
+### 🖥 language & Server 🖥
+
+<img src="https://img.shields.io/badge/intellij idea-207BEA?style=for-the-badge&logo=intellij%20idea&logoColor=white"><img src="https://img.shields.io/badge/JDK 17-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a>
+ <br>
+<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white"><img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+ <br>
+<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"><img src="https://img.shields.io/badge/ 8.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a> <br>
+<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"><img src="https://img.shields.io/badge/3.0.5-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a>
++ Java
+
+Spring Boot
+Spring Data JPA
+Spring Data JDBC
+Spring Security + JWT
+Spring Validation
+OAuth2
+QueryDSL
+Spring Batch
+Docker
+Intellij IDEA
+Git / GitHub
+Notion / Slack / ZEP
+AWS ECS Fargate
+AWS S3
+Jmeter
+Prometheus / Grafana
+GitHub Actions
+Nginx
+
+### 👏 Tools etc. 👏
+<img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"><img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <br> 
+<img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=FFFFFF"/></a><img src="https://img.shields.io/badge/slack-FE5196?style=for-the-badge&logo=slack&logoColor=FFFFFF"/></a>
+
+
 Language/Framework: Java 17, JDK 17, Spring Boot
 Build Tool: Gradle
 Database: MySQL 8.0
@@ -99,69 +146,90 @@ InfraStructure	Prometheus / Grafana	애플리케이션 모니터링
 InfraStructure	GitHub Actions	CI / CD 자동화 관리
 InfraStructure	Nginx	웹서버
 
----------------------------------------------------
+<HR>
+</div>
 
-4. 프로젝트 구조
+## 4. 프로젝트 구조
   - 아키텍처
 ![아키텍처이미지](https://github.com/user-attachments/assets/2a07852a-b86b-4772-9bd6-3caa4ef8f5d9)
 <br>
 
   - 패키지 구조
-```javascript
-├── src
-│   ├── main
-│   │   ├── java
-│   │   │   └── com.sparta.travelconquestbe
-│   │   │       ├── TravelConquestBeApplication.java
-│   │   │       ├── api
-│   │   │       │   ├── admin
-│   │   │       │   ├── auth
-│   │   │       │   ├── bookmark
-│   │   │       │   ├── chat
-│   │   │       │   ├── client
-│   │   │       │   ├── coupon
-│   │   │       │   ├── mycoupon
-│   │   │       │   ├── notification
-│   │   │       │   ├── review
-│   │   │       │   ├── route
-│   │   │       │   ├── routelocation
-│   │   │       │   └── subscription
-│   │   │       ├── common
-│   │   │       │   ├── annotation
-│   │   │       │   ├── aspect
-│   │   │       │   ├── auth
-│   │   │       │   ├── config
-│   │   │       │   ├── entity
-│   │   │       │   ├── exception
-│   │   │       │   ├── handler
-│   │   │       │   └── validator
-│   │   │       ├── config
-│   │   │       └── domain
-│   │   │            ├── bookmark
-│   │   │            ├── chat
-│   │   │            ├── coupon
-│   │   │            ├── mycoupon
-│   │   │            ├── notification
-│   │   │            ├── party
-│   │   │            ├── report
-│   │   │            ├── review
-│   │   │            ├── route
-│   │   │            ├── routelocation
-│   │   │            ├── subscription
-│   │   │            └── user
-│   │   │
-│   │   └── resources
-│   │       ├── templates
-│   │       ├── static
-│   │       └── application.properties
-│   └── test
-│       └── java
-│           └── ... (testCode)
-└── build.gradle
-```
+```plaintext
+com.sparta.travelconquestbe
+├── TravelConquestBeApplication.java
 
+├── api
+│   ├── admin
+│   ├── auth
+│   ├── bookmark
+│   ├── chat
+│   ├── client
+│   ├── coupon
+│   ├── mycoupon
+│   ├── notification
+│   ├── party
+│   ├── review
+│   ├── route
+│   ├── routelocation
+│   ├── subscription
+│   └── user
+
+├── common
+│   ├── annotation
+│   ├── aspect
+│   ├── auth
+│   ├── batch
+│   │   ├── itemprocessor
+│   │   ├── itemreader
+│   │   ├── itemwriter
+│   │   ├── Policy
+│   │   └── util
+│   ├── config
+│   │   ├── filter
+│   │   └── jwt
+│   ├── entity
+│   ├── exception
+│   ├── handler
+│   └── resolver
+
+├── config
+│   ├── AppConfig
+│   ├── CacheConfig
+│   ├── QueryDslConfig
+│   ├── S3Config
+│   ├── SecurityConfig
+│   ├── WebConfig
+│   ├── WebMvcConfig
+│   └── WebSocketConfig
+
+├── domain
+│   ├── admin
+│   ├── bookmark
+│   ├── chat
+│   ├── coupon
+│   ├── locationdata
+│   ├── mycoupon
+│   ├── notification
+│   ├── party
+│   ├── partyMember
+│   ├── tag
+│   ├── report
+│   ├── review
+│   ├── route
+│   ├── routelocation
+│   ├── subscription
+│   ├── user
+│   └── PartyTag
+
+└── resources
+    ├── application.yml
+    └── ...
+```
 ----------------------------------------------
-5. 설치 및 실행 방법???
+<div align="center">
+    
+## 5. 설치 및 실행 방법???
 프로젝트 클론
 - git clone
 https://github.com/onejo-matjib/travel-conquest-be.git
@@ -171,25 +239,225 @@ properties
 spring.datasource.url=jdbc:mysql://localhost:3306/travel-conquest
 spring.datasource.username=admin
 spring.datasource.password=admin
-# JWT
 JWT_SECRET_KEY=
-# Kakao
 KAKAO_CLIENT_ID=
 추가++
-# AWS
 AWS_ACCESS_KEY=
 AWS_SECRET_KEY=
 버킷
-접속 확인???
 브라우저에서 http://localhost:8080 접근 후, 정상 동작 확인 +++
+
 -----------------------------------------------------------
-6. 와이어 프레임
-이미지 + 링크
+## 6. 와이어 프레임
+이미지 + 링크?
+
 ------------------------------------------------------
-7. API 문서
+## 7. API 문서
 postman publishing
+
 --------------------------------------------------
-8. ERD - 머메이드로? 확대가능하게?
+
+## 8. ERD
+
+```mermaid
+erDiagram
+Admin {
+    Long id PK
+    string email "UNIQUE, NOT NULL, LENGTH=50"
+    string password "NOT NULL, LENGTH=255"
+    datetime createdAt "Auditing: 생성 시간"
+    datetime updatedAt "Auditing: 수정 시간"
+    datetime deletedAt "삭제 시각"
+}
+
+User {
+    Long id PK
+    string name "NOT NULL, LENGTH=30"
+    string nickname "NOT NULL, LENGTH=30"
+    string email "UNIQUE, NOT NULL, LENGTH=50"
+    string password "NOT NULL, LENGTH=255"
+    string birth "NOT NULL, LENGTH=10"
+    string providerId "NULLABLE (소셜 로그인)"
+    string providerType "NOT NULL (LOCAL or SOCIAL)"
+    string type "USER / AUTHENTICATED_USER / ADMIN"
+    string title "TRAVELER / PIONEER / CONQUEROR"
+    int subscriptionCount "기본값 = 0"
+    datetime suspendedUntil "정지 풀리는 시각 (nullable)"
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+    datetime deletedAt "탈퇴 시각"
+}
+
+UserUpgradeRequest {
+    Long id PK
+    string status "PENDING / APPROVED / REJECTED"
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+}
+
+Route {
+    Long id PK
+    string title "NOT NULL"
+    text description "NOT NULL"
+    Long totalDistance "기본값 = 0"
+    int money "기본값 = 0"
+    string estimatedTime "기본값 = '0'"
+    string status "UNAUTHORIZED / AUTHORIZED"
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+}
+
+RouteLocation {
+    Long id PK
+    int sequence "NOT NULL"
+    string locationName "NOT NULL, LENGTH=255"
+    decimal latitude "NOT NULL"
+    decimal longitude "NOT NULL"
+    string mediaUrl "S3 경로 (nullable 가능)"
+    datetime createdAt "Auditing"
+}
+
+Review {
+    Long id PK
+    int rating "1~5"
+    text comment "리뷰 내용"
+    datetime createdAt "Auditing"
+}
+
+Bookmark {
+    Long id PK
+    datetime createdAt "Auditing"
+}
+
+LocationData {
+    Long id PK
+    string locationName
+    decimal latitude "NOT NULL"
+    decimal longitude "NOT NULL"
+    date baseDate "수집 기준일"
+    string address "주소"
+}
+
+Party {
+    Long id PK
+    string leaderNickname
+    string name
+    string description
+    int count
+    int countMax
+    string status "OPEN / FULL"
+    boolean passwordStatus "true/false"
+    string password
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+}
+
+PartyMember {
+    Long id PK
+    string memberType "LEADER / MEMBER"
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+}
+
+PartyTag {
+    Long id PK
+    datetime createdAt "Auditing"
+}
+
+Tag {
+    Long id PK
+    string keyword "UNIQUE"
+    datetime createdAt "Auditing"
+}
+
+Subscription {
+    Long id PK
+    Long userId "FK -> User.id"
+    Long subUserId "FK -> User.id"
+}
+
+ChatRoom {
+    Long id PK
+    string title
+    int maxUsers
+    string password
+    boolean hasPassword
+    int currentUsers
+}
+
+Chat {
+    Long id PK
+    string nickname
+    string message
+    datetime createdAt "Auditing"
+}
+
+Coupon {
+    Long id PK
+    string name
+    string description
+    string type "NORMAL / PREMIUM / RANDOM"
+    int discountAmount
+    date validUntil
+    int count
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+}
+
+MyCoupon {
+    Long id PK
+    string code "UNIQUE"
+    string status "AVAILABLE / UNAVAILABLE"
+    datetime createdAt "Auditing"
+    datetime updatedAt "Auditing"
+}
+
+Notification {
+    Long id PK
+    string message
+    string notificationType "SUSPENSION, SUSPENSION_LIFTED, etc."
+    datetime createdAt "Auditing"
+}
+
+Report {
+    Long id PK
+    Long reporterId "신고자"
+    string reportCategory "ROUTE / REVIEW / CHAT"
+    string reason "PROFANITY / SPAM / ... etc."
+    datetime checkedAt "신고 처리 시각"
+    Long adminId "처리한 admin"
+    datetime createdAt "Auditing"
+}
+
+%% Relationships
+User ||--o{ UserUpgradeRequest : "1:N"
+Route ||--o{ UserUpgradeRequest : "1:N"
+User ||--o{ Route : "1:N"
+Route ||--o{ RouteLocation : "1:N"
+Route ||--o{ Review : "1:N"
+Route ||--o{ Bookmark : "1:N"
+User ||--o{ Review : "1:N"
+User ||--o{ Bookmark : "1:N"
+Party ||--o{ PartyMember : "1:N"
+Party ||--o{ PartyTag : "1:N"
+PartyMember ||--o{ Party : "N:1"
+PartyMember ||--o{ User : "N:1"
+PartyTag ||--o{ Party : "N:1"
+PartyTag ||--o{ Tag : "N:1"
+User ||--o{ Subscription : "as follower"
+User ||--o{ Subscription : "as following"
+ChatRoom ||--o{ Chat : "1:N"
+Coupon ||--o{ MyCoupon : "1:N"
+User ||--o{ MyCoupon : "1:N"
+User ||--o{ Notification : "1:N"
+User ||--o{ Report : "1:N"
+```
 --------------------
-9. 기타+++
+## 9. 기타+++
 노션 링크???
+
+---------------------
+## 10. 추후 개선 방향
+
+
+</div>
