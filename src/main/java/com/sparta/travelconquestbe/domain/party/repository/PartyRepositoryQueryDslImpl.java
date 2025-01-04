@@ -10,6 +10,7 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.travelconquestbe.api.party.dto.response.PartySearchResponse;
+import com.sparta.travelconquestbe.api.party.service.PartyRedisService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import java.util.ArrayList;
@@ -26,13 +27,11 @@ import org.springframework.stereotype.Repository;
 public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
 
   private final JPAQueryFactory jpaQueryFactory;
+  private final PartyRedisService partyRedisService;
 
   @Override
-  public Page<PartySearchResponse> searchAllPartise(
-      Pageable pageable,
-      PartySort partySort,
-      String direction
-  ) {
+  public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
+      String direction) {
     QueryResults<Tuple> results = jpaQueryFactory
         .select(
             party.id,
@@ -52,9 +51,16 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
         .limit(pageable.getPageSize())
         .fetchResults();
 
-    // tags를 별도로 처리하고 DTO 빌더로 매핑
     List<PartySearchResponse> content = results.getResults().stream().map(tuple -> {
       Long partyId = tuple.get(party.id);
+
+      // Redis에서 인원 수 가져오기
+      int count = partyRedisService.getPartyCount(partyId);
+      if (count == 0) {
+        // Redis에 값이 없으면 DB에서 가져오고 Redis에 저장
+        count = tuple.get(party.count);
+        partyRedisService.setPartyCount(partyId, count);
+      }
 
       // 태그 리스트 조회
       List<String> tags = jpaQueryFactory.select(tag.keyword)
@@ -68,7 +74,7 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
           .leaderNickname(tuple.get(party.leaderNickname))
           .name(tuple.get(party.name))
           .description(tuple.get(party.description))
-          .count(tuple.get(party.count))
+          .count(count)  // Redis 값으로 count 설정
           .countMax(tuple.get(party.countMax))
           .status(tuple.get(party.status))
           .passwordStatus(tuple.get(party.passwordStatus))
@@ -81,6 +87,7 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
     long totalCount = results.getTotal();
     return new PageImpl<>(content, pageable, totalCount);
   }
+
 
   // 다중 정렬 조건
   private List<OrderSpecifier<?>> getOrderSpecifiers(PartySort partySort, String direction) {
