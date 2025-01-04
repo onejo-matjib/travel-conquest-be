@@ -116,6 +116,13 @@ public class PartyService {
     return partyRepository.searchAllPartise(pageable, partySort, direction);
   }
 
+  // 소속된 파티 전체 조회
+  public Page<PartySearchResponse> searchAllMyPartise(Long userId, Pageable pageable,
+      PartySort partySort,
+      String direction) {
+    return partyRepository.searchAllMyPartise(userId, pageable, partySort, direction);
+  }
+
   // 파티 수정
   @Transactional
   public PartyUpdateResponse updateParty(AuthUserInfo userInfo, Long id,

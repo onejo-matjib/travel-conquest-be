@@ -76,6 +76,25 @@ public class PartyController {
         .body(partyService.searchAllPartise(pageable, partySort, direction));
   }
 
+  @GetMapping("/mypartise") // 최신순 정렬
+  public ResponseEntity<Page<PartySearchResponse>> searchAllMyPartise(
+      @AuthUser AuthUserInfo userInfo,
+      @Positive @RequestParam(defaultValue = "1", value = "page") int page,
+      @Positive @RequestParam(defaultValue = "10", value = "limit") int limit,
+      @ValidEnum(enumClass = PartySort.class, message = "정렬할 컬럼값을 정확하게 입력해주세요.")
+      @RequestParam(defaultValue = "CREATED_AT") String sort,
+      @RequestParam(defaultValue = "DESC") String direction) {
+
+    Pageable pageable = PageRequest.of(
+        page - 1,
+        limit);
+
+    PartySort partySort = PartySort.valueOf(sort.toUpperCase());
+
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(partyService.searchAllMyPartise(userInfo.getId(), pageable, partySort, direction));
+  }
+
   @PutMapping("/{id}")
   public ResponseEntity<PartyUpdateResponse> updateParty(
       @AuthUser AuthUserInfo userInfo,

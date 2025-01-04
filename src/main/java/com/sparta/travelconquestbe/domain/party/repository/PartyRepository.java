@@ -14,6 +14,9 @@ public interface PartyRepository extends JpaRepository<Party, Long>, PartyReposi
   Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
       String direction);
 
+  Page<PartySearchResponse> searchAllMyPartise(Long userId, Pageable pageable, PartySort partySort,
+      String direction);
+
   @Query("SELECT p.id FROM Party p")
   List<Long> findAllPartyId();
 }

@@ -9,4 +9,7 @@ public interface PartyRepositoryQueryDsl {
 
   Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
       String direction);
+
+  Page<PartySearchResponse> searchAllMyPartise(Long userId, Pageable pageable, PartySort partySort,
+      String direction);
 }
