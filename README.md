@@ -7,21 +7,21 @@
 ### "여행 정복"은<br> 회원들이 경로(Route)를 작성하고 공유하며,<br> 다른 회원은 해당 경로를 즐겨찾기(Bookmark), 리뷰(Review), 채팅, 파티모집 등의<br> 기능을 통해 소통할 수 있는 서비스입니다.<br>
 
 ----------------------------------------------------
-목차 (Table of Contents) - 하이퍼링크? 해당위치로<br>
+### 목차 (Table of Contents)<br>
 
- 1.[프로젝트 개요](#프로젝트-개요) <br>
- 2.[주요 기능](#주요-기능)<br>
- 3.[사용 기술](#사용-기술)<br>
- 4.[프로젝트 구조](#프로젝트-구조)<br>
- 5.[와이어 프레임](#와이어-프레임)<br>
- 6.[API 문서](#API-문서)<br>
- 7.[ERD](#ERD)<br>
- 8.[시연 영상](#시연-영상)
- 9.[추후 개선 방향](#추후-개선-방향)<br>
- 10.[기타 참고 문서](#기타-참고-문서)<br>
-
+ [1. 프로젝트 개요](#프로젝트-개요) <br>
+ [2. 주요 기능](#주요-기능) <br>
+ [3. 사용 기술](#사용-기술) <br>
+ [4. 프로젝트 구조](#프로젝트-구조) <br>
+ [5. 와이어 프레임](#와이어-프레임) <br>
+ [6. API 문서](#API-문서) <br>
+ [7. ERD](#ERD) <br>
+ [8. 시연 영상](#시연-영상) <br>
+ [9. 추후 개선 방향](#추후-개선-방향) <br>
+ [10. 기타 참고 문서](#기타-참고-문서) <br>
 
 ---------------------------------------------------
+
 ## 1. 프로젝트 개요 <br>
 ### 프로젝트 기간
 24.12.02 ~ 25.01.07
@@ -31,14 +31,7 @@
 앱 내부의 여러 기능(쿠폰, 채팅, 파티, 구독 등)을 통해 커뮤니티를 형성하게 하는 것이 목표입니다.<br>
 
 ### 팀 소개
-| 이름<br>(GitHub) | 역할 |담당 기능|
-|-----|-----|-----|
-|<div align="center">[조성준](https://github.com/matino0216](https://github.com/seongjun1130))|Leader| 담당 </div> |
-|<div align="center">[김명훈](https://github.com/LEEJI-HOON1](https://github.com/anewsdev))|SubLeader| 담당 </div> |
-|<div align="center">[신진오](https://github.com/lastdove](https://github.com/lastdove))|Member| 담당 </div> |
-|<div align="center">[윤영한](https://github.com/seongjun1130](https://github.com/0han7))|Member| 담당 </div> |
-|<div align="center">[홍주영](https://github.com/92jy38)|Member| 담당 </div> |
-
+![image](https://github.com/user-attachments/assets/b4af5aa4-0d66-499c-8823-dcd4c5fe1531)
 </div>
 
 --------------------------------------------------
@@ -81,85 +74,37 @@
 
 ### 🖥 language & Server 🖥
 
+<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=OpenJDK&logoColor=white"><br>
 <img src="https://img.shields.io/badge/intellij idea-207BEA?style=for-the-badge&logo=intellij%20idea&logoColor=white"><img src="https://img.shields.io/badge/JDK 17-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a>
  <br>
-<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white"><img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
- <br>
-<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"><img src="https://img.shields.io/badge/ 8.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a> <br>
-<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"><img src="https://img.shields.io/badge/ 7.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a>
-+ Java
-
-Spring Boot
-Spring Data JPA
-Spring Data JDBC
-Spring Security + JWT
-Spring Validation
+<img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"><img src="https://img.shields.io/badge/Spring Security-6DB33F?style=for-the-badge&logo=Spring Security&logoColor=white"><br>
+<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"><img src="https://img.shields.io/badge/ 8.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a><br>
+<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"><img src="https://img.shields.io/badge/ 7.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a> <br>
+<img src="https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logo=JUnit5&logoColor=white"><img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white"> <br>
+<img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white"><img src="https://img.shields.io/badge/GitHub Actions-2088FF?style=for-the-badge&logo=GitHub Actions&logoColor=white"> <br>
+<img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white"><img src="https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=Amazon%20S3&logoColor=white"> <br>
+<img src="https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white"><img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white"><br>
+<img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white"><br>
++
 OAuth2
 QueryDSL
 Spring Batch
-Docker
-Intellij IDEA
-Git / GitHub
-Notion / Slack / ZEP
-AWS ECS Fargate
-AWS S3
 Jmeter
-Prometheus / Grafana
-GitHub Actions
-Nginx
 
 ### 👏 Tools etc. 👏
 <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"><img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <br> 
 <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=FFFFFF"/></a><img src="https://img.shields.io/badge/slack-FE5196?style=for-the-badge&logo=slack&logoColor=FFFFFF"/></a>
 
 
-Language/Framework: Java 17, JDK 17, Spring Boot
-Build Tool: Gradle
-Database: MySQL 8.0
-+++로깅 모니터링
-Persistence: JPA, QueryDSL
-Security: Spring Security (JWT)
-REST Client: Spring Cloud OpenFeign
-Cache: Redis, Spring Cache(Cachable)
-Local Storage SAVE
-CI/CD
-배포: AWS EC2 , Docker ???
-Deployment: AWS EC2, AWS S3(미디어 업로드)
-External Services
-카카오 지도 API: 경로 안내
-AWS S3: 파일 업로드
-OAuth2: Kakao, Google OAuth
-
-
-Language	Java	주 사용 언어 
-DB	MY SQL	Main DB
-DB	REDIS	캐싱 DB
-BackEnd	Spring Boot	애플리케이션 프레임워크
-BackEnd	Spring Data JPA	ORM 기반 데이터 엑세스 계층 구현
-BackEnd	Spring Data JDBC	Bulk Update
-BackEnd	Spring Security + JWT	인증 및 인가 관리
-BackEnd	Spring Validation	유효성 검증
-BackEnd	OAuth2	소셜 로그인 (카카오, 구글)
-BackEnd	QueryDSL	동적 쿼리 생성
-BackEnd	Spring Batch	배치 라이브러리
-BackEnd	Docker	서버별 서비스구축 도구
-Tools	Intellij IDEA	백엔드 개발 환경 / JDK 17
-Tools	Git / GitHub	버전 관리 및 협업 도구
-Tools	Notion / Slack / ZEP	협업 도구
-InfraStructure	AWS ECS Fargate	클라우드 서비스
-InfraStructure	AWS S3	파일 및 이미지 저장소
-InfraStructure	Jmeter	성능 및 부하 테스트
-InfraStructure	Prometheus / Grafana	애플리케이션 모니터링
-InfraStructure	GitHub Actions	CI / CD 자동화 관리
-InfraStructure	Nginx	웹서버
-
 <HR>
+</div>
 
 ## 4. 프로젝트 구조
-  - 아키텍처
+
+- 아키텍처
+
 ![image](https://github.com/user-attachments/assets/19c8bb3e-7b96-440f-8060-84749c6e3748)
 <br>
-</div>
     
   - 패키지 구조
 ```plaintext
@@ -233,20 +178,20 @@ com.sparta.travelconquestbe
     ├── application.yml
     └── ...
 ```
+<div align="center">
 
-</div>
 
 -----------------------------------------------------------
-## 6. 와이어 프레임
+## 5. 와이어 프레임
 이미지 + 링크?
 
 ------------------------------------------------------
-## 7. API 문서
+## 6. API 문서
 postman publishing?
 
 --------------------------------------------------
 
-## 8. ERD
+## 7. ERD
 
 ```mermaid
 erDiagram
@@ -433,6 +378,14 @@ User ||--o{ Notification : "1:N"
 User ||--o{ Report : "1:N"
 ```
 --------------------
+
+## 8. 시연영상
+
+어플리케이션의 모든 기능들에 대한 시연영상 링크 <br>
+<https://drive.google.com/drive/folders/1h7YdLhC3sfyOPiYpJ_XMOth1q9TRX2kg?hl=ko><br>
+
+------------------------------
+
 ## 9. 추후 개선 방향
 
 ![image](https://github.com/user-attachments/assets/bf9ba76f-4179-4a3c-9104-9da18840721f)
@@ -445,7 +398,7 @@ User ||--o{ Report : "1:N"
 ### - 팀 노션<br>
 <https://www.notion.so/teamsparta/2e66ca7c5175497b9bc2a4b2d49847a3><br>
 ### - 프로젝트 결과 보고서(PPT)<br>
-![image](https://github.com/user-attachments/assets/278c094f-197f-4d7a-a2e4-dc2a28ccac05)
 <https://www.canva.com/design/DAGbGAVNVTE/3C3rAd5haN_VM9PmUhsT5g/edit><br>
+![image](https://github.com/user-attachments/assets/278c094f-197f-4d7a-a2e4-dc2a28ccac05)
 
 </div>
