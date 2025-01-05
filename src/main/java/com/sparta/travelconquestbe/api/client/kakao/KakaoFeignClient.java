@@ -20,3 +20,5 @@ public interface KakaoFeignClient {
       @RequestParam("origin") String origin,
       @RequestParam("destination") String destination);
 }
+
+
