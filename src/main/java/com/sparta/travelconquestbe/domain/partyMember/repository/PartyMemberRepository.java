@@ -2,8 +2,6 @@ package com.sparta.travelconquestbe.domain.partyMember.repository;
 
 import com.sparta.travelconquestbe.domain.partyMember.entity.PartyMember;
 import com.sparta.travelconquestbe.domain.partyMember.enums.MemberType;
-import io.lettuce.core.dynamic.annotation.Param;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,7 +20,10 @@ public interface PartyMemberRepository extends JpaRepository<PartyMember, Long> 
   boolean existsByUserIdAndPartyId(Long userId, Long id);
 
   @Modifying
-  @Transactional
-  @Query("DELETE FROM PartyMember pm WHERE pm.party.id = :id")
-  void deletePartyMembersByPartyId(@Param("id") Long id);
+  @Query("DELETE FROM PartyMember pm WHERE pm.party.id = :partyId")
+  void deletePartyMembersByPartyId(Long partyId);
+
+  @Modifying
+  @Query("DELETE FROM PartyMember pm WHERE pm.party.id = :partyId")
+  void deleteByPartyId(Long partyId);
 }

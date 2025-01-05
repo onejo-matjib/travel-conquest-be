@@ -139,7 +139,9 @@ public class PartyService {
 
     // Redis에서 해당 파티 정보 업데이트
     syncPartyStatusToRedis(party);
-    syncPartyStatusToDatabase(party);
+    if (party.getCount() >= party.getCountMax()) {
+      syncPartyStatusToDatabase(party);
+    }
 
     // 최종 태그 리스트: 기존 태그 중 유지된 태그 + 새로 추가된 태그
     List<String> updatedTags = mergeTags(existingTags, tagsToAdd, tagsToRemove);

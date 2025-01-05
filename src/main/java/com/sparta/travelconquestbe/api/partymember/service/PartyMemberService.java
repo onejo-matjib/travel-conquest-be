@@ -12,6 +12,7 @@ import com.sparta.travelconquestbe.domain.partyMember.repository.PartyMemberRepo
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +24,12 @@ public class PartyMemberService {
   private final PartyMemberRepository partyMemberRepository;
   private final PartyRepository partyRepository;
   private final PartyRedisService partyRedisService;
+  private final RedisTemplate<String, String> redisTemplate;
+  private static final String PARTY_COUNT_KEY_PREFIX = "party_count:";
 
   @Transactional
   public void partyLeave(AuthUserInfo userInfo, Long partyId) {
+    // 1. Party 및 PartyMember 조회
     Party party = partyRepository.findById(partyId)
         .orElseThrow(
             () -> new CustomException("PARTY#3_001", "존재하지 않는 파티입니다.", HttpStatus.NOT_FOUND));
@@ -35,22 +39,32 @@ public class PartyMemberService {
         .orElseThrow(
             () -> new CustomException("PARTY#3_002", "파티에 속해있지 않습니다.", HttpStatus.CONFLICT));
 
+    // 2. 리더 여부 확인
     if (partyMember.getMemberType() == MemberType.LEADER) {
-      // 리더가 마지막 멤버일 경우 파티 삭제
-      if (partyRedisService.getPartyCount(partyId) <= 1) {
-        deleteParty(party); // 파티 삭제 로직을 공통화
+      if (partyRedisService.getPartyCount(partyId) == 1) {
+        // 마지막 멤버일 경우: PartyMember 및 Party 삭제
+        deletePartyAndSync(party);
       } else {
-        reassignPartyLeader(party); // 리더 재배정
+        // 리더 재배정
+        reassignPartyLeader(party);
         partyRedisService.decrementPartyCount(partyId);
         partyMemberRepository.delete(partyMember);
+
+        // Redis 동기화
+        syncRedisSafely(partyId);
       }
     } else {
       // 일반 멤버 탈퇴
       partyRedisService.decrementPartyCount(partyId);
       partyMemberRepository.delete(partyMember);
-    }
 
-    // Redis 동기화
+      // Redis 동기화
+      syncRedisSafely(partyId);
+    }
+  }
+
+  // Redis 동기화를 안전하게 처리하는 메서드
+  private void syncRedisSafely(Long partyId) {
     try {
       syncRedisWithDatabase(partyId);
     } catch (Exception e) {
@@ -59,29 +73,34 @@ public class PartyMemberService {
     }
   }
 
+  @Transactional
+  public void deletePartyAndSync(Party party) {
+    partyMemberRepository.deletePartyMembersByPartyId(party.getId());
+    partyRedisService.deletePartyKey(party.getId());
+    partyRepository.delete(party);
+  }
+
   public void reassignPartyLeader(Party party) {
     List<PartyMember> remainingMembers = partyMemberRepository.findByPartyIdAndMemberTypeNot(
         party.getId(), MemberType.LEADER);
 
     if (remainingMembers.isEmpty()) {
       // 리더가 마지막 멤버인 경우 파티 삭제
-      deleteParty(party);
+      partyMemberRepository.deletePartyMembersByPartyId(party.getId());
+      partyRedisService.deletePartyKey(party.getId());
+      partyRepository.delete(party);
     } else {
       // 새로운 리더 지정
       PartyMember newLeader = remainingMembers.get(new Random().nextInt(remainingMembers.size()));
       newLeader.chageMemberLeader(MemberType.LEADER);
       partyMemberRepository.save(newLeader);
 
+      // Party 업데이트
       party.updateLeaderNickname(newLeader.getUser().getNickname());
       partyRepository.save(party);
     }
   }
 
-  public void deleteParty(Party party) {
-    partyRedisService.deletePartyKey(party.getId());
-    partyMemberRepository.deletePartyMembersByPartyId(party.getId());
-    partyRepository.delete(party);
-  }
 
   public Party validatePartyMember(AuthUserInfo userInfo, Long partyId) {
     return partyMemberRepository.findByUserIdAndPartyId(userInfo.getId(), partyId)

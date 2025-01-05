@@ -16,7 +16,6 @@ public class CouponSearchResponse {
   private CouponType type;
   private int discountAmount;
   private LocalDate validUntil;
-  private int count;
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
 }
