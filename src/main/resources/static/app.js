@@ -28,7 +28,7 @@ document.getElementById('localLoginForm').addEventListener('submit', async funct
       localStorage.setItem('authToken', token);
       // 이후 페이지 이동
       setTimeout(() => {
-       window.location.href = '/chat.html'; // 로그인 성공 후 이동할 페이지
+       window.location.href = '/login.html'; // 로그인 성공 후 이동할 페이지
       }, 10000);
     } else {
       const errText = await response.text();
