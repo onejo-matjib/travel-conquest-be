@@ -78,37 +78,30 @@ public class PartyService {
       acquireLock(lockKey, lockValue); // 락 획득
       validateUser(userInfo);
 
-      // 파티 검증
-      Party party = partyRepository.findById(id).orElseThrow(() ->
-          new CustomException("해당 파티가 존재하지 않습니다.", "PARTY#2_001", HttpStatus.NOT_FOUND));
-
-      // 이미 참여했는지 검증
-      if (isUserAlreadyInParty(userInfo.getId(), party)) {
-        throw new CustomException("이미 해당 파티에 참여하였습니다.", "PARTY#2_002", HttpStatus.CONFLICT);
+      if (partyMemberRepository.existsByUserIdAndPartyId(userInfo.getId(), id)) {
+        throw new CustomException("이미 참여된 파티입니다.", "PARTY#4_003", HttpStatus.CONFLICT);
       }
 
-      // Redis와 DB 동기화 확인
-      syncRedisWithDatabase(id, party);
+      // 파티 조회 및 검증
+      Party party = partyRepository.findById(id).orElseThrow(
+          () -> new CustomException("해당 파티가 존재하지 않습니다.", "PARTY#2_001", HttpStatus.NOT_FOUND));
 
-      // Redis 값 검증 및 증가
-      String redisKey = PARTY_COUNT_KEY_PREFIX + id;
-      incrementRedisPartyCount(redisKey, party.getCountMax());
-
-      // 파티 멤버 추가
+      // Redis에서 카운트 증가
+      int newCount = partyRedisService.incrementPartyCount(id, party.getCountMax());
+      // 파티가 다 찼을 경우, DB 동기화
+      if (newCount == party.getCountMax()) {
+        syncPartyStatusToDatabase(party);
+      }
+      // 새로운 멤버 추가 (DB에는 멤버 정보만 추가)
       User referenceUser = userRepository.getReferenceById(userInfo.getId());
       PartyMember newMember = addPartyMember(referenceUser, party);
-
-      // Redis에서 인원 수 증가
-      partyRedisService.incrementPartyCount(id);
-
-      // 파티 상태 동기화
-      syncStatusToDatabase(party, redisKey, party.getCountMax());
 
       return buildJoinResponse(party, newMember);
     } finally {
       releaseLock(lockKey, lockValue);
     }
   }
+
 
   // 파티 전체 조회
   public Page<PartySearchResponse> searchAllPartise(Pageable pageable, PartySort partySort,
@@ -118,12 +111,10 @@ public class PartyService {
 
   // 소속된 파티 전체 조회
   public Page<PartySearchResponse> searchAllMyPartise(Long userId, Pageable pageable,
-      PartySort partySort,
-      String direction) {
+      PartySort partySort, String direction) {
     return partyRepository.searchAllMyPartise(userId, pageable, partySort, direction);
   }
 
-  // 파티 수정
   @Transactional
   public PartyUpdateResponse updateParty(AuthUserInfo userInfo, Long id,
       PartyUpdateRequest request) {
@@ -142,14 +133,18 @@ public class PartyService {
     List<String> tagsToAdd = filterNewTags(existingTags, newTags);
     processTags(tagsToAdd, party);
 
-    // 태그 병합
-    List<String> allTags = mergeTags(existingTags, tagsToAdd);
+    // 사용되지 않는 태그 삭제
+    List<String> tagsToRemove = filterTagsToRemove(existingTags, newTags);
+    removeUnusedTags(party, tagsToRemove);
 
     // Redis에서 해당 파티 정보 업데이트
     syncPartyStatusToRedis(party);
     syncPartyStatusToDatabase(party);
 
-    return buildUpdateResponse(userInfo, party, allTags);
+    // 최종 태그 리스트: 기존 태그 중 유지된 태그 + 새로 추가된 태그
+    List<String> updatedTags = mergeTags(existingTags, tagsToAdd, tagsToRemove);
+
+    return buildUpdateResponse(userInfo, party, updatedTags);
   }
 
   // 파티 삭제
@@ -160,90 +155,58 @@ public class PartyService {
     partyRepository.delete(party);
   }
 
-
-  // Redis에서 파티 인원 수 감소
-  public void decrementRedisPartyCount(String redisKey) {
-    Long currentCount = redisTemplate.opsForValue().get(redisKey) != null ?
-        Long.parseLong(redisTemplate.opsForValue().get(redisKey)) : 0;
-
-    if (currentCount > 0) {
-      redisTemplate.opsForValue().set(redisKey, String.valueOf(currentCount - 1));
-    }
-  }
-
   public PartyCreateResponse buildCreateResponse(AuthUserInfo userInfo, Party party,
       List<String> hashtags) {
-    return PartyCreateResponse.builder()
-        .id(party.getId())
-        .leaderId(userInfo.getId())
-        .leaderNickname(userInfo.getNickname())
-        .name(party.getName())
-        .description(party.getDescription())
-        .count(party.getCount())
-        .countMax(party.getCountMax())
-        .passwordStatus(party.isPasswordStatus())
-        .password(party.getPassword())
-        .status(party.getStatus())
-        .tags(hashtags)
-        .createdAt(party.getCreatedAt())
-        .updatedAt(party.getUpdatedAt())
-        .build();
+    return PartyCreateResponse.builder().id(party.getId()).leaderId(userInfo.getId())
+        .leaderNickname(userInfo.getNickname()).name(party.getName())
+        .description(party.getDescription()).count(party.getCount()).countMax(party.getCountMax())
+        .passwordStatus(party.isPasswordStatus()).password(party.getPassword())
+        .status(party.getStatus()).tags(hashtags).createdAt(party.getCreatedAt())
+        .updatedAt(party.getUpdatedAt()).build();
   }
 
+  // Redis의 count를 반영하여 응답 생성
   public PartyJoinResponse buildJoinResponse(Party party, PartyMember newMember) {
+
+    String redisCountKey = PARTY_COUNT_KEY_PREFIX + party.getId();
+
+    int count = Integer.parseInt(redisTemplate.opsForValue().get(redisCountKey));
+
     return PartyJoinResponse.builder()
         .id(party.getId())
         .leaderNickname(party.getLeaderNickname())
         .name(party.getName())
         .description(party.getDescription())
-        .count(party.getCount())
+        .count(count)
         .countMax(party.getCountMax())
         .passwordStatus(party.isPasswordStatus())
         .status(party.getStatus())
-        .createdAt(newMember.getCreatedAt())
+        .createdAt(newMember.getCreatedAt()) // 새로 추가된 멤버의 참여 시간
         .build();
   }
 
   public PartyUpdateResponse buildUpdateResponse(AuthUserInfo userInfo, Party party,
       List<String> allTags) {
-    return PartyUpdateResponse.builder()
-        .id(party.getId())
-        .leaderId(userInfo.getId())
-        .leaderNickname(userInfo.getNickname())
-        .name(party.getName())
-        .description(party.getDescription())
-        .count(party.getCount())
-        .countMax(party.getCountMax())
-        .passwordStatus(party.isPasswordStatus())
-        .password(party.getPassword())
-        .status(party.getStatus())
-        .tags(allTags)
-        .createdAt(party.getCreatedAt())
-        .updatedAt(party.getUpdatedAt())
-        .build();
+    return PartyUpdateResponse.builder().id(party.getId()).leaderId(userInfo.getId())
+        .leaderNickname(userInfo.getNickname()).name(party.getName())
+        .description(party.getDescription()).count(party.getCount()).countMax(party.getCountMax())
+        .passwordStatus(party.isPasswordStatus()).password(party.getPassword())
+        .status(party.getStatus()).tags(allTags).createdAt(party.getCreatedAt())
+        .updatedAt(party.getUpdatedAt()).build();
   }
 
   public Party createAndSaveParty(AuthUserInfo userInfo, PartyCreateRequest request) {
-    Party party = Party.builder()
-        .leaderNickname(userInfo.getNickname())
-        .name(request.getName())
-        .description(request.getDescription())
-        .count(1)
-        .countMax(request.getCountMax())
-        .status(PartyStatus.OPEN)
-        .passwordStatus(request.isPasswordStatus())
-        .password(request.getPassword())
-        .build();
+    Party party = Party.builder().leaderNickname(userInfo.getNickname()).name(request.getName())
+        .description(request.getDescription()).count(1).countMax(request.getCountMax())
+        .status(PartyStatus.OPEN).passwordStatus(request.isPasswordStatus())
+        .password(request.getPassword()).build();
     return partyRepository.save(party);
   }
 
   public void addPartyLeader(AuthUserInfo userInfo, Party party) {
     User referenceUser = userRepository.getReferenceById(userInfo.getId());
-    PartyMember partyMember = PartyMember.builder()
-        .memberType(MemberType.LEADER)
-        .user(referenceUser)
-        .party(party)
-        .build();
+    PartyMember partyMember = PartyMember.builder().memberType(MemberType.LEADER)
+        .user(referenceUser).party(party).build();
     partyMemberRepository.save(partyMember);
   }
 
@@ -253,13 +216,12 @@ public class PartyService {
 
   // 태그 저장
   public void processTags(List<String> hashtags, Party party) {
-    List<Tag> tagList = hashtags.stream()
-        .map(keyword -> tagRepository.findByKeyword(keyword)
+    List<Tag> tagList = hashtags.stream().map(keyword -> tagRepository.findByKeyword(keyword)
             .orElseGet(() -> tagRepository.save(Tag.builder().keyword(keyword).build())))
         .collect(Collectors.toList());
 
-    tagList.forEach(tag -> partyTagRepository.save(
-        PartyTag.builder().party(party).tag(tag).build()));
+    tagList.forEach(
+        tag -> partyTagRepository.save(PartyTag.builder().party(party).tag(tag).build()));
   }
 
   // 해시태그 추출
@@ -267,30 +229,42 @@ public class PartyService {
     if (inputText == null || inputText.isBlank()) {
       return List.of();
     }
-    return Arrays.stream(inputText.split("\\s+"))
-        .map(String::trim)
-        .filter(tag -> !tag.isEmpty())
+    return Arrays.stream(inputText.split("\\s+")).map(String::trim).filter(tag -> !tag.isEmpty())
         .filter(tag -> tag.startsWith("#"))
         .map(tag -> tag.substring(1).replaceAll("[^a-zA-Z0-9가-힣]", ""))
-        .filter(tag -> !tag.isEmpty())
-        .toList();
+        .filter(tag -> !tag.isEmpty()).toList();
   }
 
   public List<String> getExistingTags(Party party) {
-    return party.getPartyTags().stream()
-        .map(partyTag -> partyTag.getTag().getKeyword())
-        .toList();
+    return party.getPartyTags().stream().map(partyTag -> partyTag.getTag().getKeyword()).toList();
   }
 
   public List<String> filterNewTags(List<String> existingTags, List<String> newTags) {
-    return newTags.stream()
-        .filter(tag -> !existingTags.contains(tag))
-        .toList();
+    return newTags.stream().filter(tag -> !existingTags.contains(tag)).toList();
   }
 
   public List<String> mergeTags(List<String> existingTags, List<String> newTags) {
-    return Stream.concat(existingTags.stream(), newTags.stream())
-        .distinct()
+    return Stream.concat(existingTags.stream(), newTags.stream()).distinct().toList();
+  }
+
+  // 기존 태그 중 삭제할 태그 필터링
+  public List<String> filterTagsToRemove(List<String> existingTags, List<String> newTags) {
+    return existingTags.stream().filter(tag -> !newTags.contains(tag)).toList();
+  }
+
+  // 사용되지 않는 태그 삭제
+  public void removeUnusedTags(Party party, List<String> tagsToRemove) {
+    List<PartyTag> partyTagsToRemove = party.getPartyTags().stream()
+        .filter(partyTag -> tagsToRemove.contains(partyTag.getTag().getKeyword())).toList();
+
+    partyTagRepository.deleteAll(partyTagsToRemove);
+  }
+
+  public List<String> mergeTags(List<String> existingTags, List<String> tagsToAdd,
+      List<String> tagsToRemove) {
+    return Stream.concat(existingTags.stream().filter(tag -> !tagsToRemove.contains(tag)), // 유지된 태그
+            tagsToAdd.stream() // 새로 추가된 태그
+        ).distinct() // 중복 제거
         .toList();
   }
 
@@ -308,12 +282,8 @@ public class PartyService {
   // 파티 리더 검증
   public Party validatePartyLeader(AuthUserInfo userInfo, Long id) {
     PartyMember partyMember = partyMemberRepository.findByUserIdAndPartyIdAndMemberType(
-            userInfo.getId(),
-            id,
-            MemberType.LEADER)
-        .orElseThrow(
-            () -> new CustomException("PARTY#3_001", "해당 파티를 수정할 권한이 없습니다.",
-                HttpStatus.CONFLICT));
+        userInfo.getId(), id, MemberType.LEADER).orElseThrow(
+        () -> new CustomException("PARTY#3_001", "해당 파티를 수정할 권한이 없습니다.", HttpStatus.CONFLICT));
 
     return partyMember.getParty();
   }
@@ -348,22 +318,9 @@ public class PartyService {
   }
 
   public PartyMember addPartyMember(User user, Party party) {
-    PartyMember newMember = PartyMember.builder()
-        .memberType(MemberType.MEMBER)
-        .user(user)
-        .party(party)
-        .build();
+    PartyMember newMember = PartyMember.builder().memberType(MemberType.MEMBER).user(user)
+        .party(party).build();
     return partyMemberRepository.save(newMember);
-  }
-
-  public void syncRedisWithDatabase(Long id, Party party) {
-    String redisKey = PARTY_COUNT_KEY_PREFIX + id;
-    String redisValue = redisTemplate.opsForValue().get(redisKey);
-
-    // Redis에 값이 없으면 DB 값을 기준으로 동기화
-    if (redisValue == null) {
-      redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCount()));
-    }
   }
 
   public void acquireLock(String lockKey, String lockValue) {
@@ -379,8 +336,7 @@ public class PartyService {
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      throw new CustomException("PARTY#5_004", "락 대기 중 인터럽트 발생",
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new CustomException("PARTY#5_004", "락 대기 중 인터럽트 발생", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -391,13 +347,12 @@ public class PartyService {
         redisTemplate.delete(lockKey);
       }
     } catch (Exception e) {
-      throw new CustomException("PARTY#5_005", "락 해제 중 오류 발생",
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new CustomException("PARTY#5_005", "락 해제 중 오류 발생", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   // Redis에서 방 상태 DB로 동기화
-  public void syncStatusToDatabase(Party party, String redisKey, int maxCount) {
+  public void party(Party party, String redisKey, int maxCount) {
     String redisCount = redisTemplate.opsForValue().get(redisKey);
     if (redisCount != null) {
       party.updateCount(Integer.parseInt(redisCount)); // Redis 값으로 count 동기화
@@ -440,45 +395,23 @@ public class PartyService {
   }
 
   // 파티 상태 DB로 동기화
+  @Transactional
   public void syncPartyStatusToDatabase(Party party) {
     String redisKey = PARTY_COUNT_KEY_PREFIX + party.getId();
     String redisCount = redisTemplate.opsForValue().get(redisKey);
 
-    if (redisCount != null) {
-      party.updateCount(Integer.parseInt(redisCount)); // Redis 값으로 count 동기화
-    }
+    int updatedCount = Integer.parseInt(redisCount);
+    party.updateCount(updatedCount);
 
-    // 파티 상태 업데이트 (FULL 또는 OPEN)
-    if (party.getCount() >= party.getCountMax()) {
-      party.updateStatus(PartyStatus.FULL); // 인원 수가 가득 찼으면 FULL 상태
-    } else {
-      party.updateStatus(PartyStatus.OPEN); // 인원 수가 덜 차면 OPEN 상태
-    }
+    // 인원이 최대치에 도달했으면 상태를 FULL로 변경
+    party.updateStatus(PartyStatus.FULL);
 
     // 파티 상태 및 인원 수 업데이트
     partyRepository.save(party);
 
-    // 상태 변경 시 Redis에 반영
+    // Redis에 저장된 값도 DB 값과 동기화
     redisTemplate.opsForValue().set(redisKey, String.valueOf(party.getCount()));
     String statusKey = "party_status:" + party.getId();
     redisTemplate.opsForValue().set(statusKey, party.getStatus().name());
-  }
-
-  public Long incrementRedisPartyCount(String redisKey, int maxCount) {
-    try {
-      String cachedCount = redisTemplate.opsForValue().get(redisKey);
-      if (cachedCount == null) {
-        redisTemplate.opsForValue().set(redisKey, "0");
-      }
-      Long redisCount = redisTemplate.opsForValue().increment(redisKey, 1);
-      if (redisCount > maxCount) {
-        redisTemplate.opsForValue().decrement(redisKey, 1);
-        throw new CustomException("PARTY#4_001", "해당 파티의 인원수가 가득 찼습니다.", HttpStatus.CONFLICT);
-      }
-      return redisCount;
-    } catch (Exception e) {
-      throw new CustomException("PARTY#4_002", "Redis 값 증가 중 오류 발생",
-          HttpStatus.INTERNAL_SERVER_ERROR);
-    }
   }
 }

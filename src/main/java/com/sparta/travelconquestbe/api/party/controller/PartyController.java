@@ -76,7 +76,7 @@ public class PartyController {
         .body(partyService.searchAllPartise(pageable, partySort, direction));
   }
 
-  @GetMapping("/mypartise") // 최신순 정렬
+  @GetMapping("/mine") // 최신순 정렬
   public ResponseEntity<Page<PartySearchResponse>> searchAllMyPartise(
       @AuthUser AuthUserInfo userInfo,
       @Positive @RequestParam(defaultValue = "1", value = "page") int page,

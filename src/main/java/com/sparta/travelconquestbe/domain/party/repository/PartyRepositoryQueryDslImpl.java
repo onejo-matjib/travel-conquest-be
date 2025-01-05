@@ -14,11 +14,8 @@ import com.sparta.travelconquestbe.api.party.service.PartyRedisService;
 import com.sparta.travelconquestbe.common.exception.CustomException;
 import com.sparta.travelconquestbe.domain.party.enums.PartySort;
 import com.sparta.travelconquestbe.domain.partyMember.entity.QPartyMember;
-import com.sparta.travelconquestbe.domain.tag.entity.QTag;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -55,41 +52,8 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
         .limit(pageable.getPageSize())
         .fetchResults();
 
-    List<PartySearchResponse> content = results.getResults().stream().map(tuple -> {
-      Long partyId = tuple.get(party.id);
-
-      // Redis에서 인원 수 가져오기
-      int count = partyRedisService.getPartyCount(partyId);
-      if (count == 0) {
-        // Redis에 값이 없으면 DB에서 가져오고 Redis에 저장
-        count = tuple.get(party.count);
-        partyRedisService.setPartyCount(partyId, count);
-      }
-
-      // 태그 리스트 조회
-      List<String> tags = jpaQueryFactory.select(tag.keyword)
-          .from(partyTag)
-          .join(partyTag.tag, tag)
-          .where(partyTag.party.id.eq(partyId))
-          .fetch();
-
-      return PartySearchResponse.builder()
-          .id(partyId)
-          .leaderNickname(tuple.get(party.leaderNickname))
-          .name(tuple.get(party.name))
-          .description(tuple.get(party.description))
-          .count(count)  // Redis 값으로 count 설정
-          .countMax(tuple.get(party.countMax))
-          .status(tuple.get(party.status))
-          .passwordStatus(tuple.get(party.passwordStatus))
-          .tags(tags) // 태그 리스트 추가
-          .createdAt(tuple.get(party.createdAt))
-          .updatedAt(tuple.get(party.updatedAt))
-          .build();
-    }).toList();
-
-    long totalCount = results.getTotal();
-    return new PageImpl<>(content, pageable, totalCount);
+    // Redis 동기화는 서비스 계층에서 수행
+    return mapToPartySearchResponse(results.getResults(), pageable, results.getTotal());
   }
 
   @Override
@@ -100,7 +64,6 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
       String direction
   ) {
     QPartyMember partyMemberAlias = QPartyMember.partyMember;
-    QTag tagAlias = QTag.tag;
 
     // 기본 파티 데이터 조회
     List<Tuple> results = jpaQueryFactory
@@ -118,7 +81,7 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
         )
         .from(party)
         .leftJoin(party.partyMember, partyMemberAlias)
-        .where(partyMemberAlias.user.id.eq(userId))
+        .where(partyMemberAlias.user.id.eq(userId))  // 탈퇴한 사용자는 party_member에 없으므로 자동 필터링
         .groupBy(
             party.id,
             party.leaderNickname,
@@ -136,36 +99,32 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
         .limit(pageable.getPageSize())
         .fetch();
 
-    // 태그 데이터 조회 및 그룹화
-    Map<Long, List<String>> tagMap = jpaQueryFactory
-        .select(partyTag.party.id, tagAlias.keyword)
-        .from(partyTag)
-        .join(partyTag.tag, tagAlias)
-        .where(partyTag.party.id.in(results.stream().map(r -> r.get(party.id)).toList()))
-        .fetch()
-        .stream()
-        .collect(Collectors.groupingBy(
-            tuple -> tuple.get(partyTag.party.id),
-            Collectors.mapping(tuple -> tuple.get(tagAlias.keyword), Collectors.toList())
-        ));
+    // Redis 동기화 및 파티 데이터 매핑
+    List<PartySearchResponse> content = results.stream().map(tuple -> {
+      Long partyId = tuple.get(party.id);
 
-    // 결과 매핑
-    List<PartySearchResponse> content = results.stream()
-        .map(tuple -> PartySearchResponse.builder()
-            .id(tuple.get(party.id))
-            .leaderNickname(tuple.get(party.leaderNickname))
-            .name(tuple.get(party.name))
-            .description(tuple.get(party.description))
-            .count(tuple.get(party.count))
-            .countMax(tuple.get(party.countMax))
-            .status(tuple.get(party.status))
-            .passwordStatus(tuple.get(party.passwordStatus))
-            .tags(tagMap.get(tuple.get(party.id))) // 태그 추가
-            .createdAt(tuple.get(party.createdAt))
-            .updatedAt(tuple.get(party.updatedAt))
-            .build())
-        .toList();
+      // Redis에서 인원 수 가져오기
+      int count = partyRedisService.getPartyCount(partyId);
+      if (count == 0) {
+        count = tuple.get(party.count); // Redis 값이 없을 경우 DB 값 사용
+        partyRedisService.setPartyCount(partyId, count); // Redis에 동기화
+      }
 
+      return PartySearchResponse.builder()
+          .id(partyId)
+          .leaderNickname(tuple.get(party.leaderNickname))
+          .name(tuple.get(party.name))
+          .description(tuple.get(party.description))
+          .count(count)
+          .countMax(tuple.get(party.countMax))
+          .status(tuple.get(party.status))
+          .passwordStatus(tuple.get(party.passwordStatus))
+          .createdAt(tuple.get(party.createdAt))
+          .updatedAt(tuple.get(party.updatedAt))
+          .build();
+    }).toList();
+
+    // 전체 파티 수 조회
     long totalCount = jpaQueryFactory
         .select(party.count())
         .from(party)
@@ -176,6 +135,49 @@ public class PartyRepositoryQueryDslImpl implements PartyRepositoryQueryDsl {
     return new PageImpl<>(content, pageable, totalCount);
   }
 
+  private Page<PartySearchResponse> mapToPartySearchResponse(List<Tuple> results, Pageable pageable,
+      long totalCount) {
+    List<PartySearchResponse> content = results.stream().map(tuple -> {
+      Long partyId = tuple.get(party.id);
+
+      // Redis에서 카운트 가져오기
+      int count = partyRedisService.getPartyCount(partyId);
+
+      // Redis에 값이 없으면 DB 값 사용 및 동기화
+      if (count == 1) {
+        count = tuple.get(party.count);
+        partyRedisService.setPartyCount(partyId, count);
+      }
+
+      // 태그 가져오기
+      List<String> tags = getPartyTags(partyId);
+
+      return PartySearchResponse.builder()
+          .id(partyId)
+          .leaderNickname(tuple.get(party.leaderNickname))
+          .name(tuple.get(party.name))
+          .description(tuple.get(party.description))
+          .count(count) // 최신 카운트 값 사용
+          .countMax(tuple.get(party.countMax))
+          .status(tuple.get(party.status))
+          .passwordStatus(tuple.get(party.passwordStatus))
+          .tags(tags)
+          .createdAt(tuple.get(party.createdAt))
+          .updatedAt(tuple.get(party.updatedAt))
+          .build();
+    }).toList();
+
+    return new PageImpl<>(content, pageable, totalCount);
+  }
+
+
+  private List<String> getPartyTags(Long partyId) {
+    return jpaQueryFactory.select(tag.keyword)
+        .from(partyTag)
+        .join(partyTag.tag, tag)
+        .where(partyTag.party.id.eq(partyId))
+        .fetch();
+  }
 
   // 다중 정렬 조건
   private List<OrderSpecifier<?>> getOrderSpecifiers(PartySort partySort, String direction) {

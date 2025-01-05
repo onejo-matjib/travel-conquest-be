@@ -17,6 +17,9 @@ public interface PartyRepository extends JpaRepository<Party, Long>, PartyReposi
   Page<PartySearchResponse> searchAllMyPartise(Long userId, Pageable pageable, PartySort partySort,
       String direction);
 
+  @Query("SELECT COUNT(p) FROM Party p WHERE p.id = :partyId")
+  int findCountById(Long partyId);
+
   @Query("SELECT p.id FROM Party p")
   List<Long> findAllPartyId();
 }

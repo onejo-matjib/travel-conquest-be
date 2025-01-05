@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/party-members")
+@RequestMapping("/api/parties/party-members")
 @RequiredArgsConstructor
 @Validated
 public class PartyMemberController {
