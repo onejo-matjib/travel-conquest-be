@@ -112,3 +112,9 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootJar {
+    from("src/main/resources") {
+        include "appspec.yml"
+    }
+}
