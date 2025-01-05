@@ -2,7 +2,7 @@ name: cd
 
 on:
   workflow_run:
-    workflows: [ "runtest" ]
+    workflows: [ "Run Test with Testcontainers" ]
     types:
       - completed
 
