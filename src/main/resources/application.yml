@@ -4,4 +4,4 @@ spring:
 
 # 기본 활성화할 프로파일 (개발 시 local)
   profiles:
-    active: local
+    active: prod
