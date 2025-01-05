@@ -1,5 +1,6 @@
 수정중
-    
+<div align="center">
+
 # 여행 정복 - 여정 
 ![메인 1차](https://github.com/user-attachments/assets/568362c4-7717-4d47-8f3c-89d8416612db)<br>
 
@@ -8,16 +9,15 @@
 ----------------------------------------------------
 목차 (Table of Contents) - 하이퍼링크? 해당위치로<br>
 
- 1.프로젝트 개요<br>
+ [1.프로젝트 개요](#프로젝트_개요) <br>
  2.주요 기능<br>
  3.사용 기술<br>
  4.프로젝트 구조<br>
- 5.설치 및 실행 방법<br>
- 6.와이어 프레임<br>
- 7.API 문서<br>
- 8.ERD<br>
- 9.기타 참고 ? 시연영상 ?<br>
-10.추 후 개선 방향<br>
+ 5.와이어 프레임<br>
+ 6.API 문서<br>
+ 7.ERD<br>
+ 8.기타 참고 ? 시연영상 ?<br>
+ 9.추 후 개선 방향<br>
 
 ---------------------------------------------------
 ## 1. 프로젝트 개요 <br>
@@ -36,6 +36,8 @@
 |<div align="center">[신진오](https://github.com/lastdove](https://github.com/lastdove))|Member| 담당 </div> |
 |<div align="center">[윤영한](https://github.com/seongjun1130](https://github.com/0han7))|Member| 담당 </div> |
 |<div align="center">[홍주영](https://github.com/92jy38)|Member| 담당 </div> |
+
+</div>
 
 --------------------------------------------------
 ## 2. 주요 기능
@@ -69,6 +71,9 @@
 ### 파티
  - 사용자는 파티를 구성하여 사람들을 모집하여 여행을 계획할 수 있습니다.
 -----------------------------------------------------
+
+<div align="center">
+
 ## 3. 사용 기술 및 개발 환경 -> 기술스택
 
 
@@ -152,7 +157,8 @@ InfraStructure	Nginx	웹서버
   - 아키텍처
 ![image](https://github.com/user-attachments/assets/19c8bb3e-7b96-440f-8060-84749c6e3748)
 <br>
-
+</div>
+    
   - 패키지 구조
 ```plaintext
 com.sparta.travelconquestbe
@@ -225,14 +231,8 @@ com.sparta.travelconquestbe
     ├── application.yml
     └── ...
 ```
-----------------------------------------------
-    
-## 5. 설치 및 실행 방법??? - 추가할 지 고민
-프로젝트 클론
-- git clone
-https://github.com/onejo-matjib/travel-conquest-be.git
-환경 변수 설정 ?????
 
+</div>
 
 -----------------------------------------------------------
 ## 6. 와이어 프레임
@@ -438,10 +438,12 @@ User ||--o{ Report : "1:N"
 ---------------------
 
 ## 10. 기타 참고 문서
-- 브로셔
+### - 브로셔<br>
 <https://teamsparta.notion.site/1-024e8869da34462396a658f8ddd6d80f><br>
-- 팀 노션
+### - 팀 노션<br>
 <https://www.notion.so/teamsparta/2e66ca7c5175497b9bc2a4b2d49847a3><br>
-- 프로젝트 결과 보고서(PPT)
+### - 프로젝트 결과 보고서(PPT)<br>
 ![image](https://github.com/user-attachments/assets/278c094f-197f-4d7a-a2e4-dc2a28ccac05)
 <https://www.canva.com/design/DAGbGAVNVTE/3C3rAd5haN_VM9PmUhsT5g/edit><br>
+
+</div>
