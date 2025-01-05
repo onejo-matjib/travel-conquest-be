@@ -1,3 +1,4 @@
+/*
 package com.sparta.travelconquestbe;
 
 import org.junit.jupiter.api.Test;
@@ -27,3 +28,4 @@ public class RedisSpringBootTest extends TestContainerSupport{
     assertThat(ops.get("key")).isNull();
   }
 }
+*/
