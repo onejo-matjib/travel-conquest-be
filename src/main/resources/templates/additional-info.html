@@ -98,6 +98,9 @@
             <textarea style="width: 100%; height: 100px;" readonly>${authHeader.replace('Bearer ', '')}</textarea>
           </div>
         `;
+        setTimeout(() => {
+          window.location.href = '/login.html'; // 로그인 성공 후 이동할 페이지
+        }, 10000);
       } else {
         alert(data.message || '알 수 없는 오류 발생');
       }
