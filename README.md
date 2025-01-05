@@ -150,7 +150,7 @@ InfraStructure	Nginx	웹서버
 
 ## 4. 프로젝트 구조
   - 아키텍처
-![아키텍처이미지](https://github.com/user-attachments/assets/2a07852a-b86b-4772-9bd6-3caa4ef8f5d9)
+![image](https://github.com/user-attachments/assets/19c8bb3e-7b96-440f-8060-84749c6e3748)
 <br>
 
   - 패키지 구조
