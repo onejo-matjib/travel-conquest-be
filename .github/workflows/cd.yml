@@ -69,16 +69,16 @@ jobs:
           done
           sleep 10
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+        shell: bash
+
       - name: Build with Gradle (prod profile)
         run: ./gradlew clean build -Dspring.profiles.active=prod -Duser.language=ko -Duser.country=KR
 
       - name: Tear down Docker Compose
         if: always()
         run: docker-compose down
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-        shell: bash
 
       - name: Make Zip file
         run: zip -r $GITHUB_SHA.zip build/libs/*.jar appspec.yml scripts/deploy.sh
