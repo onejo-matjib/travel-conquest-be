@@ -1,0 +1,183 @@
+erDiagram
+
+User {
+Long id PK
+string name "NOT NULL, LENGTH=30"
+string nickname "NOT NULL, LENGTH=30"
+string email "UNIQUE, NOT NULL, LENGTH=50"
+string password "NOT NULL, LENGTH=255"
+string birth "NOT NULL, LENGTH=10"
+string providerId "NULLABLE (소셜 로그인)"
+string providerType "NOT NULL (LOCAL or SOCIAL)"
+string type "USER / AUTHENTICATED_USER / ADMIN"
+string title "TRAVELER / PIONEER / CONQUEROR"
+int subscriptionCount "기본값 = 0"
+datetime suspendedUntil "정지 풀리는 시각 (nullable)"
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+datetime deletedAt "탈퇴 시각"
+}
+
+UserUpgradeRequest {
+Long id PK
+string status "PENDING / APPROVED / REJECTED"
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+}
+
+Route {
+Long id PK
+string title "NOT NULL"
+text description "NOT NULL"
+Long totalDistance "기본값 = 0"
+int money "기본값 = 0"
+string estimatedTime "기본값 = '0'"
+string status "UNAUTHORIZED / AUTHORIZED"
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+}
+
+RouteLocation {
+Long id PK
+int sequence "NOT NULL"
+string locationName "NOT NULL, LENGTH=255"
+decimal latitude "NOT NULL"
+decimal longitude "NOT NULL"
+string mediaUrl "S3 경로 (nullable 가능)"
+datetime createdAt "Auditing"
+}
+
+Review {
+Long id PK
+int rating "1~5"
+text comment "리뷰 내용"
+datetime createdAt "Auditing"
+}
+
+Bookmark {
+Long id PK
+datetime createdAt "Auditing"
+}
+
+LocationData {
+Long id PK
+string locationName
+decimal latitude "NOT NULL"
+decimal longitude "NOT NULL"
+date baseDate "수집 기준일"
+string address "주소"
+}
+
+Party {
+Long id PK
+string leaderNickname
+string name
+string description
+int count
+int countMax
+string status "OPEN / FULL"
+boolean passwordStatus "true/false"
+string password
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+}
+
+PartyMember {
+Long id PK
+string memberType "LEADER / MEMBER"
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+}
+
+PartyTag {
+Long id PK
+datetime createdAt "Auditing"
+}
+
+Tag {
+Long id PK
+string keyword "UNIQUE"
+datetime createdAt "Auditing"
+}
+
+Subscription {
+Long id PK
+Long userId "FK -> User.id"
+Long subUserId "FK -> User.id"
+}
+
+ChatRoom {
+Long id PK
+string title
+int maxUsers
+string password
+boolean hasPassword
+int currentUsers
+}
+
+Chat {
+Long id PK
+string nickname
+string message
+datetime createdAt "Auditing"
+}
+
+Coupon {
+Long id PK
+string name
+string description
+string type "NORMAL / PREMIUM / RANDOM"
+int discountAmount
+date validUntil
+int count
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+}
+
+MyCoupon {
+Long id PK
+string code "UNIQUE"
+string status "AVAILABLE / UNAVAILABLE"
+datetime createdAt "Auditing"
+datetime updatedAt "Auditing"
+}
+
+Notification {
+Long id PK
+string message
+string notificationType "SUSPENSION, SUSPENSION_LIFTED, etc."
+datetime createdAt "Auditing"
+}
+
+Report {
+Long id PK
+Long reporterId "신고자"
+string reportCategory "ROUTE / REVIEW / CHAT"
+string reason "PROFANITY / SPAM / ... etc."
+datetime checkedAt "신고 처리 시각"
+Long adminId "처리한 admin"
+datetime createdAt "Auditing"
+}
+
+%% Relationships
+User ||--o{ UserUpgradeRequest : "1:N"
+Route ||--o{ UserUpgradeRequest : "1:N"
+User ||--o{ Route : "1:N"
+Route ||--o{ RouteLocation : "1:N"
+Route ||--o{ Review : "1:N"
+Route ||--o{ Bookmark : "1:N"
+User ||--o{ Review : "1:N"
+User ||--o{ Bookmark : "1:N"
+Party ||--o{ PartyMember : "1:N"
+Party ||--o{ PartyTag : "1:N"
+PartyMember ||--o{ Party : "N:1"
+PartyMember ||--o{ User : "N:1"
+PartyTag ||--o{ Party : "N:1"
+PartyTag ||--o{ Tag : "N:1"
+User ||--o{ Subscription : "as follower"
+User ||--o{ Subscription : "as following"
+ChatRoom ||--o{ Chat : "1:N"
+Coupon ||--o{ MyCoupon : "1:N"
+User ||--o{ MyCoupon : "1:N"
+User ||--o{ Notification : "1:N"
+User ||--o{ Report : "1:N"
