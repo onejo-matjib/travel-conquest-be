@@ -87,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('추가할 경로 ID를 입력하세요.');
       return;
     }
-
     const success = await api.addBookmark(routeId); // 즐겨찾기 추가 API 호출
     if (success) {
       alert('즐겨찾기가 추가되었습니다.');
@@ -97,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('즐겨찾기 추가에 실패했습니다.');
     }
   });
-
   // 즐겨찾기 삭제 버튼 이벤트 리스너
   deleteBookmarkBtn.addEventListener('click', async () => {
     const bookmarkId = bookmarkIdInput.value.trim(); // 사용자 입력 값 가져오기
@@ -105,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('삭제할 즐겨찾기 ID를 입력하세요.');
       return;
     }
-
     const success = await api.deleteBookmark(bookmarkId); // 즐겨찾기 삭제 API 호출
     if (success) {
       alert('즐겨찾기가 삭제되었습니다.');
@@ -115,16 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('즐겨찾기 삭제에 실패했습니다.');
     }
   });
-
-  // 로컬 스토리지 즐겨찾기 확인 버튼 이벤트 리스너
+  // 로컬 스토리지 즐겨찾기 조회 버튼 이벤트 리스너
   checkLocalStorageBtn.addEventListener('click', () => {
     const storedBookmarks = localStorage.getItem('bookmarks'); // 로컬 스토리지에서 데이터 가져오기
     if (storedBookmarks) {
       const bookmarks = JSON.parse(storedBookmarks);
-
       // 최신순 정렬 (createdAt 기준)
       bookmarks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
       bookmarkList.textContent = JSON.stringify(bookmarks, null, 2); // 정렬된 데이터 출력
     } else {
       bookmarkList.textContent = '로컬 스토리지에 저장된 즐겨찾기가 없습니다.';
