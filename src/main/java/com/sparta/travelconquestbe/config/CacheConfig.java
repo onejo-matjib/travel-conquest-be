@@ -17,7 +17,9 @@ public class CacheConfig {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager(
             "searchPostsCache",
             "searchPostsBestCache",
-            "topUsersCache" // 추가
+            "topUsersCache", // 추가
+            "followersCache", // 추가
+            "followingsCache"
         );
         cacheManager.setCaffeine(
             Caffeine.newBuilder()

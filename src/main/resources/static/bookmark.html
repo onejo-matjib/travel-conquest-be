@@ -3,35 +3,99 @@
 <head>
   <meta charset="UTF-8"/>
   <title>즐겨찾기 관리</title>
+
+  <!-- CSS 추가 -->
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background-color: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: inline-block;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    input[type="number"] {
+      padding: 0.5rem;
+      width: calc(100% - 1rem);
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #eee;
+      margin: 2rem 0;
+    }
+    #logArea {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      height: 200px;
+      background-color: #fafafa;
+      white-space: pre-wrap;
+      overflow: auto;
+    }
+  </style>
 </head>
 <body>
-<h1>즐겨찾기 관리</h1>
+<div class="container">
+  <h1>즐겨찾기 관리</h1>
 
-<!-- (A) 즐겨찾기 추가 -->
-<div>
-  <label>Route ID: </label>
-  <input type="number" id="routeIdInput"/>
-  <button id="addBookmarkBtn">즐겨찾기 추가</button>
+  <!-- 즐겨찾기 추가 -->
+  <div class="form-group">
+    <label for="routeIdInput">Route ID</label>
+    <input type="number" id="routeIdInput" />
+    <button id="addBookmarkBtn">즐겨찾기 추가</button>
+  </div>
+
+  <!-- 즐겨찾기 삭제 -->
+  <div class="form-group">
+    <label for="bookmarkIdInput">Bookmark ID (삭제용)</label>
+    <input type="number" id="bookmarkIdInput" />
+    <button id="deleteBookmarkBtn">즐겨찾기 삭제</button>
+  </div>
+
+  <hr />
+
+  <!-- 로컬 스토리지 확인 -->
+  <div class="form-group">
+    <button id="checkLocalStorageBtn">로컬 스토리지 즐겨찾기 확인</button>
+  </div>
+
+  <!-- 로그 영역 -->
+  <pre id="logArea">로컬 스토리지에서 북마크를 확인해보세요.</pre>
 </div>
 
-<!-- (B) 즐겨찾기 삭제 -->
-<div style="margin-top: 1rem;">
-  <label>Bookmark ID (삭제용): </label>
-  <input type="number" id="bookmarkIdInput"/>
-  <button id="deleteBookmarkBtn">즐겨찾기 삭제</button>
-</div>
-
-<hr/>
-
-<!-- (C) 로컬 스토리지 확인 -->
-<div>
-  <button id="checkLocalStorageBtn">로컬 스토리지 즐겨찾기 확인</button>
-</div>
-
-<!-- 결과 로그 표시 -->
-<pre id="logArea" style="border:1px solid #ccc; padding:1rem; height:200px; overflow:auto;">
-</pre>
-
+<!-- 분리된 JavaScript 파일 연결 -->
 <script src="bookmark.js"></script>
 </body>
 </html>
