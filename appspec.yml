@@ -3,15 +3,19 @@ os: linux
 
 files:
   - source: /
-    destination: /home/ubuntu/travel-conquest-be
+    destination: /home/ubuntu/travel-conquest-be/
     overwrite: yes
+    exclude:
+      - scripts/**
 
 permissions:
-  - object: /
+  - object: /home/ubuntu/travel-conquest-be/
     owner: ubuntu
     group: ubuntu
+    mode: 755
 
 hooks:
   ApplicationStart:
     - location: scripts/deploy.sh
       timeout: 60
+      runas: ubuntu
