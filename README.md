@@ -127,7 +127,7 @@ com.sparta.travelconquestbe
 │   │   ├── itemprocessor
 │   │   ├── itemreader
 │   │   ├── itemwriter
-│   │   ├── Policy
+│   │   ├── policy
 │   │   └── util
 │   ├── config
 │   │   ├── filter
