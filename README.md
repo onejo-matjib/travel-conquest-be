@@ -1,4 +1,3 @@
-수정중
 <div align="center">
 
 # 여행 정복 - 여정 
@@ -9,22 +8,22 @@
 ----------------------------------------------------
 ### 목차 (Table of Contents)<br>
 
- [1. 프로젝트 개요](#프로젝트-개요) <br>
- [2. 주요 기능](#주요-기능) <br>
- [3. 사용 기술](#사용-기술) <br>
- [4. 프로젝트 구조](#프로젝트-구조) <br>
- [5. 와이어 프레임](#와이어-프레임) <br>
- [6. API 문서](#API-문서) <br>
- [7. ERD](#ERD) <br>
- [8. 시연 영상](#시연-영상) <br>
- [9. 추후 개선 방향](#추후-개선-방향) <br>
- [10. 기타 참고 문서](#기타-참고-문서) <br>
+ [1. 프로젝트 개요](#1-프로젝트-개요-) <br>
+ [2. 주요 기능](#2-주요-기능) <br>
+ [3. 사용 기술](#3-사용-기술-및-개발-환경) <br>
+ [4. 프로젝트 구조](#4-프로젝트-구조) <br>
+ [5. 서비스 아키텍쳐](#5-서비스-아키텍쳐) <br>
+ [6. API 문서](#6-api-문서) <br>
+ [7. ERD](#7-erd) <br>
+ [8. 시연 영상](#8-시연-영상) <br>
+ [9. 추후 개선 방향](#9-추후-개선-방향) <br>
+ [10. 기타 참고 문서](#10-기타-참고-문서) <br>
 
 ---------------------------------------------------
 
 ## 1. 프로젝트 개요 <br>
 ### 프로젝트 기간
-24.12.02 ~ 25.01.07
+24.12.02 ~ 25.01.07<br>
 ### 프로젝트 목표
 
 유저들이 자신의 여행 경로를 직접 생성/공유하고, 다른 유저는 해당 경로를 즐겨찾기, 리뷰로 피드백하며,<br>
@@ -36,6 +35,7 @@
 
 --------------------------------------------------
 ## 2. 주요 기능
+![image](https://github.com/user-attachments/assets/949ee7b9-6cf4-4925-9761-f16ec24e4196)
 
 ### 여행 경로
  - 사용자는 자신만의 여행 루트를 생성하고, 각 경유지에 대한 정보 (이름, 좌표, 사진/영상)를 추가할 수 있습니다.
@@ -69,29 +69,22 @@
 
 <div align="center">
 
-## 3. 사용 기술 및 개발 환경 -> 기술스택
+## 3. 사용 기술 및 개발 환경
 
 
 ### 🖥 language & Server 🖥
 
-<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=OpenJDK&logoColor=white"><br>
-<img src="https://img.shields.io/badge/intellij idea-207BEA?style=for-the-badge&logo=intellij%20idea&logoColor=white"><img src="https://img.shields.io/badge/JDK 17-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a>
- <br>
+<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=OpenJDK&logoColor=white"><img src="https://img.shields.io/badge/intellij idea-207BEA?style=for-the-badge&logo=intellij%20idea&logoColor=white"><img src="https://img.shields.io/badge/JDK 17-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a> <br>
 <img src="https://img.shields.io/badge/springboot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white"><img src="https://img.shields.io/badge/Spring Security-6DB33F?style=for-the-badge&logo=Spring Security&logoColor=white"><br>
-<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"><img src="https://img.shields.io/badge/ 8.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a><br>
-<img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"><img src="https://img.shields.io/badge/ 7.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a> <br>
-<img src="https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logo=JUnit5&logoColor=white"><img src="https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white"> <br>
+<img src="https://img.shields.io/badge/OAuth2-9187FF?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/><img src="https://img.shields.io/badge/kakao-FFCD00?style=for-the-badge&logo=kakao&logoColor=black"><img src="https://img.shields.io/badge/google-4285F4?style=for-the-badge&logo=google&logoColor=white"> <br>
+<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"><img src="https://img.shields.io/badge/ 8.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a><img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"><img src="https://img.shields.io/badge/ 7.0-666666?style=for-the-badge&logo-bitdefender&logoColor=FFFFFF"/></a> <br>
 <img src="https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white"><img src="https://img.shields.io/badge/GitHub Actions-2088FF?style=for-the-badge&logo=GitHub Actions&logoColor=white"> <br>
 <img src="https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=Amazon%20EC2&logoColor=white"><img src="https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=Amazon%20S3&logoColor=white"> <br>
-<img src="https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white"><img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white"><br>
-<img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white"><br>
-+
-OAuth2
-QueryDSL
-Spring Batch
-Jmeter
+<img src="https://img.shields.io/badge/apachejmeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white"><img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white"><br>
+<img src="https://img.shields.io/badge/JUnit5-25A162?style=for-the-badge&logo=JUnit5&logoColor=white"><img src="https://img.shields.io/badge/Hibernate-FF4F8B?style=for-the-badge&logo=Hibernate&logoColor=white"> <br>
 
-### 👏 Tools etc. 👏
+### ⚒ Tools etc. 👏
+<img src="https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white"><img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=Prometheus&logoColor=white"><br>
 <img src="https://img.shields.io/badge/git-F05032?style=for-the-badge&logo=git&logoColor=white"><img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"> <br> 
 <img src="https://img.shields.io/badge/notion-000000?style=for-the-badge&logo=notion&logoColor=FFFFFF"/></a><img src="https://img.shields.io/badge/slack-FE5196?style=for-the-badge&logo=slack&logoColor=FFFFFF"/></a>
 
@@ -102,11 +95,10 @@ Jmeter
 ## 4. 프로젝트 구조
 
 - 아키텍처
-
 ![image](https://github.com/user-attachments/assets/19c8bb3e-7b96-440f-8060-84749c6e3748)
 <br>
     
-  - 패키지 구조
+- 패키지 구조
 ```plaintext
 com.sparta.travelconquestbe
 ├── TravelConquestBeApplication.java
@@ -135,7 +127,7 @@ com.sparta.travelconquestbe
 │   │   ├── itemprocessor
 │   │   ├── itemreader
 │   │   ├── itemwriter
-│   │   ├── Policy
+│   │   ├── policy
 │   │   └── util
 │   ├── config
 │   │   ├── filter
@@ -146,11 +138,14 @@ com.sparta.travelconquestbe
 │   └── resolver
 
 ├── config
+│   ├── AdminInitializer
 │   ├── AppConfig
+│   ├── BatchConfig
 │   ├── CacheConfig
 │   ├── QueryDslConfig
 │   ├── S3Config
 │   ├── SecurityConfig
+│   ├── SuspensionScheduler
 │   ├── WebConfig
 │   ├── WebMvcConfig
 │   └── WebSocketConfig
@@ -164,32 +159,80 @@ com.sparta.travelconquestbe
 │   ├── mycoupon
 │   ├── notification
 │   ├── party
-│   ├── partyMember
-│   ├── tag
+│   ├── partymember
+│   ├── partytag
 │   ├── report
 │   ├── review
 │   ├── route
 │   ├── routelocation
 │   ├── subscription
-│   ├── user
-│   └── PartyTag
+│   ├── tqg
+│   └── user
 
 └── resources
     ├── application.yml
     └── ...
 ```
-<div align="center">
-
 
 -----------------------------------------------------------
-## 5. 와이어 프레임
-이미지 + 링크?
+<div align="center">
+ 
+## 5. 서비스 아키텍쳐
+![image](https://github.com/user-attachments/assets/034ca720-37e9-4933-a826-96fe36bd8268)
+
+</div>
 
 ------------------------------------------------------
+
 ## 6. API 문서
-postman publishing?
+기타 모든 API명세는 링크 참조.<br>
+<https://www.notion.so/teamsparta/2e66ca7c5175497b9bc2a4b2d49847a3>
+
+#### 회원가입 (Sign Up)
+- **URL**: `/api/users/signup`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "email": "test@test.com",
+    "password": "test1234",
+    "nickname": "Traveler123",
+    "name": "테스터",
+    "birth": "1990-01-01"
+  }
+  ```
+- **Response** 
+  ```json
+  {
+    "userId": 1,
+    "email": "test@test.com",
+    "nickname": "Traveler123",
+    "createdAt": "2025-01-01T10:00:00Z"
+  }
+  ```
+- **Description**: 로컬 회원가입 외 소셜로그인(카카오, 구글)도 가능합니다.
+
+#### 로그인 (Login)
+- **URL**: `/api/users/login`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    "email": "test@test.com",
+    "password": "test1234"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "accessToken": "eyJhbGciOiJIUzI1...",
+    "expiresAt": "2025-01-01T12:00:00Z"
+  }
+  ```
+- **Description**: 로그인시 인증이 완료되면 토큰이 발급됩니다.
 
 --------------------------------------------------
+<div align="center">
 
 ## 7. ERD
 
@@ -379,7 +422,7 @@ User ||--o{ Report : "1:N"
 ```
 --------------------
 
-## 8. 시연영상
+## 8. 시연 영상
 
 어플리케이션의 모든 기능들에 대한 시연영상 링크 <br>
 <https://drive.google.com/drive/folders/1h7YdLhC3sfyOPiYpJ_XMOth1q9TRX2kg?hl=ko><br>
@@ -393,11 +436,11 @@ User ||--o{ Report : "1:N"
 ---------------------
 
 ## 10. 기타 참고 문서
-### - 브로셔<br>
+### - 브로셔 -<br>
 <https://teamsparta.notion.site/1-024e8869da34462396a658f8ddd6d80f><br>
-### - 팀 노션<br>
+### - 팀 노션 -<br>
 <https://www.notion.so/teamsparta/2e66ca7c5175497b9bc2a4b2d49847a3><br>
-### - 프로젝트 결과 보고서(PPT)<br>
+### - 프로젝트 결과 보고서(PPT) -<br>
 <https://www.canva.com/design/DAGbGAVNVTE/3C3rAd5haN_VM9PmUhsT5g/edit><br>
 ![image](https://github.com/user-attachments/assets/278c094f-197f-4d7a-a2e4-dc2a28ccac05)
 
