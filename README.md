@@ -36,6 +36,7 @@
 
 --------------------------------------------------
 ## 2. 주요 기능
+![image](https://github.com/user-attachments/assets/949ee7b9-6cf4-4925-9761-f16ec24e4196)
 
 ### 여행 경로
  - 사용자는 자신만의 여행 루트를 생성하고, 각 경유지에 대한 정보 (이름, 좌표, 사진/영상)를 추가할 수 있습니다.
@@ -138,11 +139,14 @@ com.sparta.travelconquestbe
 │   └── resolver
 
 ├── config
+│   ├── AdminInitializer
 │   ├── AppConfig
+│   ├── BatchConfig
 │   ├── CacheConfig
 │   ├── QueryDslConfig
 │   ├── S3Config
 │   ├── SecurityConfig
+│   ├── SuspensionScheduler
 │   ├── WebConfig
 │   ├── WebMvcConfig
 │   └── WebSocketConfig
@@ -156,32 +160,70 @@ com.sparta.travelconquestbe
 │   ├── mycoupon
 │   ├── notification
 │   ├── party
-│   ├── partyMember
-│   ├── tag
+│   ├── partymember
+│   ├── partytag
 │   ├── report
 │   ├── review
 │   ├── route
 │   ├── routelocation
 │   ├── subscription
-│   ├── user
-│   └── PartyTag
+│   ├── tqg
+│   └── user
 
 └── resources
     ├── application.yml
     └── ...
 ```
-<div align="center">
-
 
 -----------------------------------------------------------
+<div align="center">
+ 
 ## 5. 서비스 아키텍쳐
+![image](https://github.com/user-attachments/assets/034ca720-37e9-4933-a826-96fe36bd8268)
 
+</div>
 
 ------------------------------------------------------
+
 ## 6. API 문서
-postman publishing?
+기타 모든 API명세는 링크 참조.<br>
+<https://www.notion.so/teamsparta/2e66ca7c5175497b9bc2a4b2d49847a3>
+
+#### 회원가입 (Sign Up)
+- **URL**: `/api/users/signup`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+    
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    
+  }
+  ```
+- **Description**: 
+
+#### 로그인 (Login)
+- **URL**: `/api/users/login`
+- **Method**: `POST`
+- **Request Body**:
+  ```json
+  {
+  
+  }
+  ```
+- **Response**:
+  ```json
+  {
+  }
+  ```
+- **Description**: 
 
 --------------------------------------------------
+<div align="center">
 
 ## 7. ERD
 
