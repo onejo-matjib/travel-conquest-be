@@ -1,4 +1,3 @@
-수정중
 <div align="center">
 
 # 여행 정복 - 여정 
@@ -13,7 +12,7 @@
  [2. 주요 기능](#2-주요-기능) <br>
  [3. 사용 기술](#3-사용-기술-및-개발-환경) <br>
  [4. 프로젝트 구조](#4-프로젝트-구조) <br>
- [5. 서비스 아키텍쳐](#5-서비스-아키텍처) <br>
+ [5. 서비스 아키텍쳐](#5-서비스-아키텍쳐) <br>
  [6. API 문서](#6-api-문서) <br>
  [7. ERD](#7-erd) <br>
  [8. 시연 영상](#8-시연-영상) <br>
@@ -24,7 +23,7 @@
 
 ## 1. 프로젝트 개요 <br>
 ### 프로젝트 기간
-24.12.02 ~ 25.01.07
+24.12.02 ~ 25.01.07<br>
 ### 프로젝트 목표
 
 유저들이 자신의 여행 경로를 직접 생성/공유하고, 다른 유저는 해당 경로를 즐겨찾기, 리뷰로 피드백하며,<br>
@@ -195,16 +194,23 @@ com.sparta.travelconquestbe
 - **Request Body**:
   ```json
   {
-    
+    "email": "test@test.com",
+    "password": "test1234",
+    "nickname": "Traveler123",
+    "name": "테스터",
+    "birth": "1990-01-01"
   }
   ```
-- **Response**:
+- **Response** 
   ```json
   {
-    
+    "userId": 1,
+    "email": "test@test.com",
+    "nickname": "Traveler123",
+    "createdAt": "2025-01-01T10:00:00Z"
   }
   ```
-- **Description**: 
+- **Description**: 로컬 회원가입 외 소셜로그인(카카오, 구글)도 가능합니다.
 
 #### 로그인 (Login)
 - **URL**: `/api/users/login`
@@ -212,15 +218,18 @@ com.sparta.travelconquestbe
 - **Request Body**:
   ```json
   {
-  
+    "email": "test@test.com",
+    "password": "test1234"
   }
   ```
 - **Response**:
   ```json
   {
+    "accessToken": "eyJhbGciOiJIUzI1...",
+    "expiresAt": "2025-01-01T12:00:00Z"
   }
   ```
-- **Description**: 
+- **Description**: 로그인시 인증이 완료되면 토큰이 발급됩니다.
 
 --------------------------------------------------
 <div align="center">
