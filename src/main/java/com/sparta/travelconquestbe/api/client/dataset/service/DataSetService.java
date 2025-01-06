@@ -11,7 +11,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,25 +61,20 @@ public class DataSetService {
   public void fetchAndProcess() {
     List<TourLocalSearchResponse.Result.Body.RowContainer.Row> insertList = new ArrayList<>();
     List<TourLocalSearchResponse.Result.Body.RowContainer.Row> deleteList = new ArrayList<>();
-    List<LocationData> insertList2 =
-        this.searchTourDataResponses(LocalDate.now().toString())
-            .getResponse()
-            .getBody()
-            .getItems()
+    // 공공데이터 수집 및 처리
+    List<LocationData> insertList2 = Optional.ofNullable(searchTourDataResponses(LocalDate.now().toString()))
+            .map(TourGongGongSearchResponse::getResponse)
+            .map(TourGongGongSearchResponse.Response::getBody)
+            .map(TourGongGongSearchResponse.Response.Body::getItems)
+            .orElse(Collections.emptyList()) // items가 null일 경우 빈 리스트 반환
             .stream()
-            .map(
-                item ->
-                    LocationData.builder()
-                        .locationName(item.getTrrsrtNm())
-                        .address(item.getLnmadr() != null ? item.getLnmadr() : item.getRdnmadr())
-                        .latitude(
-                            new BigDecimal(item.getLatitude())
-                                .setScale(8, BigDecimal.ROUND_HALF_UP))
-                        .longitude(
-                            new BigDecimal(item.getLongitude())
-                                .setScale(8, BigDecimal.ROUND_HALF_UP))
-                        .baseDate(LocalDate.parse(item.getReferenceDate()))
-                        .build())
+            .map(item -> LocationData.builder()
+                    .locationName(item.getTrrsrtNm())
+                    .address(item.getLnmadr() != null ? item.getLnmadr() : item.getRdnmadr())
+                    .latitude(new BigDecimal(item.getLatitude()).setScale(8, BigDecimal.ROUND_HALF_UP))
+                    .longitude(new BigDecimal(item.getLongitude()).setScale(8, BigDecimal.ROUND_HALF_UP))
+                    .baseDate(LocalDate.parse(item.getReferenceDate()))
+                    .build())
             .toList();
     for (String opnSvcId : opnSvcIds) {
       TourLocalSearchResponse datas = searchDataSetResponses(opnSvcId);
@@ -133,6 +130,7 @@ public class DataSetService {
     if (responseEntity.getStatusCode().is2xxSuccessful()) {
       return responseEntity.getBody();
     } else {
+      log.error("잘못된 요청 입니다.");
       throw new IllegalArgumentException(responseEntity.getStatusCode().toString());
     }
   }
