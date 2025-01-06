@@ -1,7 +1,8 @@
 <div align="center">
 
-# 여행 정복 - 여정 
-![메인 1차](https://github.com/user-attachments/assets/568362c4-7717-4d47-8f3c-89d8416612db)<br>
+# 여행 정복 - 여정
+
+![메인이미지](https://github.com/user-attachments/assets/e0c63bd9-ad2c-4896-a0fb-146d20457650)
 
 ### ⭐여행 정복⭐<br> 회원들이 경로를 작성하고 공유하며,<br> 다른 회원은 해당 경로를 즐겨찾기, 리뷰, 채팅, 파티모집 등의<br> 기능을 통해 소통할 수 있는 서비스입니다.<br>
 
