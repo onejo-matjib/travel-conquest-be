@@ -153,13 +153,11 @@
 </div>
 
 <script>
-  // 폼 토글
   function toggleForm() {
     const form = document.getElementById('add-coupon-form');
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
 
-  // 쿠폰 삭제
   function deleteCoupon(button) {
     const couponId = $(button).data('id');
     if (confirm('이 쿠폰을 삭제하시겠습니까?')) {
@@ -177,7 +175,6 @@
     }
   }
 
-  // 쿠폰 추가
   $('#create-coupon-form').submit(function (e) {
     e.preventDefault();
     const couponData = {
